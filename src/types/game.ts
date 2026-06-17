@@ -18,6 +18,17 @@ export type GameplayRole =
   | "Boss"
   | "Map Node";
 
+export type RepresentationMode =
+  | "Legacy"
+  | "Witness"
+  | "Intervention"
+  | "Prayer"
+  | "CovenantMemory"
+  | "MysteryEncounter"
+  | "ForbiddenWarning"
+  | "Enemy"
+  | "SpeculativeEnemy";
+
 export type ResourceName =
   | "Resolve"
   | "Faith"
@@ -50,6 +61,7 @@ export interface SourceBackedContent {
   references: string[];
   theologyNote: string;
   gameplayRole: GameplayRole;
+  representationMode?: RepresentationMode;
 }
 
 export interface ResourceCost {

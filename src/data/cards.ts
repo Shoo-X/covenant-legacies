@@ -52,6 +52,7 @@ export const cards: Card[] = [
     theologyNote:
       "David's courage is grounded in trust in the Lord and covenant deliverance, not in spectacle or self-exaltation.",
     gameplayRole: "Anti-Giant",
+    representationMode: "Legacy",
   },
   {
     id: "card-moses-divider-of-seas",
@@ -89,6 +90,7 @@ export const cards: Card[] = [
     theologyNote:
       "The card presents the Red Sea crossing as divine deliverance through obedient leadership, not as human magic.",
     gameplayRole: "Defense",
+    representationMode: "Legacy",
   },
   {
     id: "card-mary-witness-to-glory",
@@ -126,6 +128,7 @@ export const cards: Card[] = [
     theologyNote:
       "Mary Magdalene is represented as a faithful witness to resurrection hope, not as a magical unit or combat summon.",
     gameplayRole: "Support",
+    representationMode: "Witness",
   },
   {
     id: "card-archangel-michael",
@@ -135,7 +138,7 @@ export const cards: Card[] = [
       { amount: 2, resource: "Faith" },
     ],
     text: "Deal 14 damage. Gain 12 Guard. Remove 2 Corruption.",
-    type: "Angelic Intervention/Judgment",
+    type: "Heavenly Intervention/Judgment",
     rarity: "Mythic Legendary",
     archetypeTags: ["Kingdom", "Covenant"],
     synergyNotes:
@@ -163,6 +166,7 @@ export const cards: Card[] = [
     theologyNote:
       "Michael is depicted as a servant under God's authority. Gameplay frames this as delegated heavenly intervention, not a summoned creature or object of worship.",
     gameplayRole: "Judgment",
+    representationMode: "Intervention",
   },
   {
     id: "card-sling-stone",
@@ -243,6 +247,7 @@ export const cards: Card[] = [
     theologyNote:
       "This is original speculative fiction that treats forbidden knowledge as spiritually dangerous, not desirable power.",
     gameplayRole: "Corruption",
+    representationMode: "ForbiddenWarning",
   },
   {
     id: "card-blessing-of-the-most-high",
@@ -259,6 +264,7 @@ export const cards: Card[] = [
     theologyNote:
       "The blessing points to God Most High as the source of victory and authority.",
     gameplayRole: "Support",
+    representationMode: "CovenantMemory",
   },
   {
     id: "card-bread-and-wine",

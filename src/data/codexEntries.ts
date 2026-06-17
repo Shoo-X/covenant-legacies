@@ -12,6 +12,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "Throne-room imagery is handled as reverent vision language, not as a controllable character, collectible power object, or direct visual possession of divine glory.",
     gameplayRole: "Support",
+    representationMode: "MysteryEncounter",
     sections: {
       whatTheBibleSays:
         "Scripture records throne-room visions with awe, restraint, worship, judgment, and humility. The texts emphasize God's holiness and the limits of human comprehension.",
@@ -33,6 +34,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "The resurrection is presented through reverent witness and testimony, not as a collectible unit, attack effect, or controllable spectacle.",
     gameplayRole: "Support",
+    representationMode: "Witness",
     sections: {
       whatTheBibleSays:
         "The Gospels present the empty tomb through witnesses, fear, joy, proclamation, and worship. Paul later centers Christian hope on the resurrection as received testimony.",
@@ -52,6 +54,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "Melchizedek is presented with reverence as a biblical mystery, not as a character to overdefine.",
     gameplayRole: "Support",
+    representationMode: "MysteryEncounter",
     sections: {
       whatTheBibleSays:
         "Genesis presents Melchizedek as king of Salem and priest of God Most High, bringing bread and wine and blessing Abram. Psalm 110 speaks of a priest forever according to his order, and Hebrews reflects deeply on that priestly order.",
@@ -71,6 +74,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "This entry treats the Endor account as a tragic warning about fear, disobedience, and forbidden counsel.",
     gameplayRole: "Trial",
+    representationMode: "ForbiddenWarning",
     sections: {
       whatTheBibleSays:
         "1 Samuel 28 recounts Saul seeking a medium at Endor after he no longer receives an answer from the Lord. The episode is dark, fearful, and bound to Saul's judgment.",
@@ -90,6 +94,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "Forbidden knowledge is represented as corrupting, fear-driven, and spiritually dangerous.",
     gameplayRole: "Corruption",
+    representationMode: "ForbiddenWarning",
     sections: {
       whatTheBibleSays:
         "Scripture repeatedly warns against grasping after knowledge or counsel outside faithful obedience to God.",
@@ -109,6 +114,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "Discernment is framed as faithful wisdom and trained moral perception.",
     gameplayRole: "Support",
+    representationMode: "Prayer",
     sections: {
       whatTheBibleSays:
         "1 Corinthians names discernment among spiritual gifts, and Hebrews describes mature believers trained to distinguish good from evil.",
@@ -128,6 +134,7 @@ export const codexEntries: CodexLoreEntry[] = [
     theologyNote:
       "Mystery encounters are designed as conversation starters, with Scripture-labeled material kept distinct from interpretation and fictional gameplay.",
     gameplayRole: "Map Node",
+    representationMode: "MysteryEncounter",
     sections: {
       whatTheBibleSays:
         "Some passages introduce mysterious figures or events with theological weight and limited explanation.",
