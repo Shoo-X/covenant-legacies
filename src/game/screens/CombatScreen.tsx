@@ -102,6 +102,9 @@ export function CombatScreen({
     .filter((entry): entry is { instance: CombatCardInstance; card: Card } =>
       Boolean(entry.card),
     );
+  const selectedHandCard = handCards.find(
+    ({ instance }) => instance.instanceId === selectedCardId,
+  )?.card;
 
   const latestFeedback = [...combat.feedback].slice(-8).reverse();
   const battlefieldFeedback = [...combat.feedback]
@@ -219,6 +222,11 @@ export function CombatScreen({
               <p>Hand</p>
               <span>{handCards.length} cards</span>
             </div>
+            {selectedHandCard && (
+              <div className="combat-hand-inspector" aria-live="polite">
+                <CollectibleCard as="article" card={selectedHandCard} size="inspect" />
+              </div>
+            )}
             <div className="combat-hand-scroll" aria-label="Card hand">
               {handCards.map(({ instance, card }) => {
                 const playable =

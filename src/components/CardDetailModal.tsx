@@ -15,7 +15,7 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
     <div className="card-detail-overlay" role="dialog" aria-modal="true">
       <div className="card-detail-modal">
         <div className="card-detail-preview">
-          <CollectibleCard card={card} disabled size="viewer" />
+          <CollectibleCard as="article" card={card} size="inspect" />
         </div>
 
         <div className="card-detail-copy game-scroll">

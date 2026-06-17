@@ -6,6 +6,7 @@ export const cardRarityFilters: Array<CardRarity | "All"> = [
   "Common",
   "Uncommon",
   "Rare",
+  "Epic",
   "Legendary",
   "Mythic Legendary",
   "Mystery",
@@ -20,10 +21,11 @@ export const cardSetFilters: Array<CardSet | "All"> = [
 const rarityRank: Record<CardRarity, number> = {
   "Mythic Legendary": 0,
   Legendary: 1,
-  Rare: 2,
-  Uncommon: 3,
-  Common: 4,
-  Mystery: 5,
+  Epic: 2,
+  Rare: 3,
+  Uncommon: 4,
+  Common: 5,
+  Mystery: 6,
 };
 
 export function getCardSet(card: Card): CardSet {

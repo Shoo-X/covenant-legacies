@@ -1,11 +1,11 @@
 import { cards } from "@/data/cards";
 import { heroes } from "@/data/heroes";
+import { CollectibleCard } from "@/components/CollectibleCard";
 import { GamePanel } from "@/components/GamePanel";
 import { PlaceholderArt } from "@/components/PlaceholderArt";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ResourceStrip } from "@/components/ResourceStrip";
 import { ScreenFrame } from "@/components/ScreenFrame";
-import { formatCardCost } from "@/game/cardText";
 import type { GameScreen } from "@/types/game";
 
 interface HeroSelectScreenProps {
@@ -78,7 +78,7 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
               <p className="text-xs uppercase tracking-[0.2em] text-[var(--color-gold)]">
                 Starting Deck
               </p>
-              <div className="game-scroll mt-3 grid max-h-[15rem] gap-3 pr-1 md:grid-cols-3">
+              <div className="starting-deck-preview-grid game-scroll mt-3">
                 {hero.startingDeck.map((deckCard) => {
                   const card = cardsById.get(deckCard.cardId);
 
@@ -87,22 +87,9 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
                   }
 
                   return (
-                    <div
-                      className="rounded-md border border-[rgba(215,180,93,0.16)] bg-[rgba(8,7,5,0.32)] p-3"
-                      key={deckCard.cardId}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="font-semibold text-[#fff3cf]">{card.name}</p>
-                        <span className="text-sm text-[var(--color-gold)]">
-                          x{deckCard.quantity}
-                        </span>
-                      </div>
-                      <p className="mt-1 text-xs uppercase tracking-[0.16em] text-[rgba(241,228,194,0.48)]">
-                        {card.type} / {formatCardCost(card)}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[rgba(241,228,194,0.66)]">
-                        {card.text}
-                      </p>
+                    <div className="starting-deck-preview-card" key={deckCard.cardId}>
+                      <CollectibleCard as="article" card={card} size="preview" />
+                      <span className="starting-deck-quantity">x{deckCard.quantity}</span>
                     </div>
                   );
                 })}

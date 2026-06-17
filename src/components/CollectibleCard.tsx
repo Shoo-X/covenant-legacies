@@ -3,6 +3,7 @@ import { CardArtwork } from "@/components/CardArtwork";
 import type { Card } from "@/types/game";
 
 interface CollectibleCardProps {
+  as?: "article" | "button";
   card: Card;
   disabled?: boolean;
   isPlayable?: boolean;
@@ -12,7 +13,7 @@ interface CollectibleCardProps {
   onFocus?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-  size?: "reward" | "hand" | "collection" | "viewer";
+  size?: "reward" | "hand" | "collection" | "preview" | "inspect" | "viewer";
 }
 
 function getCardTone(card: Card) {
@@ -63,7 +64,20 @@ function getRarityClass(card: Card) {
   return card.rarity.toLowerCase().replaceAll(" ", "-");
 }
 
+function getSourceAbbreviation(card: Card) {
+  if (card.sourceTier === "Interpretive Tradition") {
+    return "Trad.";
+  }
+
+  if (card.sourceTier === "Speculative Fiction") {
+    return "Spec.";
+  }
+
+  return "Script.";
+}
+
 export function CollectibleCard({
+  as,
   card,
   disabled = false,
   isPlayable = true,
@@ -78,46 +92,73 @@ export function CollectibleCard({
   const tone = getCardTone(card);
   const artSymbol = getArtSymbol(card);
   const rarityClass = getRarityClass(card);
+  const displaySize = size === "viewer" ? "inspect" : size;
+  const isInteractive = as
+    ? as === "button"
+    : Boolean(onClick || onFocus || onMouseEnter || onMouseLeave);
+  const frameClass = `tcg-card tcg-card-${displaySize} tcg-card-${tone} tcg-card-rarity-${rarityClass} ${
+    isPlayable ? "is-playable" : "is-unplayable"
+  } ${isSelected ? "is-selected" : ""}`;
+  const body = (
+    <div className="tcg-card-inner">
+      <div className="tcg-card-header">
+        <h3 className="tcg-card-title">{card.name}</h3>
+        <span className="tcg-card-cost-gem" aria-label={`Cost ${formatCardCost(card)}`}>
+          {formatCardCost(card)}
+        </span>
+      </div>
+
+      <CardArtwork
+        card={card}
+        className={`tcg-card-art tcg-card-art-${artSymbol}`}
+        loading={displaySize === "hand" ? "eager" : "lazy"}
+        priority={card.imagePath !== undefined && displaySize === "reward"}
+      />
+
+      <div className="tcg-card-type-line">{card.type}</div>
+
+      <div className="tcg-card-effect">
+        <p>{card.text}</p>
+        {card.flavorText && <em>{card.flavorText}</em>}
+      </div>
+
+      <div className="tcg-card-footer">
+        <span className="tcg-card-rarity-label">{card.rarity}</span>
+        <span
+          className="tcg-card-source-badge"
+          data-short-source={getSourceAbbreviation(card)}
+          title={card.sourceTier}
+        >
+          {card.sourceTier}
+        </span>
+      </div>
+
+      {displaySize === "reward" && <span className="tcg-card-choose">Choose Card</span>}
+    </div>
+  );
+
+  if (!isInteractive) {
+    return (
+      <article className={frameClass} title={card.text}>
+        {body}
+      </article>
+    );
+  }
 
   return (
     <button
-      className={`tcg-card tcg-card-${size} tcg-card-${tone} tcg-card-rarity-${rarityClass} ${
-        isPlayable ? "is-playable" : "is-unplayable"
-      } ${isSelected ? "is-selected" : ""}`}
-      disabled={disabled || !isPlayable}
+      className={frameClass}
+      aria-disabled={!isPlayable}
+      disabled={disabled}
       onBlur={onBlur}
-      onClick={onClick}
+      onClick={isPlayable ? onClick : undefined}
       onFocus={onFocus}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       title={card.text}
       type="button"
     >
-      <div className="tcg-card-inner">
-        <div className="tcg-card-header">
-          <h3>{card.name}</h3>
-          <span>{formatCardCost(card)}</span>
-        </div>
-
-        <CardArtwork
-          card={card}
-          className={`tcg-card-art tcg-card-art-${artSymbol}`}
-          loading={size === "hand" ? "eager" : "lazy"}
-          priority={card.imagePath !== undefined && size === "reward"}
-        />
-
-        <div className="tcg-card-type-line">{card.type}</div>
-
-        <div className="tcg-card-effect">
-          <p>{card.text}</p>
-          {card.flavorText && <em>{card.flavorText}</em>}
-        </div>
-
-        <div className="tcg-card-footer">
-          <span>{card.rarity}</span>
-          <span>{card.sourceTier}</span>
-        </div>
-      </div>
+      {body}
     </button>
   );
 }
