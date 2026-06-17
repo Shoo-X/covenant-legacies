@@ -113,6 +113,15 @@ export function CollectibleCard({
         className={`tcg-card-art tcg-card-art-${artSymbol}`}
         loading={displaySize === "hand" ? "eager" : "lazy"}
         priority={card.imagePath !== undefined && displaySize === "reward"}
+        variant={
+          displaySize === "collection" ||
+          displaySize === "hand" ||
+          displaySize === "inspect" ||
+          displaySize === "preview" ||
+          displaySize === "reward"
+            ? displaySize
+            : "card"
+        }
       />
 
       <div className="tcg-card-type-line">{card.type}</div>

@@ -31,7 +31,7 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
             </PrimaryButton>
           </div>
 
-          <CardArtwork card={card} className="card-detail-art" />
+          <CardArtwork card={card} className="card-detail-art" variant="inspect" />
 
           <dl className="card-detail-facts">
             <Fact label="Rarity" value={card.rarity} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
 import { heroes } from "@/data/heroes";
@@ -17,6 +17,7 @@ import {
 import type {
   CombatAction,
   CombatCardInstance,
+  CombatFeedback,
   CombatFeedbackKind,
 } from "@/game/combat/types";
 import type {
@@ -54,6 +55,16 @@ const feedbackTone: Record<CombatFeedbackKind, string> = {
   system: "border-[rgba(215,180,93,0.24)] text-[rgba(241,228,194,0.7)]",
 };
 
+type CombatCueTone = "attack" | "guard" | "prayer" | "forbidden" | "mystery";
+type CombatCueTarget = "enemy" | "player" | "center";
+
+interface PlayedCue {
+  cardName: string;
+  id: string;
+  target: CombatCueTarget;
+  tone: CombatCueTone;
+}
+
 export function CombatScreen({
   encounter,
   onNavigate,
@@ -66,7 +77,9 @@ export function CombatScreen({
   const enemy =
     enemies.find((candidate) => candidate.id === encounter.enemyIds[0]) ?? enemies[0];
   const cardsById = useMemo(() => new Map(cards.map((card) => [card.id, card])), []);
+  const cueIdRef = useRef(0);
   const [selectedCardId, setSelectedCardId] = useState<string>();
+  const [playedCue, setPlayedCue] = useState<PlayedCue>();
   const [combat, setCombat] = useState(() =>
     createCombatState(
       hero,
@@ -88,6 +101,20 @@ export function CombatScreen({
   }
 
   function playCard(instanceId: string) {
+    const card = cardsById.get(
+      combat.hand.find((instance) => instance.instanceId === instanceId)?.cardId ?? "",
+    );
+
+    if (card) {
+      cueIdRef.current += 1;
+      setPlayedCue({
+        cardName: card.name,
+        id: `${instanceId}-${combat.feedback.length + 1}-${cueIdRef.current}`,
+        target: getCardCueTarget(card),
+        tone: getCardCueTone(card),
+      });
+    }
+
     setSelectedCardId(instanceId);
     dispatch({
       type: "play-card",
@@ -108,6 +135,26 @@ export function CombatScreen({
   )?.card;
 
   const latestFeedback = [...combat.feedback].slice(-8).reverse();
+  const feedbackByNewest = [...combat.feedback].reverse();
+  const latestDamageFeedback = feedbackByNewest.find((item) => item.kind === "damage");
+  const latestGuardFeedback = feedbackByNewest.find(
+    (item) => item.kind === "guard" && !item.message.includes("Healed"),
+  );
+  const latestHealingFeedback = feedbackByNewest.find((item) =>
+    item.message.includes("Healed"),
+  );
+  const latestPlayerFeedback = latestHealingFeedback ?? latestGuardFeedback;
+  const latestResourceFeedback = feedbackByNewest.find(
+    (item) => item.kind === "resource",
+  );
+  const latestPrayerFeedback =
+    feedbackByNewest.find(
+      (item) =>
+        item.kind === "draw" ||
+        item.message.includes("Fear removed") ||
+        item.message.includes("Prayer") ||
+        item.message.includes("Corruption"),
+    ) ?? latestResourceFeedback;
   const battlefieldFeedback = [...combat.feedback]
     .filter((item) => item.kind === "damage" || item.kind === "guard")
     .slice(-3)
@@ -120,6 +167,12 @@ export function CombatScreen({
           <GamePanel className="combat-enemy-zone">
             <div className="combat-portrait combat-portrait-enemy">
               <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
+              {latestDamageFeedback && (
+                <span
+                  className="combat-portrait-hit-flash"
+                  key={`enemy-hit-${latestDamageFeedback.id}`}
+                />
+              )}
             </div>
 
             <div className="min-w-0">
@@ -157,20 +210,52 @@ export function CombatScreen({
 
           <div className="combat-battlefield-zone">
             <div className="combat-valley-bg" aria-hidden="true" />
+            <div className="combat-high-place-bg" aria-hidden="true" />
+            <div className="combat-battlefield-glow" aria-hidden="true" />
+            {playedCue && (
+              <div
+                className={`combat-played-card-cue combat-played-card-${playedCue.tone} combat-played-card-to-${playedCue.target}`}
+                key={playedCue.id}
+              >
+                <span>{playedCue.cardName}</span>
+              </div>
+            )}
+            {latestDamageFeedback && (
+              <CombatPopup
+                feedback={latestDamageFeedback}
+                key={`damage-${latestDamageFeedback.id}`}
+                tone="damage"
+              />
+            )}
+            {latestPlayerFeedback && (
+              <CombatPopup
+                feedback={latestPlayerFeedback}
+                key={`player-${latestPlayerFeedback.id}`}
+                tone={latestHealingFeedback ? "heal" : "guard"}
+              />
+            )}
             <div className="combat-field-slot combat-field-slot-left">
               <p>Attack Effects</p>
-              {battlefieldFeedback[0] && (
+              {(latestDamageFeedback ?? battlefieldFeedback[0]) && (
                 <span className="combat-float-number">
-                  {battlefieldFeedback[0].message}
+                  {(latestDamageFeedback ?? battlefieldFeedback[0])?.message}
                 </span>
               )}
             </div>
             <div className="combat-confrontation-line" aria-hidden="true" />
+            <div className="combat-field-slot combat-field-slot-center">
+              <p>Prayer / Covenant</p>
+              {latestPrayerFeedback && (
+                <span className="combat-float-number combat-float-prayer">
+                  {latestPrayerFeedback.message}
+                </span>
+              )}
+            </div>
             <div className="combat-field-slot combat-field-slot-right">
               <p>Altar / Structure</p>
-              {battlefieldFeedback[1] && (
+              {(latestGuardFeedback ?? battlefieldFeedback[1]) && (
                 <span className="combat-float-number">
-                  {battlefieldFeedback[1].message}
+                  {(latestGuardFeedback ?? battlefieldFeedback[1])?.message}
                 </span>
               )}
             </div>
@@ -179,7 +264,11 @@ export function CombatScreen({
             </div>
           </div>
 
-          <GamePanel className="combat-player-zone">
+          <GamePanel
+            className={`combat-player-zone ${
+              latestGuardFeedback ? "combat-player-guard-pulse" : ""
+            } ${latestHealingFeedback ? "combat-player-heal-pulse" : ""}`}
+          >
             <div className="min-w-0">
               <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
                 Champion
@@ -196,14 +285,35 @@ export function CombatScreen({
             </div>
 
             <div className="combat-player-stats">
-              <Stat label="Guard" value={combat.player.guard} tone="blue" />
+              <Stat
+                isChanged={Boolean(latestGuardFeedback || latestHealingFeedback)}
+                key={`guard-${latestGuardFeedback?.id ?? latestHealingFeedback?.id ?? "stable"}`}
+                label="Guard"
+                value={combat.player.guard}
+                tone="blue"
+              />
               <Stat label="Draw" value={combat.drawPile.length} />
               <Stat label="Discard" value={combat.discardPile.length} />
             </div>
 
             <div className="combat-resource-bank">
               {resourceLabels.map(([key, label]) => (
-                <ResourcePip key={key} label={label} value={combat.resources[key]} />
+                <ResourcePip
+                  isChanged={Boolean(
+                    latestResourceFeedback?.message
+                      .toLowerCase()
+                      .includes(label.toLowerCase()),
+                  )}
+                  key={`${key}-${
+                    latestResourceFeedback?.message
+                      .toLowerCase()
+                      .includes(label.toLowerCase())
+                      ? latestResourceFeedback.id
+                      : "stable"
+                  }`}
+                  label={label}
+                  value={combat.resources[key]}
+                />
               ))}
             </div>
 
@@ -216,6 +326,15 @@ export function CombatScreen({
                 ))
               )}
             </div>
+
+            {(latestGuardFeedback || latestHealingFeedback) && (
+              <span
+                className="combat-player-feedback-ring"
+                key={`player-ring-${
+                  latestGuardFeedback?.id ?? latestHealingFeedback?.id
+                }`}
+              />
+            )}
           </GamePanel>
 
           <GamePanel className="combat-hand-tray">
@@ -276,9 +395,11 @@ export function CombatScreen({
               <span>Latest</span>
             </div>
             <div className="mt-2 space-y-2">
-              {latestFeedback.map((item) => (
+              {latestFeedback.map((item, index) => (
                 <p
-                  className={`combat-feedback-pop rounded-sm border bg-[rgba(255,255,255,0.035)] px-3 py-2 text-xs leading-5 ${feedbackTone[item.kind]}`}
+                  className={`combat-feedback-pop ${
+                    index === 0 ? "combat-log-entry-latest" : ""
+                  } rounded-sm border bg-[rgba(255,255,255,0.035)] px-3 py-2 text-xs leading-5 ${feedbackTone[item.kind]}`}
                   key={item.id}
                 >
                   {item.message}
@@ -360,19 +481,24 @@ function Meter({ current, label, max, tone }: MeterProps) {
 }
 
 interface StatProps {
+  isChanged?: boolean;
   label: string;
   value: number | string;
   tone?: "blue" | "default";
 }
 
-function Stat({ label, value, tone = "default" }: StatProps) {
+function Stat({ isChanged = false, label, value, tone = "default" }: StatProps) {
   const toneClass =
     tone === "blue"
       ? "border-[rgba(93,183,232,0.24)] bg-[rgba(93,183,232,0.08)]"
       : "border-[rgba(215,180,93,0.16)] bg-[rgba(255,255,255,0.04)]";
 
   return (
-    <div className={`rounded-sm border p-2 ${toneClass}`}>
+    <div
+      className={`rounded-sm border p-2 ${
+        isChanged ? "combat-stat-pulse" : ""
+      } ${toneClass}`}
+    >
       <p className="text-[0.65rem] uppercase tracking-[0.16em] text-[rgba(241,228,194,0.5)]">
         {label}
       </p>
@@ -383,19 +509,95 @@ function Stat({ label, value, tone = "default" }: StatProps) {
   );
 }
 
-function ResourcePip({ label, value }: { label: string; value: number }) {
+function ResourcePip({
+  isChanged = false,
+  label,
+  value,
+}: {
+  isChanged?: boolean;
+  label: string;
+  value: number;
+}) {
   const danger = label === "Corruption";
 
   return (
     <div
       className={`combat-resource-pip ${
         danger ? "combat-resource-corruption" : "combat-resource-faith"
-      }`}
+      } ${isChanged ? "combat-resource-pulse" : ""}`}
     >
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
   );
+}
+
+function CombatPopup({
+  feedback,
+  tone,
+}: {
+  feedback: CombatFeedback;
+  tone: "damage" | "guard" | "heal";
+}) {
+  return (
+    <span className={`combat-popup combat-popup-${tone}`}>
+      {formatFeedbackPopup(feedback, tone)}
+    </span>
+  );
+}
+
+function formatFeedbackPopup(feedback: CombatFeedback, tone: "damage" | "guard" | "heal") {
+  if (tone === "damage") {
+    const damage = feedback.message.match(/-(\d+)/)?.[1];
+    return damage ? `-${damage}` : "Hit";
+  }
+
+  if (tone === "heal") {
+    const healing = feedback.message.match(/Healed\s+(\d+)/)?.[1];
+    return healing ? `+${healing} Health` : "Healed";
+  }
+
+  const guard = feedback.message.match(/\+(\d+)\s+Guard/)?.[1];
+  return guard ? `+${guard} Guard` : "Guard";
+}
+
+function getCardCueTone(card: Card): CombatCueTone {
+  if (card.type.includes("Forbidden") || card.rarity === "Mystery") {
+    return card.type.includes("Forbidden") ? "forbidden" : "mystery";
+  }
+
+  if (
+    card.type.includes("Prayer") ||
+    card.type.includes("Psalm") ||
+    card.type.includes("Covenant") ||
+    card.type.includes("Blessing")
+  ) {
+    return "prayer";
+  }
+
+  if (card.combatEffect?.guard || card.type.includes("Guard")) {
+    return "guard";
+  }
+
+  return "attack";
+}
+
+function getCardCueTarget(card: Card): CombatCueTarget {
+  if (card.combatEffect?.damage || card.type.includes("Attack")) {
+    return "enemy";
+  }
+
+  if (
+    card.combatEffect?.guard ||
+    card.combatEffect?.heal ||
+    card.type.includes("Guard") ||
+    card.type.includes("Prayer") ||
+    card.type.includes("Psalm")
+  ) {
+    return "player";
+  }
+
+  return "center";
 }
 
 function Chip({

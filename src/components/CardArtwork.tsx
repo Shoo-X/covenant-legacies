@@ -7,8 +7,27 @@ interface CardArtworkProps {
   className?: string;
   loading?: "eager" | "lazy";
   priority?: boolean;
-  variant?: "card" | "gallery" | "banner";
+  variant?:
+    | "card"
+    | "hand"
+    | "preview"
+    | "reward"
+    | "inspect"
+    | "collection"
+    | "gallery"
+    | "banner";
 }
+
+const imageSizesByVariant: Record<NonNullable<CardArtworkProps["variant"]>, string> = {
+  banner: "(max-width: 900px) 90vw, 45vw",
+  card: "180px",
+  collection: "(max-width: 768px) 45vw, 220px",
+  gallery: "(max-width: 768px) 90vw, 360px",
+  hand: "120px",
+  inspect: "420px",
+  preview: "160px",
+  reward: "260px",
+};
 
 export function CardArtwork({
   card,
@@ -37,11 +56,7 @@ export function CardArtwork({
         fill
         loading={priority ? undefined : loading}
         priority={priority}
-        sizes={
-          variant === "banner"
-            ? "100vw"
-            : "(max-width: 768px) 72vw, (max-width: 1280px) 28vw, 22vw"
-        }
+        sizes={imageSizesByVariant[variant]}
         src={card.imagePath}
       />
       <div className="card-artwork-vignette" aria-hidden="true" />
