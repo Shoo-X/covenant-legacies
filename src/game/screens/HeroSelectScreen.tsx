@@ -43,7 +43,8 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
           <article className="grid h-full min-h-0 gap-3 overflow-hidden border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.035)] p-4 lg:grid-cols-[0.7fr_1.3fr]" key={hero.id}>
             <div className="min-h-0">
               <PlaceholderArt
-                label={`${hero.name} portrait placeholder`}
+                label={hero.name}
+                subject={hero}
                 tone={index === 0 ? "gold" : "indigo"}
               />
             </div>

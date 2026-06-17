@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { SymbolicArt } from "@/components/SymbolicArt";
 import type { Card } from "@/types/game";
 
 interface CardArtworkProps {
@@ -18,9 +19,13 @@ export function CardArtwork({
 }: CardArtworkProps) {
   if (!card.imagePath) {
     return (
-      <div className={`card-artwork card-artwork-placeholder card-artwork-${variant} ${className}`}>
-        <span>{card.artworkTitle ?? card.name}</span>
-      </div>
+      <SymbolicArt
+        className={`card-artwork card-artwork-${variant} ${className}`}
+        kind="card"
+        label={card.artworkTitle ?? card.name}
+        subject={card}
+        variant={variant === "banner" ? "wide" : "card"}
+      />
     );
   }
 

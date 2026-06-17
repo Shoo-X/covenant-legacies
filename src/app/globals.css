@@ -532,6 +532,509 @@ button {
   text-transform: uppercase;
 }
 
+.symbolic-art {
+  --symbolic-gold: rgba(215, 180, 93, 0.82);
+  --symbolic-bronze: rgba(155, 106, 50, 0.76);
+  --symbolic-blue: rgba(93, 183, 232, 0.48);
+  --symbolic-crimson: rgba(159, 61, 40, 0.5);
+  --symbolic-violet: rgba(127, 35, 95, 0.44);
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: 100%;
+  min-height: 3rem;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(255, 243, 207, 0.16), transparent 8rem),
+    linear-gradient(180deg, rgba(32, 25, 19, 0.94), rgba(8, 7, 5, 0.98));
+  box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.48);
+}
+
+.symbolic-art::before,
+.symbolic-art::after,
+.symbolic-sky,
+.symbolic-horizon,
+.symbolic-aura,
+.symbolic-motif,
+.motif {
+  pointer-events: none;
+  position: absolute;
+}
+
+.symbolic-art::before {
+  content: "";
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 12px 12px;
+  mix-blend-mode: overlay;
+}
+
+.symbolic-art::after {
+  content: "";
+  inset: 0;
+  z-index: 5;
+  background:
+    radial-gradient(circle at 50% 34%, transparent 35%, rgba(0, 0, 0, 0.22) 100%),
+    linear-gradient(180deg, rgba(255, 243, 207, 0.08), transparent 35% 70%, rgba(0, 0, 0, 0.36));
+}
+
+.symbolic-sky {
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 54% 14%, rgba(255, 226, 150, 0.22), transparent 5rem),
+    radial-gradient(circle at 76% 28%, rgba(93, 183, 232, 0.12), transparent 6rem),
+    linear-gradient(180deg, rgba(28, 30, 36, 0.94), rgba(58, 38, 22, 0.74) 58%, rgba(16, 12, 9, 0.98));
+}
+
+.symbolic-horizon {
+  left: -8%;
+  right: -8%;
+  bottom: 8%;
+  z-index: 1;
+  height: 38%;
+  background:
+    linear-gradient(160deg, transparent 0 28%, rgba(8, 7, 5, 0.56) 28% 36%, transparent 36%),
+    linear-gradient(24deg, transparent 0 58%, rgba(8, 7, 5, 0.5) 58% 66%, transparent 66%),
+    radial-gradient(ellipse at 50% 100%, rgba(0, 0, 0, 0.66), transparent 64%);
+}
+
+.symbolic-aura {
+  inset: 9% 16% 18%;
+  z-index: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(215, 180, 93, 0.18), transparent 62%);
+  filter: blur(4px);
+}
+
+.symbolic-motif {
+  inset: 0;
+  z-index: 3;
+}
+
+.motif {
+  display: block;
+}
+
+.symbolic-label {
+  position: absolute;
+  left: 0.45rem;
+  right: 0.45rem;
+  bottom: 0.35rem;
+  z-index: 6;
+  overflow: hidden;
+  color: rgba(255, 243, 207, 0.54);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tcg-card-hand .symbolic-label,
+.tcg-card-preview .symbolic-label {
+  display: none;
+}
+
+.symbolic-art-portrait {
+  aspect-ratio: 4 / 3;
+  min-height: 10rem;
+  border-radius: 0.22rem;
+}
+
+.symbolic-art-card {
+  min-height: 0;
+}
+
+.symbolic-art-sling-stone .motif-one,
+.symbolic-art-defiant-stone .motif-one {
+  left: 20%;
+  top: 23%;
+  width: 58%;
+  height: 52%;
+  border: 2px solid transparent;
+  border-top-color: var(--symbolic-gold);
+  border-radius: 50%;
+  transform: rotate(-24deg);
+  box-shadow: 0 -7px 18px rgba(215, 180, 93, 0.1);
+}
+
+.symbolic-art-sling-stone .motif-two,
+.symbolic-art-defiant-stone .motif-two {
+  left: 42%;
+  top: 48%;
+  width: 19%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 243, 207, 0.24);
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 26%, rgba(255, 243, 207, 0.4), rgba(99, 67, 40, 0.82));
+  box-shadow: 0 0 18px rgba(215, 180, 93, 0.22);
+}
+
+.symbolic-art-sling-stone .motif-three,
+.symbolic-art-defiant-stone .motif-three {
+  left: 18%;
+  right: 18%;
+  bottom: 21%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(215, 180, 93, 0.48), transparent);
+}
+
+.symbolic-art-defiant-stone .motif-four {
+  right: 12%;
+  bottom: 18%;
+  width: 24%;
+  height: 54%;
+  border-radius: 50% 50% 12% 12%;
+  background: rgba(0, 0, 0, 0.34);
+  filter: blur(1px);
+}
+
+.symbolic-art-staff-shield .motif-one,
+.symbolic-art-shepherd-king .motif-one {
+  left: 34%;
+  top: 17%;
+  width: 8%;
+  height: 58%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 243, 207, 0.76), rgba(155, 106, 50, 0.82));
+  transform: rotate(12deg);
+}
+
+.symbolic-art-staff-shield .motif-two,
+.symbolic-art-shepherd-king .motif-two {
+  right: 23%;
+  top: 31%;
+  width: 28%;
+  height: 34%;
+  border: 2px solid rgba(215, 180, 93, 0.48);
+  border-radius: 46% 46% 54% 54%;
+  background: rgba(8, 7, 5, 0.22);
+}
+
+.symbolic-art-staff-shield .motif-three {
+  left: 12%;
+  right: 10%;
+  bottom: 18%;
+  height: 18%;
+  background:
+    radial-gradient(circle at 18% 72%, rgba(255, 243, 207, 0.22) 0 0.28rem, transparent 0.3rem),
+    radial-gradient(circle at 28% 62%, rgba(255, 243, 207, 0.18) 0 0.22rem, transparent 0.24rem),
+    radial-gradient(circle at 40% 76%, rgba(255, 243, 207, 0.2) 0 0.25rem, transparent 0.27rem);
+}
+
+.symbolic-art-harp-light .motif-one {
+  left: 31%;
+  top: 18%;
+  width: 35%;
+  height: 56%;
+  border: 2px solid rgba(215, 180, 93, 0.62);
+  border-left-width: 0;
+  border-radius: 0 70% 70% 0;
+}
+
+.symbolic-art-harp-light .motif-two,
+.symbolic-art-harp-light .motif-three,
+.symbolic-art-harp-light .motif-four {
+  top: 24%;
+  bottom: 24%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(255, 243, 207, 0.74), transparent);
+}
+
+.symbolic-art-harp-light .motif-two {
+  left: 40%;
+}
+
+.symbolic-art-harp-light .motif-three {
+  left: 48%;
+}
+
+.symbolic-art-harp-light .motif-four {
+  left: 56%;
+}
+
+.symbolic-art-harp-light .symbolic-aura,
+.symbolic-art-parted-veil .symbolic-aura {
+  background: radial-gradient(circle, rgba(93, 183, 232, 0.24), transparent 62%);
+}
+
+.symbolic-art-altar-light .motif-one {
+  left: 27%;
+  right: 27%;
+  bottom: 25%;
+  height: 16%;
+  background:
+    linear-gradient(90deg, rgba(72, 52, 34, 0.9), rgba(146, 101, 54, 0.82)),
+    repeating-linear-gradient(90deg, transparent 0 20%, rgba(0, 0, 0, 0.18) 20% 22%);
+  box-shadow: 0 0 22px rgba(215, 180, 93, 0.16);
+}
+
+.symbolic-art-altar-light .motif-two {
+  left: 35%;
+  top: 24%;
+  width: 30%;
+  height: 34%;
+  border-radius: 60% 60% 45% 45%;
+  background: linear-gradient(180deg, rgba(255, 243, 207, 0.72), rgba(215, 180, 93, 0.16), transparent);
+  filter: blur(1px);
+}
+
+.symbolic-art-table-blessing .motif-one {
+  left: 25%;
+  right: 25%;
+  bottom: 31%;
+  height: 8%;
+  border-radius: 999px;
+  background: rgba(215, 180, 93, 0.42);
+}
+
+.symbolic-art-table-blessing .motif-two {
+  left: 31%;
+  top: 42%;
+  width: 18%;
+  height: 12%;
+  border-radius: 50%;
+  background: rgba(255, 243, 207, 0.54);
+}
+
+.symbolic-art-table-blessing .motif-three {
+  right: 31%;
+  top: 34%;
+  width: 12%;
+  height: 28%;
+  border: 1px solid rgba(255, 243, 207, 0.38);
+  border-radius: 0 0 40% 40%;
+  background: rgba(215, 180, 93, 0.16);
+}
+
+.symbolic-art-parted-veil .motif-one,
+.symbolic-art-parted-veil .motif-two {
+  top: 11%;
+  bottom: 12%;
+  width: 33%;
+  background: linear-gradient(180deg, rgba(203, 185, 143, 0.18), rgba(203, 185, 143, 0.04));
+}
+
+.symbolic-art-parted-veil .motif-one {
+  left: 4%;
+  transform: skewY(-9deg);
+}
+
+.symbolic-art-parted-veil .motif-two {
+  right: 4%;
+  transform: skewY(9deg);
+}
+
+.symbolic-art-parted-veil .motif-three {
+  left: 47%;
+  top: 8%;
+  bottom: 12%;
+  width: 6%;
+  background: linear-gradient(180deg, rgba(255, 243, 207, 0.7), rgba(93, 183, 232, 0.2), transparent);
+  filter: blur(1px);
+}
+
+.symbolic-art-fractured-tablet .symbolic-sky,
+.symbolic-art-dread-parchment .symbolic-sky,
+.symbolic-art-forbidden-forge .symbolic-sky {
+  background:
+    radial-gradient(circle at 55% 18%, rgba(127, 35, 95, 0.22), transparent 5rem),
+    linear-gradient(180deg, rgba(24, 18, 22, 0.98), rgba(42, 20, 20, 0.72) 58%, rgba(8, 7, 5, 0.98));
+}
+
+.symbolic-art-fractured-tablet .symbolic-aura,
+.symbolic-art-dread-parchment .symbolic-aura,
+.symbolic-art-forbidden-forge .symbolic-aura {
+  background: radial-gradient(circle, rgba(127, 35, 95, 0.22), transparent 62%);
+}
+
+.symbolic-art-fractured-tablet .motif-one {
+  left: 29%;
+  top: 18%;
+  width: 42%;
+  height: 58%;
+  border: 1px solid rgba(203, 185, 143, 0.24);
+  border-radius: 0.25rem;
+  background: linear-gradient(145deg, rgba(91, 69, 50, 0.58), rgba(18, 13, 13, 0.52));
+  transform: rotate(-4deg);
+}
+
+.symbolic-art-fractured-tablet .motif-two,
+.symbolic-art-fractured-tablet .motif-three,
+.symbolic-art-dread-parchment .motif-two {
+  left: 36%;
+  right: 34%;
+  height: 1px;
+  background: rgba(159, 61, 40, 0.54);
+  transform: rotate(-22deg);
+}
+
+.symbolic-art-fractured-tablet .motif-two {
+  top: 37%;
+}
+
+.symbolic-art-fractured-tablet .motif-three {
+  top: 53%;
+  transform: rotate(24deg);
+}
+
+.symbolic-art-dread-parchment .motif-one {
+  left: 24%;
+  top: 22%;
+  width: 52%;
+  height: 48%;
+  border: 1px solid rgba(203, 185, 143, 0.18);
+  border-radius: 0.18rem;
+  background: linear-gradient(135deg, rgba(91, 67, 43, 0.44), rgba(13, 10, 10, 0.62));
+}
+
+.symbolic-art-dread-parchment .motif-two {
+  top: 48%;
+  right: 28%;
+  background: linear-gradient(90deg, transparent, rgba(159, 61, 40, 0.64), transparent);
+}
+
+.symbolic-art-covenant-seal .motif-one,
+.symbolic-art-scroll-light .motif-one {
+  left: 32%;
+  top: 24%;
+  width: 36%;
+  aspect-ratio: 1;
+  border: 2px solid rgba(215, 180, 93, 0.48);
+  transform: rotate(45deg);
+  box-shadow: 0 0 26px rgba(215, 180, 93, 0.14);
+}
+
+.symbolic-art-scroll-light .motif-two {
+  left: 28%;
+  right: 28%;
+  top: 43%;
+  height: 18%;
+  border-top: 1px solid rgba(255, 243, 207, 0.36);
+  border-bottom: 1px solid rgba(255, 243, 207, 0.18);
+}
+
+.symbolic-art-shepherd-king .motif-three {
+  left: 18%;
+  top: 24%;
+  width: 46%;
+  height: 58%;
+  border-radius: 46% 46% 16% 16%;
+  background: linear-gradient(180deg, rgba(255, 243, 207, 0.13), rgba(0, 0, 0, 0.34));
+  box-shadow: 0 0 30px rgba(215, 180, 93, 0.18);
+}
+
+.symbolic-art-shepherd-king .motif-four,
+.symbolic-art-giant-ridge .motif-four {
+  right: 10%;
+  bottom: 17%;
+  width: 23%;
+  height: 50%;
+  border-radius: 50% 50% 14% 14%;
+  background: rgba(0, 0, 0, 0.38);
+}
+
+.symbolic-art-enemy .symbolic-label {
+  color: rgba(255, 215, 201, 0.58);
+}
+
+.symbolic-art-raider-mark .symbolic-sky,
+.symbolic-art-idol-shadow .symbolic-sky,
+.symbolic-art-giant-ridge .symbolic-sky {
+  background:
+    radial-gradient(circle at 52% 18%, rgba(159, 61, 40, 0.2), transparent 6rem),
+    linear-gradient(180deg, rgba(31, 22, 19, 0.98), rgba(75, 39, 24, 0.7) 58%, rgba(8, 7, 5, 0.98));
+}
+
+.symbolic-art-raider-mark .motif-one {
+  left: 36%;
+  top: 22%;
+  width: 28%;
+  height: 54%;
+  border-radius: 45% 45% 18% 18%;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.symbolic-art-raider-mark .motif-two {
+  left: 30%;
+  top: 46%;
+  width: 40%;
+  height: 2px;
+  background: rgba(159, 61, 40, 0.62);
+  transform: rotate(-18deg);
+}
+
+.symbolic-art-idol-shadow .motif-one {
+  left: 34%;
+  top: 20%;
+  width: 32%;
+  height: 56%;
+  clip-path: polygon(50% 0, 82% 18%, 70% 100%, 30% 100%, 18% 18%);
+  background: linear-gradient(180deg, rgba(92, 76, 59, 0.68), rgba(0, 0, 0, 0.52));
+}
+
+.symbolic-art-idol-shadow .motif-two {
+  left: 25%;
+  right: 25%;
+  bottom: 20%;
+  height: 8%;
+  background: rgba(0, 0, 0, 0.34);
+}
+
+.symbolic-art-forbidden-forge .motif-one {
+  left: 26%;
+  bottom: 24%;
+  width: 48%;
+  height: 18%;
+  border-radius: 0.2rem;
+  background: linear-gradient(180deg, rgba(159, 61, 40, 0.55), rgba(8, 7, 5, 0.5));
+  box-shadow: 0 0 28px rgba(159, 61, 40, 0.2);
+}
+
+.symbolic-art-forbidden-forge .motif-two {
+  left: 44%;
+  top: 24%;
+  width: 8%;
+  height: 42%;
+  background: rgba(0, 0, 0, 0.5);
+  transform: rotate(42deg);
+}
+
+.symbolic-art-forbidden-forge .motif-three {
+  left: 35%;
+  top: 29%;
+  width: 30%;
+  height: 9%;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.48);
+  transform: rotate(42deg);
+}
+
+.symbolic-art-giant-ridge .motif-one {
+  left: 38%;
+  top: 12%;
+  width: 30%;
+  height: 66%;
+  border-radius: 48% 48% 12% 12%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.48), rgba(0, 0, 0, 0.68));
+}
+
+.symbolic-art-giant-ridge .motif-two {
+  left: 41%;
+  top: 11%;
+  width: 24%;
+  height: 12%;
+  clip-path: polygon(0 100%, 24% 0, 50% 100%, 76% 0, 100% 100%);
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .card-artwork-gallery,
 .card-artwork-banner {
   width: 100%;
@@ -1284,13 +1787,21 @@ button {
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.62);
 }
 
-.combat-portrait span {
+.combat-portrait > span {
   max-width: 5rem;
   color: rgba(255, 243, 207, 0.62);
   font-size: 0.56rem;
   line-height: 1.4;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+}
+
+.combat-portrait .symbolic-art {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0.2rem;
 }
 
 .combat-portrait-enemy {

@@ -8,6 +8,7 @@ import { CollectibleCard } from "@/components/CollectibleCard";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { SymbolicArt } from "@/components/SymbolicArt";
 import {
   canPayForCard,
   combatReducer,
@@ -117,8 +118,8 @@ export function CombatScreen({
       <div className="combat-board-grid">
         <section className="combat-main-board" aria-label="Combat board">
           <GamePanel className="combat-enemy-zone">
-            <div className="combat-portrait combat-portrait-enemy" aria-hidden="true">
-              <span>{enemy.name}</span>
+            <div className="combat-portrait combat-portrait-enemy">
+              <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
             </div>
 
             <div className="min-w-0">
