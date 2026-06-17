@@ -5,12 +5,15 @@ import { encounters } from "@/data/encounters";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { getCorruptionThreshold } from "@/game/corruption";
 import type { Encounter, Memorial, ResourceState } from "@/types/game";
 
 interface MapScreenProps {
   completedEncounterIds: string[];
+  maxRunHealth: number;
   onStartEncounter: (encounter: Encounter) => void;
   revealedMapNodeCount: number;
+  runHealth: number;
   runMemorials: Memorial[];
   runResources: ResourceState;
   upgradedCardIds: string[];
@@ -18,12 +21,15 @@ interface MapScreenProps {
 
 export function MapScreen({
   completedEncounterIds,
+  maxRunHealth,
   onStartEncounter,
   revealedMapNodeCount,
+  runHealth,
   runMemorials,
   runResources,
   upgradedCardIds,
 }: MapScreenProps) {
+  const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
   const nextEnterableEncounter = useMemo(
     () => getNextEnterableEncounter(completedEncounterIds) ?? encounters[0],
     [completedEncounterIds],
@@ -61,11 +67,19 @@ export function MapScreen({
           </div>
 
           <div className="campaign-run-stats">
+            <RunStat label="Health" value={`${runHealth} / ${maxRunHealth}`} />
             <RunStat label="Faith" value={runResources.faith} />
             <RunStat label="Authority" value={runResources.authority} />
-            <RunStat label="Corruption" value={runResources.corruption} />
+            <RunStat
+              label="Corruption"
+              value={`${runResources.corruption} - ${corruptionThreshold.name}`}
+            />
             <RunStat label="Upgrades" value={upgradedCardIds.length} />
           </div>
+
+          <p className={`campaign-corruption-note corruption-note-${corruptionThreshold.tone}`}>
+            {corruptionThreshold.name}: {corruptionThreshold.summary}
+          </p>
 
           {revealedMapNodeCount > 0 && (
             <p className="campaign-warning">
@@ -152,7 +166,9 @@ export function MapScreen({
               : selectedCanEnter
                 ? selectedEncounter.mysteryEncounterIds?.length
                   ? "Enter Mystery"
-                  : "Enter Trial"
+                  : selectedEncounter.nodeType === "Rest / Upgrade"
+                    ? "Rest / Upgrade"
+                    : "Enter Trial"
                 : hasEncounterAction(selectedEncounter)
                   ? "Locked"
                   : "Coming Soon"}
@@ -191,6 +207,7 @@ function canEnterEncounter(
 
 function hasEncounterAction(encounter: Encounter) {
   return (
+    encounter.nodeType === "Rest / Upgrade" ||
     encounter.enemyIds.length > 0 ||
     Boolean(encounter.mysteryEncounterIds?.length)
   );
@@ -198,7 +215,7 @@ function hasEncounterAction(encounter: Encounter) {
 
 interface RunStatProps {
   label: string;
-  value: number;
+  value: number | string;
 }
 
 function RunStat({ label, value }: RunStatProps) {

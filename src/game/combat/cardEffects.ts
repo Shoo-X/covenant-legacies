@@ -7,13 +7,16 @@ import type { CombatContext, CombatState } from "./types";
 type CardEffect = (state: CombatState, card: Card, context: CombatContext) => CombatState;
 
 export const cardEffects: Record<string, CardEffect> = {
-  "card-sling-stone": (state) => {
+  "card-sling-stone": (state, card) => {
     const traitBonus = state.enemy.traits.some(
       (trait) => trait === "Giant" || trait === "Nephilim",
     )
-      ? 3
+      ? card.isUpgraded
+        ? 5
+        : 3
       : 0;
-    const damage = 6 + traitBonus + state.nextAttackBonus;
+    const damage =
+      (card.isUpgraded ? 8 : 6) + traitBonus + state.nextAttackBonus;
 
     return dealEnemyDamage(
       {
@@ -24,47 +27,50 @@ export const cardEffects: Record<string, CardEffect> = {
       traitBonus > 0 ? "Sling Stone strikes a giant-blooded foe." : "Sling Stone hits.",
     );
   },
-  "card-shepherds-guard": (state) => gainPlayerGuard(state, 5, "Shepherd's Guard"),
+  "card-shepherds-guard": (state, card) =>
+    gainPlayerGuard(state, card.isUpgraded ? 8 : 5, "Shepherd's Guard"),
   "card-psalm-of-courage": (state, _card, context) => {
     const guarded = gainPlayerGuard(
       {
         ...state,
         hasFear: false,
       },
-      4,
+      _card.isUpgraded ? 6 : 4,
       "Psalm of Courage",
     );
 
     return drawCards(guarded, 1, context.random);
   },
-  "card-smooth-stone": (state) => ({
+  "card-smooth-stone": (state, card) => ({
     ...state,
-    nextAttackBonus: state.nextAttackBonus + 3,
+    nextAttackBonus: state.nextAttackBonus + (card.isUpgraded ? 5 : 3),
     feedback: [
       ...state.feedback,
       {
         id: state.feedback.length + 1,
         kind: "system",
-        message: "Next attack gains +3 damage.",
+        message: `Next attack gains +${card.isUpgraded ? 5 : 3} damage.`,
       },
     ],
   }),
-  "card-forbidden-watcher-diagram": (state, _card, context) =>
-    drawCards(gainCorruption(state, 2), 3, context.random),
-  "card-blessing-of-the-most-high": (state) => {
+  "card-forbidden-watcher-diagram": (state, card, context) =>
+    drawCards(gainCorruption(state, card.isUpgraded ? 1 : 2), 3, context.random),
+  "card-blessing-of-the-most-high": (state, card) => {
     const blessed = gainPlayerGuard(
       {
         ...state,
         hasFear: false,
       },
-      6,
+      card.isUpgraded ? 8 : 6,
       "Blessing of the Most High",
     );
 
-    return blessed.resources.corruption === 0 ? gainAuthority(blessed, 1) : blessed;
+    return blessed.resources.corruption === 0
+      ? gainAuthority(blessed, card.isUpgraded ? 2 : 1)
+      : blessed;
   },
-  "card-bread-and-wine": (state, _card, context) => {
-    const healed = healPlayer(state, 5);
+  "card-bread-and-wine": (state, card, context) => {
+    const healed = healPlayer(state, card.isUpgraded ? 7 : 5);
 
     return drawCards(
       {
@@ -83,20 +89,20 @@ export const cardEffects: Record<string, CardEffect> = {
       context.random,
     );
   },
-  "card-order-of-the-king-priest": (state, _card, context) =>
+  "card-order-of-the-king-priest": (state, card, context) =>
     drawCards(
       gainAuthority(
         {
           ...state,
           covenantCardsTriggerTwice: true,
         },
-        2,
+        card.isUpgraded ? 3 : 2,
       ),
       0,
       context.random,
     ),
-  "card-forbidden-consultation": (state, _card, context) => {
-    const corrupted = gainCorruption(state, 2);
+  "card-forbidden-consultation": (state, card, context) => {
+    const corrupted = gainCorruption(state, card.isUpgraded ? 1 : 2);
 
     return drawCards(
       {
@@ -140,11 +146,12 @@ export function applyCardEffect(
     return bespokeEffect(state, card, context);
   }
 
-  return applyConfiguredEffect(state, card.combatEffect, context);
+  return applyConfiguredEffect(state, card, card.combatEffect, context);
 }
 
 function applyConfiguredEffect(
   state: CombatState,
+  card: Card,
   effect: CardCombatEffect | undefined,
   context: CombatContext,
 ): CombatState {
@@ -173,11 +180,21 @@ function applyConfiguredEffect(
   }
 
   if (effect.guard) {
-    nextState = gainPlayerGuard(nextState, effect.guard, "Card");
+    const cleanHandsBonus =
+      nextState.resources.corruption === 0 && card.type.includes("Covenant") ? 1 : 0;
+
+    nextState = gainPlayerGuard(
+      nextState,
+      effect.guard + cleanHandsBonus,
+      cleanHandsBonus > 0 ? "Clean Hands covenant bonus" : "Card",
+    );
   }
 
   if (effect.heal) {
-    nextState = healPlayer(nextState, effect.heal);
+    const cleanHandsBonus =
+      nextState.resources.corruption === 0 && card.type.includes("Covenant") ? 1 : 0;
+
+    nextState = healPlayer(nextState, effect.heal + cleanHandsBonus);
   }
 
   if (effect.removeFear) {
@@ -282,7 +299,7 @@ function applyConfiguredEffect(
   }
 
   if (effect.ifCorruptionZero && nextState.resources.corruption === 0) {
-    nextState = applyConfiguredEffect(nextState, effect.ifCorruptionZero, context);
+    nextState = applyConfiguredEffect(nextState, card, effect.ifCorruptionZero, context);
   }
 
   if (effect.draw) {
@@ -293,7 +310,8 @@ function applyConfiguredEffect(
 }
 
 function gainCorruption(state: CombatState, amount: number): CombatState {
-  const bossMightGain = state.enemy.traits.includes("Boss") ? amount : 0;
+  const bossMightGain =
+    state.enemy.traits.includes("Boss") && state.bossPhase >= 3 ? amount : 0;
 
   return {
     ...state,
@@ -331,13 +349,22 @@ export function dealEnemyDamage(
   const totalDamage = damage + memorialBonus;
   const nextHealth = Math.max(0, state.enemyState.health - totalDamage);
   const status = nextHealth === 0 ? "victory" : state.status;
+  const nextBossPhase = getNextBossPhase(state, nextHealth);
+  const phaseChanged = nextBossPhase > state.bossPhase;
+  const phaseFeedback = getBossPhaseFeedback(state, nextBossPhase, phaseChanged);
 
   return {
     ...state,
     enemyState: {
       ...state.enemyState,
       health: nextHealth,
+      might:
+        phaseChanged && nextBossPhase >= 3
+          ? state.enemyState.might + 1
+          : state.enemyState.might,
     },
+    bossPhase: nextBossPhase,
+    hasFear: phaseChanged && nextBossPhase >= 2 ? true : state.hasFear,
     status,
     feedback: [
       ...state.feedback,
@@ -348,10 +375,11 @@ export function dealEnemyDamage(
           memorialBonus > 0 ? ` (${memorialBonus} from Memorials)` : ""
         }.`,
       },
+      ...phaseFeedback,
       ...(status === "victory"
         ? [
             {
-              id: state.feedback.length + 2,
+              id: state.feedback.length + 2 + phaseFeedback.length,
               kind: "system" as const,
               message: "Enemy defeated.",
             },
@@ -359,6 +387,56 @@ export function dealEnemyDamage(
         : []),
     ],
   };
+}
+
+function getNextBossPhase(state: CombatState, nextHealth: number) {
+  if (!state.enemy.traits.includes("Boss")) {
+    return state.bossPhase;
+  }
+
+  const healthRatio = nextHealth / state.enemyState.maxHealth;
+
+  if (healthRatio <= 0.3) {
+    return 3;
+  }
+
+  if (healthRatio <= 0.6) {
+    return 2;
+  }
+
+  return 1;
+}
+
+function getBossPhaseFeedback(
+  state: CombatState,
+  nextBossPhase: number,
+  phaseChanged: boolean,
+): CombatState["feedback"] {
+  if (!phaseChanged || !state.enemy.traits.includes("Boss")) {
+    return [];
+  }
+
+  if (nextBossPhase >= 3) {
+    return [
+      {
+        id: state.feedback.length + 2,
+        kind: "enemy",
+        message: "Phase 3: Shadow of the Watchers gathers. The Giant gains 1 Might.",
+      },
+    ];
+  }
+
+  if (nextBossPhase >= 2) {
+    return [
+      {
+        id: state.feedback.length + 2,
+        kind: "enemy",
+        message: "Phase 2: Fear rises from the high place.",
+      },
+    ];
+  }
+
+  return [];
 }
 
 export function gainPlayerGuard(

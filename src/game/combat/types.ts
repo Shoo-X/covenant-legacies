@@ -39,6 +39,8 @@ export interface CombatState {
   hero: Hero;
   enemy: Enemy;
   runDeck: StartingDeckCard[];
+  runHealth: number;
+  runResources: ResourceState;
   memorials: Memorial[];
   startingFaithBonus: number;
   player: CombatantState;
@@ -55,6 +57,7 @@ export interface CombatState {
   oilOfGladnessUsed: boolean;
   hasFear: boolean;
   heartOfCourageUsed: boolean;
+  bossPhase: number;
   status: CombatStatus;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;

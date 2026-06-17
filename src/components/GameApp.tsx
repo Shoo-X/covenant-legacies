@@ -18,10 +18,12 @@ import { HomeScreen } from "@/game/screens/HomeScreen";
 import { MapScreen } from "@/game/screens/MapScreen";
 import { MemorialRewardScreen } from "@/game/screens/MemorialRewardScreen";
 import { MysteryEncounterScreen } from "@/game/screens/MysteryEncounterScreen";
+import { RestNodeScreen } from "@/game/screens/RestNodeScreen";
 import { RewardScreen } from "@/game/screens/RewardScreen";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { applyMysteryChoice } from "@/game/mysteryEffects";
 import { chooseMemorialRewards, chooseRewardCards } from "@/game/rewards";
+import { applyRestChoice, type RestChoiceId } from "@/game/rest";
 import type {
   Card,
   Encounter,
@@ -46,6 +48,7 @@ export function GameApp() {
   );
   const [completedEncounterIds, setCompletedEncounterIds] = useState<string[]>([]);
   const [runDeck, setRunDeck] = useState<StartingDeckCard[]>([]);
+  const [runHealth, setRunHealth] = useState(heroes[0].maxHealth);
   const [runResources, setRunResources] = useState<ResourceState>(
     heroes[0].resourceState,
   );
@@ -82,6 +85,7 @@ export function GameApp() {
     setSelectedMysteryEncounterId(mysteryEncounters[0].id);
     setCompletedEncounterIds([]);
     setRunDeck(heroes[0].startingDeck);
+    setRunHealth(heroes[0].maxHealth);
     setRunResources(heroes[0].resourceState);
     setRewardPoolCardIds(baseRewardPoolCardIds);
     setUnlockedCodexEntryIds([]);
@@ -112,6 +116,11 @@ export function GameApp() {
     setSelectedEncounterId(encounter.id);
     setActiveCombatEncounterId(undefined);
 
+    if (encounter.nodeType === "Rest / Upgrade") {
+      setScreen("rest");
+      return;
+    }
+
     if (encounter.mysteryEncounterIds && encounter.mysteryEncounterIds.length > 0) {
       const mysteryIndex = Math.floor(Math.random() * encounter.mysteryEncounterIds.length);
       setSelectedMysteryEncounterId(encounter.mysteryEncounterIds[mysteryIndex]);
@@ -131,10 +140,23 @@ export function GameApp() {
     }
   }
 
-  function completeEncounter(encounter: Encounter) {
+  function completeEncounter(
+    encounter: Encounter,
+    remainingHealth?: number,
+    finalResources?: ResourceState,
+  ) {
     const runMemorials = getRunMemorials();
 
     setActiveCombatEncounterId(undefined);
+    if (remainingHealth !== undefined) {
+      setRunHealth(Math.max(1, remainingHealth));
+    }
+    if (finalResources) {
+      setRunResources((current) => ({
+        ...current,
+        corruption: finalResources.corruption,
+      }));
+    }
     setCompletedEncounterIds((current) =>
       current.includes(encounter.id) ? current : [...current, encounter.id],
     );
@@ -234,6 +256,30 @@ export function GameApp() {
     setScreen("map");
   }
 
+  function resolveRestChoice(choiceId: RestChoiceId) {
+    const resolution = applyRestChoice(
+      {
+        maxHealth: heroes[0].maxHealth,
+        runDeck,
+        runHealth,
+        runResources,
+        upgradedCardIds,
+      },
+      choiceId,
+      new Map(cards.map((card) => [card.id, card])),
+    );
+
+    setRunHealth(resolution.state.runHealth);
+    setRunResources(resolution.state.runResources);
+    setUpgradedCardIds(resolution.state.upgradedCardIds);
+    setCompletedEncounterIds((current) =>
+      current.includes(selectedEncounter.id)
+        ? current
+        : [...current, selectedEncounter.id],
+    );
+    setScreen("map");
+  }
+
   function resolveMysteryChoice(choice: MysteryEncounterChoice) {
     const resolution = applyMysteryChoice(
       {
@@ -310,8 +356,10 @@ export function GameApp() {
         (runStarted ? (
           <MapScreen
             completedEncounterIds={completedEncounterIds}
+            maxRunHealth={heroes[0].maxHealth}
             onStartEncounter={startEncounter}
             revealedMapNodeCount={revealedMapNodeCount}
+            runHealth={runHealth}
             runMemorials={getRunMemorials()}
             runResources={runResources}
             upgradedCardIds={upgradedCardIds}
@@ -332,8 +380,11 @@ export function GameApp() {
             onNavigate={navigate}
             onVictory={completeEncounter}
             runDeck={runDeck}
+            runHealth={runHealth}
             runMemorials={getRunMemorials()}
+            runResources={runResources}
             startingFaithBonus={startingFaithBonus}
+            upgradedCardIds={upgradedCardIds}
           />
         ) : (
           <RunRequiredState
@@ -374,6 +425,25 @@ export function GameApp() {
         ) : (
           <RunRequiredState
             body="Mystery encounters appear along The Valley of the Giant during a run."
+            cta="Choose Hero"
+            onAction={() => setScreen("hero-select")}
+            title="No active run"
+          />
+        )
+      )}
+      {screen === "rest" && (
+        runStarted ? (
+          <RestNodeScreen
+            maxHealth={heroes[0].maxHealth}
+            onChoose={resolveRestChoice}
+            runDeck={runDeck}
+            runHealth={runHealth}
+            runResources={runResources}
+            upgradedCardIds={upgradedCardIds}
+          />
+        ) : (
+          <RunRequiredState
+            body="Rest and upgrade choices appear during an active run."
             cta="Choose Hero"
             onAction={() => setScreen("hero-select")}
             title="No active run"

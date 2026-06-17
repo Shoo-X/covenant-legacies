@@ -67,7 +67,7 @@ export const encounters: Encounter[] = [
     nodeType: "Rest / Upgrade",
     region: "The Valley of the Giant",
     enemyIds: [],
-    rewardPreview: "Future rest and upgrade choice",
+    rewardPreview: "Rest, upgrade one run card, or cleanse 1 Corruption",
     difficulty: "Low",
     sourceTier: "Speculative Fiction",
     references: ["Original encounter", "Psalm 23 as thematic resonance"],

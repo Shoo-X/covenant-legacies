@@ -15,6 +15,8 @@ import {
   combatReducer,
   createCombatState,
 } from "@/game/combat/engine";
+import { getUpgradedCombatCard } from "@/game/cardUpgrades";
+import { getCorruptionThreshold } from "@/game/corruption";
 import type {
   CombatAction,
   CombatCardInstance,
@@ -33,10 +35,17 @@ import type {
 interface CombatScreenProps {
   encounter: Encounter;
   onNavigate: (screen: GameScreen) => void;
-  onVictory: (encounter: Encounter) => void;
+  onVictory: (
+    encounter: Encounter,
+    remainingHealth: number,
+    resources: ResourceState,
+  ) => void;
   runDeck: StartingDeckCard[];
+  runHealth: number;
   runMemorials: Memorial[];
+  runResources: ResourceState;
   startingFaithBonus: number;
+  upgradedCardIds: string[];
 }
 
 const resourceLabels: Array<[keyof ResourceState, string]> = [
@@ -71,13 +80,23 @@ export function CombatScreen({
   onNavigate,
   onVictory,
   runDeck,
+  runHealth,
   runMemorials,
+  runResources,
   startingFaithBonus,
+  upgradedCardIds,
 }: CombatScreenProps) {
   const hero = heroes[0];
   const enemy =
     enemies.find((candidate) => candidate.id === encounter.enemyIds[0]) ?? enemies[0];
-  const cardsById = useMemo(() => new Map(cards.map((card) => [card.id, card])), []);
+  const combatCards = useMemo(
+    () => cards.map((card) => getUpgradedCombatCard(card, upgradedCardIds)),
+    [upgradedCardIds],
+  );
+  const cardsById = useMemo(
+    () => new Map(combatCards.map((card) => [card.id, card])),
+    [combatCards],
+  );
   const cueIdRef = useRef(0);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
@@ -90,8 +109,11 @@ export function CombatScreen({
       runDeck,
       runMemorials,
       startingFaithBonus,
+      runResources,
+      runHealth,
     ),
   );
+  const corruptionThreshold = getCorruptionThreshold(combat.resources.corruption);
 
   function dispatch(action: CombatAction) {
     setCombat((current) =>
@@ -215,6 +237,9 @@ export function CombatScreen({
               ))}
               <Chip label={`Might ${combat.enemyState.might}`} tone="crimson" />
               {combat.hasFear && <Chip label="Fear" tone="violet" />}
+              {combat.bossPhase > 0 && (
+                <Chip label={`Phase ${combat.bossPhase}`} tone="crimson" />
+              )}
             </div>
           </GamePanel>
 
@@ -228,6 +253,16 @@ export function CombatScreen({
                 key={playedCue.id}
               >
                 <span>{playedCue.cardName}</span>
+              </div>
+            )}
+            {combat.bossPhase > 1 && (
+              <div className="combat-phase-banner">
+                <p>Boss Phase {combat.bossPhase}</p>
+                <span>
+                  {combat.bossPhase >= 3
+                    ? "Shadow of the Watchers answers Corruption."
+                    : "Fear pressure rises from the high place."}
+                </span>
               </div>
             )}
             {latestDamageFeedback && (
@@ -334,6 +369,9 @@ export function CombatScreen({
                       : "stable"
                   }`}
                   label={label}
+                  thresholdName={
+                    key === "corruption" ? corruptionThreshold.name : undefined
+                  }
                   value={combat.resources[key]}
                 />
               ))}
@@ -452,7 +490,11 @@ export function CombatScreen({
                 <PrimaryButton
                   onClick={() =>
                     combat.status === "victory"
-                      ? onVictory(encounter)
+                      ? onVictory(
+                          encounter,
+                          combat.player.health,
+                          combat.resources,
+                        )
                       : dispatch({ type: "restart" })
                   }
                   tone={combat.status === "victory" ? "primary" : "danger"}
@@ -534,10 +576,12 @@ function Stat({ isChanged = false, label, value, tone = "default" }: StatProps) 
 function ResourcePip({
   isChanged = false,
   label,
+  thresholdName,
   value,
 }: {
   isChanged?: boolean;
   label: string;
+  thresholdName?: string;
   value: number;
 }) {
   const danger = label === "Corruption";
@@ -550,6 +594,7 @@ function ResourcePip({
     >
       <span>{label}</span>
       <strong>{value}</strong>
+      {thresholdName && <em>{thresholdName}</em>}
     </div>
   );
 }

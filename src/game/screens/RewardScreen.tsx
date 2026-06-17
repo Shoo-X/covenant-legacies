@@ -23,22 +23,28 @@ export function RewardScreen({
           <h2>Choose one card for the road ahead.</h2>
           <span>
             Add a card to the Shepherd King&apos;s run deck, or skip to keep the
-            deck lean.
+            deck lean. After choosing, the road returns to The Valley of the
+            Giant with the next node available.
           </span>
         </div>
 
         <div className="reward-card-stage">
           {rewardCards.slice(0, 3).map((card) => (
-            <CollectibleCard
-              card={card}
-              key={card.id}
-              onClick={() => onChooseCard(card.id)}
-              size="reward"
-            />
+            <div className="reward-card-choice" key={card.id}>
+              <CollectibleCard
+                card={card}
+                onClick={() => onChooseCard(card.id)}
+                size="reward"
+              />
+              <p>
+                {card.rarity} / {card.sourceTier}
+              </p>
+            </div>
           ))}
         </div>
 
         <div className="reward-skip-row">
+          <span>Choose one card or skip. Either choice returns to the campaign map.</span>
           <PrimaryButton onClick={onSkip} tone="secondary">
             Skip Reward
           </PrimaryButton>

@@ -40,6 +40,7 @@ export type EnemyTrait =
   | "Giant"
   | "Nephilim"
   | "Watcher"
+  | "Demon"
   | "Human"
   | "Spirit"
   | "Idol"
@@ -116,6 +117,7 @@ export interface Card extends SourceBackedContent, CardArtMetadata {
   id: string;
   name: string;
   cost: ResourceCost[];
+  isUpgraded?: boolean;
   isPlayable?: boolean;
   text: string;
   type: string;
@@ -254,6 +256,7 @@ export type GameScreen =
   | "map"
   | "combat"
   | "mystery"
+  | "rest"
   | "reward"
   | "memorial-reward"
   | "collection"
