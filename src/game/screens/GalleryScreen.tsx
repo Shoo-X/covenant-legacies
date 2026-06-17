@@ -49,8 +49,12 @@ export function GalleryScreen() {
       <div className="gallery-screen">
         <GamePanel className="gallery-header-panel">
           <div>
-            <p>Art Gallery</p>
-            <h2>Unlocked Artwork</h2>
+            <p>Showcase Art</p>
+            <h2>Gallery</h2>
+            <span>
+              Artwork and concept pieces for Covenant: Legacies, separate from
+              deck-building and codex records.
+            </span>
           </div>
 
           <div className="gallery-controls">

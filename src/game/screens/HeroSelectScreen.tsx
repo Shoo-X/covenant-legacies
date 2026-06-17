@@ -6,13 +6,12 @@ import { PlaceholderArt } from "@/components/PlaceholderArt";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ResourceStrip } from "@/components/ResourceStrip";
 import { ScreenFrame } from "@/components/ScreenFrame";
-import type { GameScreen } from "@/types/game";
 
 interface HeroSelectScreenProps {
-  onNavigate: (screen: GameScreen) => void;
+  onStartRun: () => void;
 }
 
-export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
+export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
   const cardsById = new Map(cards.map((card) => [card.id, card]));
 
   return (
@@ -32,7 +31,7 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
             </p>
           </div>
           <div className="mt-4">
-            <PrimaryButton onClick={() => onNavigate("map")}>
+            <PrimaryButton onClick={onStartRun}>
               Begin With {heroes[0].name}
             </PrimaryButton>
           </div>

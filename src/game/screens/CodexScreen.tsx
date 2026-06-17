@@ -117,14 +117,14 @@ export function CodexScreen({
         <GamePanel className="flex min-h-0 flex-col justify-between p-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              Record
+              Codex
             </p>
             <h2 className="mt-2 text-3xl font-black leading-tight text-[#fff3cf] md:text-5xl">
-              Trace every design claim.
+              Scripture and lore record.
             </h2>
             <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-              Scripture, interpretive tradition, and original speculative fiction
-              remain visibly distinct.
+              Source tiers, references, theology notes, and conversation
+              starters remain visibly distinct.
             </p>
           </div>
 

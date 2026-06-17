@@ -2411,6 +2411,79 @@ button {
   letter-spacing: 0.14em;
 }
 
+.home-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.75rem, 1fr));
+  gap: 0.75rem;
+}
+
+.home-action-grid button {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 0.75rem;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+}
+
+.home-flow-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-flow-panel h3 {
+  margin-top: 0.75rem;
+  color: #fff3cf;
+  font-size: 1.45rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.home-flow-panel > span {
+  display: block;
+  margin-top: 0.45rem;
+  color: rgba(241, 228, 194, 0.7);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.home-role-list {
+  display: grid;
+  min-height: 0;
+  gap: 0.65rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.demo-empty-state {
+  display: grid;
+  width: min(34rem, 100%);
+  gap: 0.85rem;
+  padding: 1.4rem;
+  text-align: left;
+}
+
+.demo-empty-state p {
+  color: var(--color-gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.demo-empty-state h2 {
+  color: #fff3cf;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.demo-empty-state span {
+  color: rgba(241, 228, 194, 0.74);
+  font-size: 0.96rem;
+  line-height: 1.6;
+}
+
 .collection-screen {
   display: grid;
   grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(16rem, 20rem);
@@ -2437,6 +2510,15 @@ button {
   font-size: clamp(1.8rem, 2.5vw, 2.6rem);
   font-weight: 900;
   line-height: 0.95;
+}
+
+.gallery-header-panel span {
+  display: block;
+  margin-top: 0.55rem;
+  max-width: 34rem;
+  color: rgba(241, 228, 194, 0.68);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .collection-mode-toggle {

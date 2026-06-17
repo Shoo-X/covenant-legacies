@@ -6,18 +6,21 @@ The tone target is serious, reverent, ancient, mysterious, and premium. This is 
 
 ## Current Scope
 
-This build is a UI and data foundation only. It includes:
+This build is a coherent playable demo shell. It includes:
 
-- A full-screen title screen with a cinematic CSS key-art placeholder
+- A full-screen Home entry point for starting or continuing a run
 - A dark stone, parchment, bronze, gold, ivory, sacred-blue, and corruption-crimson visual shell
 - A collectible-card presentation system and route-style campaign map foundation
-- State-based navigation between Home, Hero Select, Campaign Map, Combat, Reward, Event, Memorial Reward, and Codex
+- State-based navigation between Home, Hero Select, Campaign Map, Combat, Reward, Mystery Encounter, Memorial Reward, Collection, Gallery, and Codex
 - The Shepherd King hero, starter deck, card rewards, mystery encounters, enemies, and memorials
 - War of the Watchers as the first saga, with The Valley of the Giant as the first campaign map
+- Collection as the card archive and future deck-building home
+- Gallery as the showcase art and concept-art viewer
+- Codex as the scripture, lore, theology-note, source-tier, and reference record
 - TypeScript domain types for future gameplay systems
 - Folder structure for components, data, types, game, and styles
 
-Procedural campaign generation, final art, save persistence, and full game balance are not implemented yet.
+Long-term save persistence, procedural campaign generation, and full game balance are not implemented yet.
 
 ## Full-Screen Game Shell
 

@@ -7,17 +7,18 @@ import { encounters } from "@/data/encounters";
 import { heroes } from "@/data/heroes";
 import { memorials } from "@/data/memorials";
 import { mysteryEncounters } from "@/data/mysteryEncounters";
-import { LandingPage } from "@/components/LandingPage";
 import { CombatScreen } from "@/game/screens/CombatScreen";
 import { CodexScreen } from "@/game/screens/CodexScreen";
 import { CollectionScreen } from "@/game/screens/CollectionScreen";
 import { GalleryScreen } from "@/game/screens/GalleryScreen";
+import { GamePanel } from "@/components/GamePanel";
 import { HeroSelectScreen } from "@/game/screens/HeroSelectScreen";
 import { HomeScreen } from "@/game/screens/HomeScreen";
 import { MapScreen } from "@/game/screens/MapScreen";
 import { MemorialRewardScreen } from "@/game/screens/MemorialRewardScreen";
 import { MysteryEncounterScreen } from "@/game/screens/MysteryEncounterScreen";
 import { RewardScreen } from "@/game/screens/RewardScreen";
+import { PrimaryButton } from "@/components/PrimaryButton";
 import { applyMysteryChoice } from "@/game/mysteryEffects";
 import { chooseMemorialRewards, chooseRewardCards } from "@/game/rewards";
 import type {
@@ -35,14 +36,15 @@ const baseRewardPoolCardIds = cards
   .map((card) => card.id);
 
 export function GameApp() {
-  const [hasStarted, setHasStarted] = useState(false);
   const [screen, setScreen] = useState<GameScreen>("home");
+  const [runStarted, setRunStarted] = useState(false);
   const [selectedEncounterId, setSelectedEncounterId] = useState(encounters[0].id);
+  const [activeCombatEncounterId, setActiveCombatEncounterId] = useState<string>();
   const [selectedMysteryEncounterId, setSelectedMysteryEncounterId] = useState(
     mysteryEncounters[0].id,
   );
   const [completedEncounterIds, setCompletedEncounterIds] = useState<string[]>([]);
-  const [runDeck, setRunDeck] = useState<StartingDeckCard[]>(heroes[0].startingDeck);
+  const [runDeck, setRunDeck] = useState<StartingDeckCard[]>([]);
   const [runResources, setRunResources] = useState<ResourceState>(
     heroes[0].resourceState,
   );
@@ -59,12 +61,46 @@ export function GameApp() {
   const selectedEncounter =
     encounters.find((encounter) => encounter.id === selectedEncounterId) ??
     encounters[0];
+  const activeCombatEncounter = encounters.find(
+    (encounter) => encounter.id === activeCombatEncounterId,
+  );
   const selectedMysteryEncounter =
     mysteryEncounters.find((encounter) => encounter.id === selectedMysteryEncounterId) ??
     mysteryEncounters[0];
 
+  function startRun() {
+    setRunStarted(true);
+    setScreen("map");
+    setSelectedEncounterId(encounters[0].id);
+    setActiveCombatEncounterId(undefined);
+    setSelectedMysteryEncounterId(mysteryEncounters[0].id);
+    setCompletedEncounterIds([]);
+    setRunDeck(heroes[0].startingDeck);
+    setRunResources(heroes[0].resourceState);
+    setRewardPoolCardIds(baseRewardPoolCardIds);
+    setUnlockedCodexEntryIds([]);
+    setUpgradedCardIds([]);
+    setRevealedMapNodeCount(0);
+    setHasFear(false);
+    setRewardCards([]);
+    setRunMemorialIds([]);
+    setMemorialRewards([]);
+    setStartingFaithBonus(0);
+  }
+
+  function continueRun() {
+    if (runStarted) {
+      setScreen("map");
+    }
+  }
+
+  function navigate(screenId: GameScreen) {
+    setScreen(screenId);
+  }
+
   function startEncounter(encounter: Encounter) {
     setSelectedEncounterId(encounter.id);
+    setActiveCombatEncounterId(undefined);
 
     if (encounter.mysteryEncounterIds && encounter.mysteryEncounterIds.length > 0) {
       const mysteryIndex = Math.floor(Math.random() * encounter.mysteryEncounterIds.length);
@@ -74,6 +110,7 @@ export function GameApp() {
     }
 
     if (encounter.enemyIds.length > 0) {
+      setActiveCombatEncounterId(encounter.id);
       setScreen("combat");
     }
   }
@@ -81,6 +118,7 @@ export function GameApp() {
   function completeEncounter(encounter: Encounter) {
     const runMemorials = getRunMemorials();
 
+    setActiveCombatEncounterId(undefined);
     setCompletedEncounterIds((current) =>
       current.includes(encounter.id) ? current : [...current, encounter.id],
     );
@@ -235,66 +273,106 @@ export function GameApp() {
     setScreen("reward");
   }
 
-  if (!hasStarted) {
-    return (
-      <LandingPage
-        onOpenCodex={() => {
-          setHasStarted(true);
-          setScreen("codex");
-        }}
-        onStart={() => {
-          setHasStarted(true);
-          setScreen("hero-select");
-        }}
-      />
-    );
-  }
-
   return (
-    <AppShell currentScreen={screen} onNavigate={setScreen}>
-      {screen === "home" && <HomeScreen onNavigate={setScreen} />}
-      {screen === "hero-select" && <HeroSelectScreen onNavigate={setScreen} />}
-      {screen === "map" && (
-        <MapScreen
-          completedEncounterIds={completedEncounterIds}
-          onStartEncounter={startEncounter}
-          revealedMapNodeCount={revealedMapNodeCount}
-          runMemorials={getRunMemorials()}
-          runResources={runResources}
-          upgradedCardIds={upgradedCardIds}
+    <AppShell currentScreen={screen} onNavigate={navigate}>
+      {screen === "home" && (
+        <HomeScreen
+          hasRun={runStarted}
+          onContinueRun={continueRun}
+          onNavigate={navigate}
+          onStartRun={() => setScreen("hero-select")}
         />
       )}
+      {screen === "hero-select" && <HeroSelectScreen onStartRun={startRun} />}
+      {screen === "map" &&
+        (runStarted ? (
+          <MapScreen
+            completedEncounterIds={completedEncounterIds}
+            onStartEncounter={startEncounter}
+            revealedMapNodeCount={revealedMapNodeCount}
+            runMemorials={getRunMemorials()}
+            runResources={runResources}
+            upgradedCardIds={upgradedCardIds}
+          />
+        ) : (
+          <RunRequiredState
+            body="Choose a covenant bearer before entering The Valley of the Giant."
+            cta="Choose Hero"
+            onAction={() => setScreen("hero-select")}
+            title="No active run"
+          />
+        ))}
       {screen === "combat" && (
-        <CombatScreen
-          encounter={selectedEncounter}
-          key={selectedEncounter.id}
-          onNavigate={setScreen}
-          onVictory={completeEncounter}
-          runDeck={runDeck}
-          runMemorials={getRunMemorials()}
-          startingFaithBonus={startingFaithBonus}
-        />
+        runStarted && activeCombatEncounter ? (
+          <CombatScreen
+            encounter={activeCombatEncounter}
+            key={activeCombatEncounter.id}
+            onNavigate={navigate}
+            onVictory={completeEncounter}
+            runDeck={runDeck}
+            runMemorials={getRunMemorials()}
+            startingFaithBonus={startingFaithBonus}
+          />
+        ) : (
+          <RunRequiredState
+            body={
+              runStarted
+                ? "Select an available encounter from The Valley of the Giant before entering combat."
+                : "Start a run before entering combat."
+            }
+            cta={runStarted ? "Open Map" : "Choose Hero"}
+            onAction={() => setScreen(runStarted ? "map" : "hero-select")}
+            title="No battle selected"
+          />
+        )
       )}
       {screen === "memorial-reward" && (
-        <MemorialRewardScreen
-          memorialRewards={memorialRewards}
-          onChooseMemorial={addMemorialReward}
-          onSkip={skipMemorialReward}
-        />
+        runStarted ? (
+          <MemorialRewardScreen
+            memorialRewards={memorialRewards}
+            onChooseMemorial={addMemorialReward}
+            onSkip={skipMemorialReward}
+          />
+        ) : (
+          <RunRequiredState
+            body="Memorial rewards appear after elite trials during a run."
+            cta="Choose Hero"
+            onAction={() => setScreen("hero-select")}
+            title="No active run"
+          />
+        )
       )}
       {screen === "mystery" && (
-        <MysteryEncounterScreen
-          encounter={selectedMysteryEncounter}
-          onChoose={resolveMysteryChoice}
-          runResources={runResources}
-        />
+        runStarted ? (
+          <MysteryEncounterScreen
+            encounter={selectedMysteryEncounter}
+            onChoose={resolveMysteryChoice}
+            runResources={runResources}
+          />
+        ) : (
+          <RunRequiredState
+            body="Mystery encounters appear along The Valley of the Giant during a run."
+            cta="Choose Hero"
+            onAction={() => setScreen("hero-select")}
+            title="No active run"
+          />
+        )
       )}
       {screen === "reward" && (
-        <RewardScreen
-          onChooseCard={addRewardCard}
-          onSkip={() => setScreen("map")}
-          rewardCards={rewardCards}
-        />
+        runStarted && rewardCards.length > 0 ? (
+          <RewardScreen
+            onChooseCard={addRewardCard}
+            onSkip={() => setScreen("map")}
+            rewardCards={rewardCards}
+          />
+        ) : (
+          <RunRequiredState
+            body="Card rewards appear after victorious encounters."
+            cta={runStarted ? "Open Map" : "Choose Hero"}
+            onAction={() => setScreen(runStarted ? "map" : "hero-select")}
+            title="No reward available"
+          />
+        )
       )}
       {screen === "collection" && (
         <CollectionScreen
@@ -311,5 +389,28 @@ export function GameApp() {
         />
       )}
     </AppShell>
+  );
+}
+
+function RunRequiredState({
+  body,
+  cta,
+  onAction,
+  title,
+}: {
+  body: string;
+  cta: string;
+  onAction: () => void;
+  title: string;
+}) {
+  return (
+    <div className="grid h-full min-h-0 place-items-center p-4">
+      <GamePanel className="demo-empty-state">
+        <p>War of the Watchers</p>
+        <h2>{title}</h2>
+        <span>{body}</span>
+        <PrimaryButton onClick={onAction}>{cta}</PrimaryButton>
+      </GamePanel>
+    </div>
   );
 }

@@ -11,7 +11,7 @@ export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
     <header className="game-topbar relative z-20 flex h-[var(--topbar-height)] shrink-0 items-center justify-between overflow-hidden border-b border-[rgba(215,180,93,0.22)] bg-[linear-gradient(90deg,rgba(8,7,5,0.88),rgba(25,19,15,0.82),rgba(8,7,5,0.88))] px-4 shadow-[0_18px_45px_rgba(0,0,0,0.32)] md:px-6">
       <button className="text-left" onClick={() => onNavigate("home")} type="button">
         <p className="text-[0.62rem] uppercase tracking-[0.32em] text-[var(--color-gold)]">
-          Covenant: Legacies
+          COVENANT: LEGACIES
         </p>
         <h1 className="text-base font-semibold leading-none text-[#fff3cf] md:text-lg">
           War of the Watchers
@@ -31,6 +31,7 @@ export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
               }`}
               key={screen.id}
               onClick={() => onNavigate(screen.id)}
+              aria-current={isActive ? "page" : undefined}
               type="button"
             >
               {screen.label}
