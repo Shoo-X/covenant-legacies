@@ -12,6 +12,8 @@ export interface ArtAsset {
   id: string;
   title: string;
   path: string;
+  objectFit?: "contain" | "cover";
+  objectPosition?: string;
   sourceType: ArtAssetSourceType;
   generationTool: string;
   generatedForProject: boolean;
@@ -45,6 +47,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-throne-room-vision",
     title: "Throne Room Vision",
     path: "/art/showcase/throne-room-vision.png",
+    objectPosition: "50% 42%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: [
@@ -64,6 +67,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-moses-divider-of-seas",
     title: "Moses, Divider of Seas",
     path: "/art/showcase/moses-divider-of-seas.png",
+    objectPosition: "46% 36%",
     relatedCards: ["card-moses-divider-of-seas", "card-psalm-of-deliverance"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["moses", "red sea", "deliverance", "prophet", "covenant"],
@@ -76,6 +80,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-archangel-michael",
     title: "Archangel Michael",
     path: "/art/showcase/archangel-michael.png",
+    objectPosition: "52% 36%",
     relatedCards: ["card-archangel-michael"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["archangel", "heavenly host", "judgment", "radiance", "mystery"],
@@ -88,6 +93,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-david-goliath-portrait",
     title: "David vs Goliath",
     path: "/art/showcase/david-goliath-portrait.png",
+    objectPosition: "44% 32%",
     relatedCards: ["card-david-vs-goliath", "card-giant-toppler"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["david", "goliath", "giant", "courage", "valley", "covenant"],
@@ -100,6 +106,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-mary-empty-tomb",
     title: "Mary Magdalene at the Empty Tomb",
     path: "/art/showcase/mary-empty-tomb.png",
+    objectPosition: "42% 30%",
     relatedCards: ["card-mary-witness-to-glory"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Codex", "Combat"],
     tags: ["mary magdalene", "empty tomb", "witness", "hope", "resurrection"],
@@ -112,6 +119,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-resurrection-empty-tomb",
     title: "The Resurrection Witness",
     path: "/art/showcase/resurrection-empty-tomb.png",
+    objectPosition: "50% 42%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["empty tomb", "resurrection", "witness", "hope", "mystery"],
@@ -124,6 +132,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-abraham-stars",
     title: "Abraham",
     path: "/art/gallery/abraham-stars.png",
+    objectPosition: "50% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["abraham", "stars", "promise", "covenant", "witness"],
@@ -136,6 +145,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-elijah-fire-from-heaven",
     title: "Elijah",
     path: "/art/gallery/elijah-fire-from-heaven.png",
+    objectPosition: "50% 38%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["elijah", "prophet", "fire", "judgment", "covenant"],
@@ -148,6 +158,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-noah-ark-covenant",
     title: "Noah",
     path: "/art/gallery/noah-ark-covenant.png",
+    objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["noah", "ark", "covenant", "judgment", "deliverance", "mercy"],
@@ -160,6 +171,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-samuel-temple",
     title: "Samuel",
     path: "/art/gallery/samuel-temple.png",
+    objectPosition: "50% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["samuel", "temple", "calling", "prophet", "witness"],
@@ -172,6 +184,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-peter-witness",
     title: "Peter",
     path: "/art/gallery/peter-witness.png",
+    objectPosition: "48% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["peter", "witness", "apostle", "restoration", "covenant"],
@@ -184,6 +197,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-samson-pillars",
     title: "Samson",
     path: "/art/heroes/samson-pillars.png",
+    objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery"],
     tags: ["samson", "pillars", "strength", "judgment", "deliverance"],
@@ -196,6 +210,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-ruth-fields",
     title: "Ruth",
     path: "/art/heroes/ruth-fields.png",
+    objectPosition: "48% 35%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["ruth", "fields", "loyalty", "provision", "witness"],
@@ -208,6 +223,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-shepherd-david",
     title: "Shepherd David",
     path: "/art/heroes/shepherd-david.png",
+    objectPosition: "48% 26%",
     relatedCards: ["card-sling-stone", "card-shepherds-guard"],
     relatedScreens: ["Gallery", "Hero Select"],
     tags: ["david", "shepherd", "harp", "sling", "courage", "covenant", "giant"],
@@ -220,6 +236,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-daniel-lions-den",
     title: "Daniel in the Lions' Den",
     path: "/art/heroes/daniel-lions-den.png",
+    objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
     tags: ["daniel", "lions", "faithfulness", "deliverance", "witness"],

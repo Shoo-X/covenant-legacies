@@ -7,6 +7,7 @@ interface SymbolicArtProps {
   className?: string;
   kind: SymbolicKind;
   label?: string;
+  showLabel?: boolean;
   subject: SymbolicSubject;
   variant?: "card" | "portrait" | "wide";
 }
@@ -15,6 +16,7 @@ export function SymbolicArt({
   className = "",
   kind,
   label,
+  showLabel = true,
   subject,
   variant = "card",
 }: SymbolicArtProps) {
@@ -36,7 +38,7 @@ export function SymbolicArt({
         <span className="motif motif-three" />
         <span className="motif motif-four" />
       </div>
-      <span className="symbolic-label">{title}</span>
+      {showLabel && <span className="symbolic-label">{title}</span>}
     </div>
   );
 }

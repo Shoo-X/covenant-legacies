@@ -18,13 +18,13 @@ export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
         </h1>
       </button>
 
-      <nav className="flex max-w-[68vw] gap-1 overflow-x-auto md:gap-2">
+      <nav className="flex max-w-[70vw] gap-1 overflow-x-auto">
         {screens.map((screen) => {
           const isActive = screen.id === currentScreen;
 
           return (
             <button
-              className={`h-9 shrink-0 border px-3 text-xs uppercase tracking-[0.14em] transition ${
+              className={`h-9 shrink-0 border px-2 text-[0.68rem] uppercase tracking-[0.12em] transition lg:px-3 lg:text-xs ${
                 isActive
                   ? "border-[rgba(215,180,93,0.72)] bg-[rgba(215,180,93,0.16)] text-[#fff3cf]"
                   : "border-[rgba(203,185,143,0.14)] bg-[rgba(255,255,255,0.035)] text-[rgba(241,228,194,0.66)] hover:border-[rgba(215,180,93,0.45)] hover:text-[#fff3cf]"

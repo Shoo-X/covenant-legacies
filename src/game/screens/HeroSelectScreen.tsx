@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cards } from "@/data/cards";
 import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
@@ -6,6 +7,7 @@ import { PlaceholderArt } from "@/components/PlaceholderArt";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ResourceStrip } from "@/components/ResourceStrip";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import type { Hero } from "@/types/game";
 
 interface HeroSelectScreenProps {
   onStartRun: () => void;
@@ -41,11 +43,7 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
         {heroes.map((hero, index) => (
           <article className="hero-card-layout" key={hero.id}>
             <div className="hero-art-panel">
-              <PlaceholderArt
-                label={hero.name}
-                subject={hero}
-                tone={index === 0 ? "gold" : "indigo"}
-              />
+              <HeroPortrait hero={hero} tone={index === 0 ? "gold" : "indigo"} />
             </div>
             <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
               <div>
@@ -101,5 +99,27 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
       </div>
       </div>
     </ScreenFrame>
+  );
+}
+
+function HeroPortrait({ hero, tone }: { hero: Hero; tone: "gold" | "indigo" }) {
+  if (!hero.imagePath) {
+    return <PlaceholderArt label={hero.name} subject={hero} tone={tone} />;
+  }
+
+  return (
+    <div className="hero-portrait-art" role="img" aria-label={hero.artworkTitle ?? hero.name}>
+      <Image
+        alt={hero.artworkTitle ?? hero.name}
+        className="hero-portrait-image"
+        fill
+        priority
+        sizes="(max-width: 900px) 90vw, 34vw"
+        src={hero.imagePath}
+        style={{ objectPosition: hero.imageObjectPosition ?? "50% 30%" }}
+      />
+      <div className="hero-portrait-vignette" aria-hidden="true" />
+      <span>{hero.name}</span>
+    </div>
   );
 }

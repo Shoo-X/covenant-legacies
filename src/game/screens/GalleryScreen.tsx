@@ -127,6 +127,7 @@ export function GalleryScreen() {
               className={getGalleryTileClassName(entry)}
               key={entry.id}
               onClick={() => setExpandedEntry(entry)}
+              title={entry.title}
               type="button"
             >
               {entry.kind === "card" ? (
@@ -239,6 +240,10 @@ function GalleryAssetArtwork({
         priority={priority}
         sizes={sizes}
         src={asset.path}
+        style={{
+          objectFit: asset.objectFit ?? "cover",
+          objectPosition: asset.objectPosition ?? "50% 50%",
+        }}
       />
       <div className="card-artwork-vignette" aria-hidden="true" />
     </div>

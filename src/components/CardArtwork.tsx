@@ -5,8 +5,10 @@ import type { Card } from "@/types/game";
 interface CardArtworkProps {
   card: Card;
   className?: string;
+  imageFit?: "contain" | "cover";
   loading?: "eager" | "lazy";
   priority?: boolean;
+  showLabel?: boolean;
   variant?:
     | "card"
     | "hand"
@@ -36,8 +38,10 @@ const imageSizesByVariant: Record<NonNullable<CardArtworkProps["variant"]>, stri
 export function CardArtwork({
   card,
   className = "",
+  imageFit,
   loading = "lazy",
   priority = false,
+  showLabel = true,
   variant = "card",
 }: CardArtworkProps) {
   if (!card.imagePath) {
@@ -46,6 +50,7 @@ export function CardArtwork({
         className={`card-artwork card-artwork-${variant} ${className}`}
         kind="card"
         label={card.artworkTitle ?? card.name}
+        showLabel={showLabel}
         subject={card}
         variant={
           variant === "banner" || variant === "galleryLarge" || variant === "keyArt"
@@ -56,16 +61,40 @@ export function CardArtwork({
     );
   }
 
+  const resolvedImageFit = imageFit ?? card.imageObjectFit ?? (variant === "inspect" ? "contain" : "cover");
+  const imageObjectPosition = card.imageObjectPosition ?? "50% 50%";
+  const preserveComposition = resolvedImageFit === "contain";
+
   return (
     <div className={`card-artwork card-artwork-${variant} ${className}`}>
+      {preserveComposition && (
+        <Image
+          alt=""
+          aria-hidden="true"
+          className="card-artwork-image card-artwork-image-backdrop"
+          fill
+          loading={priority ? undefined : loading}
+          priority={priority}
+          sizes={imageSizesByVariant[variant]}
+          src={card.imagePath}
+          style={{
+            objectFit: "cover",
+            objectPosition: imageObjectPosition,
+          }}
+        />
+      )}
       <Image
         alt={card.artworkTitle ?? card.name}
-        className="card-artwork-image"
+        className={`card-artwork-image ${preserveComposition ? "card-artwork-image-contained" : ""}`}
         fill
         loading={priority ? undefined : loading}
         priority={priority}
         sizes={imageSizesByVariant[variant]}
         src={card.imagePath}
+        style={{
+          objectFit: resolvedImageFit,
+          objectPosition: imageObjectPosition,
+        }}
       />
       <div className="card-artwork-vignette" aria-hidden="true" />
     </div>
