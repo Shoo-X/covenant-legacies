@@ -11,6 +11,7 @@ import {
   cardRarityFilters,
   cardSetFilters,
   getCardSet,
+  isShowcaseCard,
   sortCardsForShowcase,
 } from "@/game/cardArt";
 import type { Card, CardRarity, CardSet, StartingDeckCard } from "@/types/game";
@@ -65,7 +66,7 @@ export function CollectionScreen({
       <div className="collection-screen">
         <GamePanel className="collection-toolbar">
           <div className="collection-title-block">
-            <p>Covenant Archive</p>
+            <p>Card Archive</p>
             <h2>Collection</h2>
           </div>
 
@@ -112,7 +113,12 @@ export function CollectionScreen({
         <GamePanel className="collection-card-stage game-scroll">
           <div className="collection-card-grid">
             {filteredCards.map((card) => (
-              <div className="collection-card-cell" key={card.id}>
+              <div
+                className={`collection-card-cell ${
+                  isShowcaseCard(card) ? "is-showcase-card" : ""
+                }`}
+                key={card.id}
+              >
                 <CollectibleCard
                   card={card}
                   onClick={() => setSelectedCard(card)}
@@ -157,10 +163,11 @@ export function CollectionScreen({
             </>
           ) : (
             <>
-              <h3>Showcase cards appear first.</h3>
+              <h3>The collectible foundation.</h3>
               <p className="collection-panel-copy">
-                Open any card to inspect its art, lore fields, source tier,
-                references, theology note, and gameplay role.
+                Showcase cards appear first. This archive is the future home
+                for deck-building while preserving art, lore fields, source
+                tier, references, theology note, and gameplay role.
               </p>
               <PrimaryButton
                 disabled={!filteredCards[0]}

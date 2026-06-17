@@ -1,4 +1,7 @@
 import type { Hero } from "@/types/game";
+import { getArtAsset } from "@/data/artAssets";
+
+const shepherdDavidArt = getArtAsset("art-shepherd-david");
 
 export const heroes: Hero[] = [
   {
@@ -7,6 +10,9 @@ export const heroes: Hero[] = [
     epithet: "Courage, worship, and the guarded flock",
     calling:
       "A David-inspired covenant champion who stands before giants with song, resolve, and a shepherd's defiant care.",
+    imagePath: shepherdDavidArt?.path,
+    artworkTitle: shepherdDavidArt?.title ?? "Shepherd David",
+    imageObjectPosition: shepherdDavidArt?.objectPosition ?? "48% 26%",
     maxHealth: 72,
     passive: {
       name: "Heart of Courage",

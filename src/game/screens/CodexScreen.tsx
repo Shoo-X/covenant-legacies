@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cards } from "@/data/cards";
 import { codexEntries } from "@/data/codexEntries";
 import { encounters } from "@/data/encounters";
@@ -13,6 +14,8 @@ type CodexEntry = SourceBackedContent & {
   id: string;
   name: string;
   category: string;
+  imagePath?: string;
+  artworkTitle?: string;
   details: Array<{
     label: string;
     value: string;
@@ -117,14 +120,14 @@ export function CodexScreen({
         <GamePanel className="flex min-h-0 flex-col justify-between p-5">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              Record
+              Codex
             </p>
             <h2 className="mt-2 text-3xl font-black leading-tight text-[#fff3cf] md:text-5xl">
-              Trace every design claim.
+              Scripture and lore record.
             </h2>
             <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-              Scripture, interpretive tradition, and original speculative fiction
-              remain visibly distinct.
+              Source tiers, references, theology notes, and conversation
+              starters remain visibly distinct.
             </p>
           </div>
 
@@ -172,6 +175,18 @@ export function CodexScreen({
             <p className="mt-4 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
               {entry.theologyNote}
             </p>
+            {entry.category === "Codex" && entry.imagePath && (
+              <div className="codex-entry-art" aria-label={entry.artworkTitle ?? entry.name}>
+                <Image
+                  alt={entry.artworkTitle ?? entry.name}
+                  className="card-artwork-image"
+                  fill
+                  sizes="(max-width: 900px) 90vw, 300px"
+                  src={entry.imagePath}
+                />
+                <div className="card-artwork-vignette" aria-hidden="true" />
+              </div>
+            )}
             <div className="mt-4 grid gap-3">
               {entry.details.map((detail) => (
                 <div key={detail.label}>

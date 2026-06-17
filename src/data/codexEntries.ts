@@ -1,6 +1,49 @@
 import type { CodexLoreEntry } from "@/types/game";
+import { getArtAssetPath } from "@/data/artAssets";
 
 export const codexEntries: CodexLoreEntry[] = [
+  {
+    id: "codex-throne-room-vision",
+    title: "Throne Room Vision",
+    imagePath: getArtAssetPath("art-throne-room-vision"),
+    artworkTitle: "Throne Room Vision",
+    sourceTier: "Interpretive Tradition",
+    references: ["Isaiah 6", "Ezekiel 1", "Revelation 4-5"],
+    theologyNote:
+      "Throne-room imagery is handled as reverent vision language, not as a controllable character, collectible power object, or direct visual possession of divine glory.",
+    gameplayRole: "Support",
+    sections: {
+      whatTheBibleSays:
+        "Scripture records throne-room visions with awe, restraint, worship, judgment, and humility. The texts emphasize God's holiness and the limits of human comprehension.",
+      whyItIsMysterious:
+        "These passages use symbolic visionary language. Covenant: Legacies treats that mystery with distance and reverence rather than trying to fully visualize or explain it.",
+      interpretiveTraditions:
+        "Jewish and Christian interpretation has approached these visions through worship, prophetic calling, angelic service, and apocalyptic symbolism, while recognizing that the images are not ordinary scenery.",
+      gameInterpretation:
+        "This concept art belongs in Gallery and Codex contexts as atmosphere and theological reflection. It is not a playable unit or a direct depiction to be wielded by the player.",
+    },
+  },
+  {
+    id: "codex-resurrection-witness",
+    title: "The Resurrection Witness",
+    imagePath: getArtAssetPath("art-resurrection-empty-tomb"),
+    artworkTitle: "The Resurrection Witness",
+    sourceTier: "Scripture",
+    references: ["Matthew 28", "Luke 24", "John 20", "1 Corinthians 15"],
+    theologyNote:
+      "The resurrection is presented through reverent witness and testimony, not as a collectible unit, attack effect, or controllable spectacle.",
+    gameplayRole: "Support",
+    sections: {
+      whatTheBibleSays:
+        "The Gospels present the empty tomb through witnesses, fear, joy, proclamation, and worship. Paul later centers Christian hope on the resurrection as received testimony.",
+      whyItIsMysterious:
+        "The resurrection is central, holy, and beyond ordinary game abstraction. The project treats it through testimony and hope rather than direct control.",
+      interpretiveTraditions:
+        "Christian tradition receives the resurrection as the heart of hope, worship, and proclamation. Any artistic use needs restraint and care.",
+      gameInterpretation:
+        "This concept remains Gallery and Codex material unless reviewed for a witness or intervention card that avoids making Jesus a player-controlled object.",
+    },
+  },
   {
     id: "codex-melchizedek",
     title: "Melchizedek",

@@ -73,6 +73,8 @@ export type CardSet = "War of the Watchers" | "Core Covenant";
 export interface CardArtMetadata {
   imagePath?: string;
   artworkTitle?: string;
+  imageObjectFit?: "contain" | "cover";
+  imageObjectPosition?: string;
   artistCredit?: string;
   cardSet?: CardSet;
   flavorText?: string;
@@ -153,6 +155,9 @@ export interface Hero extends SourceBackedContent {
   name: string;
   epithet: string;
   calling: string;
+  imagePath?: string;
+  artworkTitle?: string;
+  imageObjectPosition?: string;
   maxHealth: number;
   passive: HeroPassive;
   startingDeck: StartingDeckCard[];
@@ -167,6 +172,9 @@ export interface Enemy extends SourceBackedContent {
   attackDamage: number;
   intent: string;
   traits: EnemyTrait[];
+  imagePath?: string;
+  artworkTitle?: string;
+  imageObjectPosition?: string;
   mechanics?: string[];
 }
 
@@ -215,6 +223,8 @@ export interface CodexSectionSet {
 export interface CodexLoreEntry extends SourceBackedContent {
   id: string;
   title: string;
+  imagePath?: string;
+  artworkTitle?: string;
   sections: CodexSectionSet;
 }
 

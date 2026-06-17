@@ -1,4 +1,7 @@
 import type { Enemy } from "@/types/game";
+import { getArtAsset } from "@/data/artAssets";
+
+const davidGoliathArt = getArtAsset("art-david-goliath-portrait");
 
 export const enemies: Enemy[] = [
   {
@@ -38,6 +41,9 @@ export const enemies: Enemy[] = [
     attackDamage: 11,
     intent: "Heavy attack",
     traits: ["Giant"],
+    imagePath: davidGoliathArt?.path,
+    artworkTitle: davidGoliathArt?.title ?? "David vs Goliath",
+    imageObjectPosition: "74% 34%",
     mechanics: ["Takes extra damage from Sling Stone and anti-Giant effects."],
     sourceTier: "Speculative Fiction",
     references: ["Original adversary", "1 Samuel 17 as thematic inspiration"],
@@ -68,6 +74,9 @@ export const enemies: Enemy[] = [
     attackDamage: 12,
     intent: "Crush through fear and accumulated Might",
     traits: ["Nephilim", "Giant", "Idol", "Boss"],
+    imagePath: davidGoliathArt?.path,
+    artworkTitle: davidGoliathArt?.title ?? "David vs Goliath",
+    imageObjectPosition: "75% 33%",
     mechanics: [
       "Starts combat with Fear pressure.",
       "Gains Might when the player gains Corruption.",

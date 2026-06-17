@@ -1,5 +1,6 @@
 import { formatCardCost } from "@/game/cardText";
 import { CardArtwork } from "@/components/CardArtwork";
+import Image from "next/image";
 import type { Card } from "@/types/game";
 
 interface CollectibleCardProps {
@@ -26,6 +27,15 @@ function getCardTone(card: Card) {
   }
 
   if (card.type.includes("Prayer") || card.type.includes("Psalm")) {
+    return "sacred";
+  }
+
+  if (
+    card.type.includes("Intervention") ||
+    card.type.includes("Judgment") ||
+    card.type.includes("Legacy") ||
+    card.type.includes("Witness")
+  ) {
     return "sacred";
   }
 
@@ -57,6 +67,14 @@ function getArtSymbol(card: Card) {
     return "seal";
   }
 
+  if (
+    card.type.includes("Intervention") ||
+    card.type.includes("Legacy") ||
+    card.type.includes("Witness")
+  ) {
+    return "seal";
+  }
+
   return "altar";
 }
 
@@ -76,6 +94,30 @@ function getSourceAbbreviation(card: Card) {
   return "Script.";
 }
 
+function getCostGemText(card: Card) {
+  if (card.isPlayable === false) {
+    return "--";
+  }
+
+  if (card.cost.length === 0) {
+    return "0";
+  }
+
+  if (card.cost.length === 1) {
+    return `${card.cost[0].amount}`;
+  }
+
+  return card.cost.map((cost) => cost.amount).join("/");
+}
+
+const fullArtSizesByDisplaySize: Record<string, string> = {
+  collection: "220px",
+  hand: "120px",
+  inspect: "420px",
+  preview: "160px",
+  reward: "260px",
+};
+
 export function CollectibleCard({
   as,
   card,
@@ -93,36 +135,75 @@ export function CollectibleCard({
   const artSymbol = getArtSymbol(card);
   const rarityClass = getRarityClass(card);
   const displaySize = size === "viewer" ? "inspect" : size;
+  const hasFullCardArt = Boolean(card.imagePath);
   const isInteractive = as
     ? as === "button"
     : Boolean(onClick || onFocus || onMouseEnter || onMouseLeave);
   const frameClass = `tcg-card tcg-card-${displaySize} tcg-card-${tone} tcg-card-rarity-${rarityClass} ${
     isPlayable ? "is-playable" : "is-unplayable"
-  } ${isSelected ? "is-selected" : ""}`;
+  } ${isSelected ? "is-selected" : ""} ${hasFullCardArt ? "is-full-art" : ""}`;
   const body = (
     <div className="tcg-card-inner">
+      {card.imagePath && (
+        <div className="tcg-card-background-art" aria-hidden="true">
+          <Image
+            alt=""
+            className="tcg-card-background-backdrop"
+            fill
+            loading={displaySize === "hand" ? "eager" : "lazy"}
+            sizes={fullArtSizesByDisplaySize[displaySize] ?? "220px"}
+            src={card.imagePath}
+            style={{
+              objectFit: "cover",
+              objectPosition: card.imageObjectPosition ?? "50% 50%",
+            }}
+          />
+          <Image
+            alt=""
+            className="tcg-card-background-image"
+            fill
+            loading={displaySize === "hand" ? "eager" : "lazy"}
+            sizes={fullArtSizesByDisplaySize[displaySize] ?? "220px"}
+            src={card.imagePath}
+            style={{
+              objectFit: "contain",
+              objectPosition: card.imageObjectPosition ?? "50% 50%",
+            }}
+          />
+          <div className="tcg-card-background-vignette" />
+        </div>
+      )}
+
       <div className="tcg-card-header">
         <h3 className="tcg-card-title">{card.name}</h3>
         <span className="tcg-card-cost-gem" aria-label={`Cost ${formatCardCost(card)}`}>
-          {formatCardCost(card)}
+          {getCostGemText(card)}
         </span>
       </div>
 
-      <CardArtwork
-        card={card}
-        className={`tcg-card-art tcg-card-art-${artSymbol}`}
-        loading={displaySize === "hand" ? "eager" : "lazy"}
-        priority={card.imagePath !== undefined && displaySize === "reward"}
-        variant={
-          displaySize === "collection" ||
-          displaySize === "hand" ||
-          displaySize === "inspect" ||
-          displaySize === "preview" ||
-          displaySize === "reward"
-            ? displaySize
-            : "card"
-        }
-      />
+      {hasFullCardArt ? (
+        <div
+          aria-hidden="true"
+          className={`tcg-card-art tcg-card-art-full-reveal tcg-card-art-${artSymbol}`}
+        />
+      ) : (
+        <CardArtwork
+          card={card}
+          className={`tcg-card-art tcg-card-art-${artSymbol}`}
+          loading={displaySize === "hand" ? "eager" : "lazy"}
+          priority={card.imagePath !== undefined && displaySize === "reward"}
+          showLabel={false}
+          variant={
+            displaySize === "collection" ||
+            displaySize === "hand" ||
+            displaySize === "inspect" ||
+            displaySize === "preview" ||
+            displaySize === "reward"
+              ? displaySize
+              : "card"
+          }
+        />
+      )}
 
       <div className="tcg-card-type-line">{card.type}</div>
 

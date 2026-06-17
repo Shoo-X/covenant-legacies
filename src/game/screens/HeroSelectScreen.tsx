@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cards } from "@/data/cards";
 import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
@@ -6,13 +7,13 @@ import { PlaceholderArt } from "@/components/PlaceholderArt";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ResourceStrip } from "@/components/ResourceStrip";
 import { ScreenFrame } from "@/components/ScreenFrame";
-import type { GameScreen } from "@/types/game";
+import type { Hero } from "@/types/game";
 
 interface HeroSelectScreenProps {
-  onNavigate: (screen: GameScreen) => void;
+  onStartRun: () => void;
 }
 
-export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
+export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
   const cardsById = new Map(cards.map((card) => [card.id, card]));
 
   return (
@@ -32,7 +33,7 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
             </p>
           </div>
           <div className="mt-4">
-            <PrimaryButton onClick={() => onNavigate("map")}>
+            <PrimaryButton onClick={onStartRun}>
               Begin With {heroes[0].name}
             </PrimaryButton>
           </div>
@@ -40,13 +41,9 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
 
         <div className="grid h-full min-h-0 gap-3">
         {heroes.map((hero, index) => (
-          <article className="grid h-full min-h-0 gap-3 overflow-hidden border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.035)] p-4 lg:grid-cols-[0.7fr_1.3fr]" key={hero.id}>
-            <div className="min-h-0">
-              <PlaceholderArt
-                label={hero.name}
-                subject={hero}
-                tone={index === 0 ? "gold" : "indigo"}
-              />
+          <article className="hero-card-layout" key={hero.id}>
+            <div className="hero-art-panel">
+              <HeroPortrait hero={hero} tone={index === 0 ? "gold" : "indigo"} />
             </div>
             <div className="flex min-h-0 flex-col gap-3 overflow-hidden">
               <div>
@@ -102,5 +99,27 @@ export function HeroSelectScreen({ onNavigate }: HeroSelectScreenProps) {
       </div>
       </div>
     </ScreenFrame>
+  );
+}
+
+function HeroPortrait({ hero, tone }: { hero: Hero; tone: "gold" | "indigo" }) {
+  if (!hero.imagePath) {
+    return <PlaceholderArt label={hero.name} subject={hero} tone={tone} />;
+  }
+
+  return (
+    <div className="hero-portrait-art" role="img" aria-label={hero.artworkTitle ?? hero.name}>
+      <Image
+        alt={hero.artworkTitle ?? hero.name}
+        className="hero-portrait-image"
+        fill
+        priority
+        sizes="(max-width: 900px) 90vw, 34vw"
+        src={hero.imagePath}
+        style={{ objectPosition: hero.imageObjectPosition ?? "50% 30%" }}
+      />
+      <div className="hero-portrait-vignette" aria-hidden="true" />
+      <span>{hero.name}</span>
+    </div>
   );
 }

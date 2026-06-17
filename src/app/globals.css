@@ -244,7 +244,7 @@ button {
   border: 1px solid rgba(215, 180, 93, 0.22);
 }
 
-.landing-showcase-frame .card-artwork-banner {
+.landing-showcase-frame .card-artwork-keyArt {
   position: absolute;
   inset: 0;
 }
@@ -451,6 +451,94 @@ button {
     repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 8px);
 }
 
+.tcg-card-background-art {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: #080705;
+}
+
+.tcg-card-background-backdrop,
+.tcg-card-background-image {
+  position: absolute;
+  inset: 0;
+}
+
+.tcg-card-background-backdrop {
+  filter: blur(10px) saturate(0.95) brightness(0.56);
+  opacity: 0.58;
+  transform: scale(1.12);
+}
+
+.tcg-card-background-image {
+  filter: saturate(1.04) brightness(0.98);
+  opacity: 1;
+}
+
+.tcg-card-background-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(7, 6, 5, 0.56) 0%, rgba(7, 6, 5, 0.08) 28%, rgba(7, 6, 5, 0.14) 58%, rgba(7, 6, 5, 0.78) 100%),
+    radial-gradient(ellipse at 50% 18%, transparent 0 38%, rgba(0, 0, 0, 0.26) 80%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.44), transparent 24% 76%, rgba(0, 0, 0, 0.44));
+}
+
+.tcg-card.is-full-art .tcg-card-inner {
+  border-color: rgba(255, 243, 207, 0.18);
+  background:
+    linear-gradient(180deg, rgba(35, 27, 19, 0.42), rgba(12, 10, 10, 0.48)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.026) 0, rgba(255, 255, 255, 0.026) 1px, transparent 1px, transparent 8px);
+}
+
+.tcg-card.is-full-art .tcg-card-header,
+.tcg-card.is-full-art .tcg-card-art,
+.tcg-card.is-full-art .tcg-card-type-line,
+.tcg-card.is-full-art .tcg-card-effect,
+.tcg-card.is-full-art .tcg-card-footer,
+.tcg-card.is-full-art .tcg-card-choose {
+  position: relative;
+  z-index: 2;
+}
+
+.tcg-card.is-full-art .tcg-card-header {
+  align-items: center;
+  margin: -0.12rem -0.12rem 0;
+  border: 1px solid rgba(255, 243, 207, 0.12);
+  border-radius: 0.24rem;
+  background: linear-gradient(90deg, rgba(8, 7, 5, 0.66), rgba(8, 7, 5, 0.28));
+  padding: 0.28rem 0.32rem;
+  backdrop-filter: blur(3px);
+}
+
+.tcg-card.is-full-art .tcg-card-art {
+  border-color: rgba(255, 243, 207, 0.16);
+  background: rgba(8, 7, 5, 0.2);
+  box-shadow:
+    inset 0 0 28px rgba(0, 0, 0, 0.34),
+    0 0 18px rgba(215, 180, 93, 0.1);
+}
+
+.tcg-card.is-full-art .tcg-card-type-line,
+.tcg-card.is-full-art .tcg-card-footer {
+  border: 1px solid rgba(255, 243, 207, 0.1);
+  border-radius: 999px;
+  background: rgba(8, 7, 5, 0.4);
+  padding: 0.12rem 0.34rem;
+  backdrop-filter: blur(3px);
+}
+
+.tcg-card.is-full-art .tcg-card-effect {
+  border-color: rgba(255, 243, 207, 0.15);
+  background:
+    linear-gradient(180deg, rgba(35, 27, 19, 0.68), rgba(8, 7, 5, 0.78)),
+    rgba(8, 7, 5, 0.58);
+  backdrop-filter: blur(3px);
+}
+
 .tcg-card-header {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -467,7 +555,9 @@ button {
   font-size: 1rem;
   font-weight: 800;
   line-height: 1.08;
+  overflow-wrap: break-word;
   text-overflow: ellipsis;
+  word-break: normal;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -508,6 +598,16 @@ button {
 
 .card-artwork-image {
   object-fit: cover;
+}
+
+.card-artwork-image-backdrop {
+  filter: blur(12px) saturate(0.9) brightness(0.5);
+  opacity: 0.86;
+  transform: scale(1.12);
+}
+
+.card-artwork-image-contained {
+  filter: saturate(1.02) brightness(0.96);
 }
 
 .card-artwork-vignette {
@@ -1035,8 +1135,10 @@ button {
   background: rgba(0, 0, 0, 0.5);
 }
 
+.card-artwork-banner,
 .card-artwork-gallery,
-.card-artwork-banner {
+.card-artwork-galleryLarge,
+.card-artwork-keyArt {
   width: 100%;
   height: 100%;
 }
@@ -1098,6 +1200,50 @@ button {
   box-shadow: 0 0 30px rgba(127, 35, 95, 0.22);
 }
 
+.tcg-card-art-full-reveal {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-color: rgba(255, 243, 207, 0.14);
+  background:
+    linear-gradient(180deg, rgba(255, 243, 207, 0.04), transparent 38%, rgba(8, 7, 5, 0.18)),
+    rgba(8, 7, 5, 0.02);
+  box-shadow:
+    inset 0 0 0 1px rgba(8, 7, 5, 0.34),
+    inset 0 0 26px rgba(0, 0, 0, 0.18);
+}
+
+.tcg-card-art-full-reveal::before {
+  background:
+    linear-gradient(180deg, rgba(255, 243, 207, 0.08), transparent 24% 68%, rgba(0, 0, 0, 0.2)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28), transparent 22% 78%, rgba(0, 0, 0, 0.28));
+}
+
+.tcg-card-art-full-reveal::after {
+  position: absolute;
+  inset: 0.28rem;
+  border: 1px solid rgba(255, 243, 207, 0.06);
+  border-radius: 0.16rem;
+}
+
+.tcg-card-art-full-reveal span {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.16rem 0.32rem;
+  background: linear-gradient(90deg, transparent, rgba(8, 7, 5, 0.46) 18% 82%, transparent);
+  color: rgba(255, 243, 207, 0.58);
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .tcg-card-type-line,
 .tcg-card-footer {
   overflow: hidden;
@@ -1140,20 +1286,31 @@ button {
 
 .tcg-card-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  min-width: 0;
   color: rgba(241, 228, 194, 0.46);
 }
 
-.tcg-card-rarity-label,
-.tcg-card-source-badge {
+.tcg-card-footer span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tcg-card-rarity-label {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tcg-card-source-badge {
-  flex: 0 1 auto;
+  flex: 0 1 58%;
+  max-width: 58%;
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid rgba(203, 185, 143, 0.14);
   border-radius: 999px;
   padding: 0.1rem 0.38rem;
@@ -1305,13 +1462,33 @@ button {
   width: 100%;
 }
 
+.tcg-card-collection .tcg-card-title {
+  font-size: 0.9rem;
+  line-height: 1.12;
+}
+
+.tcg-card-collection .tcg-card-header {
+  grid-template-columns: minmax(0, 1fr) 1.85rem;
+}
+
+.tcg-card-collection .tcg-card-cost-gem {
+  min-width: 1.8rem;
+  min-height: 1.8rem;
+  font-size: 0.62rem;
+}
+
+.tcg-card-collection .tcg-card-footer {
+  gap: 0.35rem;
+}
+
 .tcg-card-viewer {
   width: min(100%, 22rem);
 }
 
 .tcg-card-inspect {
-  width: min(100%, 20rem);
-  min-height: 28rem;
+  width: min(100%, 19rem);
+  height: min(72dvh, 28rem);
+  min-height: 0;
 }
 
 .tcg-card-preview {
@@ -1348,6 +1525,29 @@ button {
   padding: 0.46rem;
 }
 
+.tcg-card-hand.is-full-art .tcg-card-inner {
+  gap: 0.22rem;
+  padding: 0.42rem;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-header {
+  margin: -0.06rem -0.06rem 0;
+  background: linear-gradient(90deg, rgba(8, 7, 5, 0.78), rgba(8, 7, 5, 0.42));
+  padding: 0.16rem 0.22rem;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-background-image {
+  filter: saturate(0.98) brightness(0.84);
+  opacity: 0.78;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-background-vignette {
+  background:
+    linear-gradient(180deg, rgba(7, 6, 5, 0.7) 0%, rgba(7, 6, 5, 0.22) 28%, rgba(7, 6, 5, 0.34) 58%, rgba(7, 6, 5, 0.88) 100%),
+    radial-gradient(ellipse at 50% 18%, transparent 0 32%, rgba(0, 0, 0, 0.42) 78%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.56), transparent 22% 78%, rgba(0, 0, 0, 0.56));
+}
+
 .tcg-card-hand .tcg-card-title {
   font-size: 0.76rem;
   line-height: 1.08;
@@ -1367,6 +1567,22 @@ button {
 
 .tcg-card-hand .tcg-card-effect {
   padding: 0.36rem;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-art {
+  opacity: 1;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-type-line,
+.tcg-card-hand.is-full-art .tcg-card-footer {
+  padding: 0 0.24rem;
+}
+
+.tcg-card-hand.is-full-art .tcg-card-effect {
+  background:
+    linear-gradient(180deg, rgba(31, 24, 18, 0.84), rgba(8, 7, 5, 0.9)),
+    rgba(8, 7, 5, 0.76);
+  padding: 0.32rem;
 }
 
 .tcg-card-hand .tcg-card-effect p {
@@ -1497,6 +1713,66 @@ button {
 .reward-skip-row {
   display: flex;
   justify-content: flex-start;
+}
+
+.hero-card-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+  gap: 0.75rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 1rem;
+}
+
+.hero-art-panel {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  border-radius: 0.28rem;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(255, 226, 150, 0.12), transparent 10rem),
+    linear-gradient(180deg, rgba(32, 25, 19, 0.94), rgba(8, 7, 5, 0.98));
+  box-shadow:
+    inset 0 0 52px rgba(0, 0, 0, 0.42),
+    0 24px 58px rgba(0, 0, 0, 0.3);
+}
+
+.hero-portrait-art {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.hero-portrait-image {
+  object-fit: cover;
+}
+
+.hero-portrait-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 48% 24%, transparent 24%, rgba(0, 0, 0, 0.16) 70%),
+    linear-gradient(180deg, rgba(255, 243, 207, 0.1), transparent 36% 72%, rgba(0, 0, 0, 0.62));
+}
+
+.hero-portrait-art span {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.9rem;
+  color: rgba(255, 243, 207, 0.62);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .starting-deck-preview-grid {
@@ -1817,10 +2093,32 @@ button {
   border-radius: 0.2rem;
 }
 
+.combat-portrait .symbolic-label {
+  display: none;
+}
+
+.combat-portrait-image {
+  object-fit: cover;
+}
+
+.combat-portrait-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 24%, transparent 32%, rgba(0, 0, 0, 0.18) 70%),
+    linear-gradient(180deg, rgba(255, 243, 207, 0.08), transparent 42%, rgba(0, 0, 0, 0.52));
+}
+
 .combat-portrait-enemy {
   background:
     radial-gradient(circle at 50% 20%, rgba(159, 61, 40, 0.3), transparent 4rem),
     linear-gradient(145deg, rgba(49, 22, 21, 0.8), rgba(8, 7, 5, 0.96));
+}
+
+.combat-portrait-enemy .symbolic-art::after {
+  background:
+    radial-gradient(circle at 50% 34%, transparent 28%, rgba(0, 0, 0, 0.28) 100%),
+    linear-gradient(180deg, rgba(159, 61, 40, 0.08), transparent 42%, rgba(0, 0, 0, 0.42));
 }
 
 .combat-intent-panel {
@@ -1849,9 +2147,9 @@ button {
   border: 1px solid rgba(215, 180, 93, 0.18);
   border-radius: var(--panel-radius);
   background:
-    radial-gradient(circle at 50% 12%, rgba(93, 183, 232, 0.13), transparent 20rem),
-    radial-gradient(circle at 48% 88%, rgba(215, 180, 93, 0.12), transparent 22rem),
-    linear-gradient(180deg, rgba(15, 14, 18, 0.82), rgba(36, 25, 18, 0.74) 58%, rgba(8, 7, 5, 0.95));
+    radial-gradient(circle at 50% 12%, rgba(93, 183, 232, 0.16), transparent 20rem),
+    radial-gradient(circle at 48% 88%, rgba(215, 180, 93, 0.14), transparent 22rem),
+    linear-gradient(180deg, rgba(15, 14, 18, 0.84), rgba(36, 25, 18, 0.76) 58%, rgba(8, 7, 5, 0.95));
   box-shadow: inset 0 0 72px rgba(0, 0, 0, 0.56);
 }
 
@@ -1871,8 +2169,8 @@ button {
   inset: 0;
   background:
     radial-gradient(circle at 50% 12%, rgba(255, 226, 150, 0.12), transparent 16rem),
-    linear-gradient(155deg, transparent 0 32%, rgba(0, 0, 0, 0.34) 32% 38%, transparent 38%),
-    linear-gradient(25deg, transparent 0 54%, rgba(0, 0, 0, 0.28) 54% 61%, transparent 61%),
+    linear-gradient(155deg, transparent 0 30%, rgba(0, 0, 0, 0.4) 30% 37%, transparent 37%),
+    linear-gradient(25deg, transparent 0 53%, rgba(0, 0, 0, 0.34) 53% 61%, transparent 61%),
     radial-gradient(ellipse at 50% 102%, rgba(0, 0, 0, 0.8), transparent 42%);
 }
 
@@ -1914,8 +2212,8 @@ button {
   right: 16%;
   top: 50%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(215, 180, 93, 0.5), rgba(93, 183, 232, 0.42), transparent);
-  box-shadow: 0 0 26px rgba(93, 183, 232, 0.24);
+  background: linear-gradient(90deg, transparent, rgba(215, 180, 93, 0.62), rgba(93, 183, 232, 0.52), rgba(159, 61, 40, 0.36), transparent);
+  box-shadow: 0 0 30px rgba(93, 183, 232, 0.26);
 }
 
 .combat-field-slot {
@@ -1926,12 +2224,21 @@ button {
   min-height: 4.6rem;
   padding: 0.65rem;
   transform: translateY(-50%);
-  border: 1px solid rgba(215, 180, 93, 0.16);
+  border: 1px solid rgba(215, 180, 93, 0.22);
   border-radius: 0.2rem;
   background:
     linear-gradient(180deg, rgba(255, 243, 207, 0.035), rgba(8, 7, 5, 0.36)),
     rgba(8, 7, 5, 0.34);
   box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.32);
+}
+
+.combat-field-slot::before {
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  pointer-events: none;
+  border: 1px solid rgba(255, 243, 207, 0.045);
+  border-radius: 0.16rem;
 }
 
 .combat-field-slot p,
@@ -2094,6 +2401,23 @@ button {
   padding: 0.65rem;
 }
 
+.combat-player-identity {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.combat-portrait-player {
+  flex: 0 0 4.6rem;
+  width: 4.6rem;
+  height: 4.6rem;
+  border-color: rgba(215, 180, 93, 0.24);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 226, 150, 0.22), transparent 4.5rem),
+    linear-gradient(145deg, rgba(57, 39, 20, 0.82), rgba(8, 7, 5, 0.94));
+}
+
 .combat-player-guard-pulse::after,
 .combat-player-heal-pulse::after {
   pointer-events: none;
@@ -2178,7 +2502,7 @@ button {
   pointer-events: none;
   position: absolute;
   left: clamp(1rem, 24vw, 18rem);
-  bottom: calc(100% - 0.35rem);
+  bottom: calc(100% + 0.2rem);
   z-index: 25;
   width: min(20rem, 38vw);
   filter: drop-shadow(0 30px 52px rgba(0, 0, 0, 0.62));
@@ -2186,6 +2510,11 @@ button {
 
 .combat-hand-inspector .tcg-card {
   transform: translateY(0);
+}
+
+.combat-hand-inspector .tcg-card-inspect {
+  width: min(17rem, 34vw);
+  height: min(52dvh, 24rem);
 }
 
 .combat-hand-header,
@@ -2370,7 +2699,7 @@ button {
   overflow: hidden;
 }
 
-.home-identity-panel .card-artwork-banner {
+.home-identity-panel .card-artwork-keyArt {
   position: absolute;
   inset: 0;
 }
@@ -2379,7 +2708,7 @@ button {
   position: absolute;
   left: 1.2rem;
   right: 1.2rem;
-  bottom: 1.2rem;
+  bottom: clamp(1.6rem, 3vh, 2.2rem);
   z-index: 5;
 }
 
@@ -2398,9 +2727,9 @@ button {
 .home-identity-copy h2 {
   margin-top: 0.35rem;
   color: #fff3cf;
-  font-size: clamp(2rem, 3.2vw, 3.5rem);
+  font-size: clamp(1.9rem, 3vw, 3.35rem);
   font-weight: 950;
-  line-height: 0.9;
+  line-height: 0.92;
   text-shadow: 0 18px 42px rgba(0, 0, 0, 0.7);
 }
 
@@ -2409,6 +2738,80 @@ button {
   margin-top: 0.7rem;
   color: rgba(241, 228, 194, 0.82);
   letter-spacing: 0.14em;
+}
+
+.home-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7.75rem, 1fr));
+  gap: 0.75rem;
+}
+
+.home-action-grid button {
+  width: 100%;
+  min-width: 0;
+  padding-inline: 0.75rem;
+  letter-spacing: 0.13em;
+  white-space: nowrap;
+}
+
+.home-flow-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-flow-panel h3 {
+  margin-top: 0.75rem;
+  color: #fff3cf;
+  font-size: 1.45rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+.home-flow-panel > span {
+  display: block;
+  margin-top: 0.45rem;
+  color: rgba(241, 228, 194, 0.7);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.home-role-list {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  gap: 0.65rem;
+  overflow-y: auto;
+  padding-right: 0.2rem;
+}
+
+.demo-empty-state {
+  display: grid;
+  width: min(34rem, 100%);
+  gap: 0.85rem;
+  padding: 1.4rem;
+  text-align: left;
+}
+
+.demo-empty-state p {
+  color: var(--color-gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.demo-empty-state h2 {
+  color: #fff3cf;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.demo-empty-state span {
+  color: rgba(241, 228, 194, 0.74);
+  font-size: 0.96rem;
+  line-height: 1.6;
 }
 
 .collection-screen {
@@ -2437,6 +2840,15 @@ button {
   font-size: clamp(1.8rem, 2.5vw, 2.6rem);
   font-weight: 900;
   line-height: 0.95;
+}
+
+.gallery-header-panel span {
+  display: block;
+  margin-top: 0.55rem;
+  max-width: 34rem;
+  color: rgba(241, 228, 194, 0.68);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .collection-mode-toggle {
@@ -2529,7 +2941,33 @@ button {
 }
 
 .collection-card-cell {
+  position: relative;
   min-width: 0;
+}
+
+.collection-card-cell.is-showcase-card::before {
+  content: "Showcase Art";
+  position: absolute;
+  top: -0.32rem;
+  left: 0.58rem;
+  z-index: 8;
+  border: 1px solid rgba(255, 226, 150, 0.36);
+  border-radius: 999px;
+  background: rgba(28, 23, 20, 0.94);
+  padding: 0.2rem 0.48rem;
+  color: var(--color-gold);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.collection-card-cell.is-showcase-card .tcg-card {
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.42),
+    0 0 36px rgba(215, 180, 93, 0.16),
+    inset 0 0 0 1px rgba(255, 243, 207, 0.18);
 }
 
 .collection-card-cell .tcg-card:hover,
@@ -2599,6 +3037,19 @@ button {
   color: var(--color-gold);
 }
 
+.codex-entry-art {
+  position: relative;
+  height: 11rem;
+  margin-top: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.2);
+  border-radius: 0.32rem;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 226, 150, 0.12), transparent 42%),
+    linear-gradient(180deg, rgba(28, 23, 20, 0.92), rgba(9, 9, 12, 0.98));
+  box-shadow: inset 0 0 34px rgba(0, 0, 0, 0.48);
+}
+
 .card-detail-overlay,
 .gallery-fullscreen {
   position: absolute;
@@ -2612,11 +3063,13 @@ button {
 
 .card-detail-modal {
   display: grid;
-  grid-template-columns: minmax(16rem, 24rem) minmax(0, 36rem);
+  grid-template-columns: minmax(14rem, 21rem) minmax(0, 33rem);
   gap: 1rem;
-  width: min(72rem, calc(100% - 2rem));
-  max-height: calc(100% - 2rem);
+  width: min(62rem, calc(100% - 1.5rem));
+  height: min(41.5rem, calc(100% - 1rem));
+  max-height: calc(100% - 1rem);
   min-height: 0;
+  overflow: hidden;
   border: 1px solid rgba(215, 180, 93, 0.32);
   border-radius: var(--panel-radius);
   background: linear-gradient(180deg, rgba(28, 23, 20, 0.98), rgba(9, 9, 12, 0.99));
@@ -2630,9 +3083,25 @@ button {
   place-items: center;
 }
 
+.card-detail-preview .tcg-card-inspect {
+  height: min(100%, 28rem);
+}
+
 .card-detail-copy {
   min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
   padding: 0.4rem 0.3rem 0.4rem 0;
+}
+
+.card-detail-copy > .flex,
+.gallery-fullscreen-copy > .flex {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  align-items: flex-start;
+  padding-bottom: 0.55rem;
+  background: linear-gradient(180deg, rgba(28, 23, 20, 0.98), rgba(28, 23, 20, 0.86) 72%, transparent);
 }
 
 .card-detail-copy h2,
@@ -2746,7 +3215,7 @@ button {
 .gallery-art-tile {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  grid-template-rows: minmax(0, 1fr) auto auto auto auto auto;
   min-height: 26rem;
   overflow: hidden;
   border: 1px solid rgba(215, 180, 93, 0.22);
@@ -2774,6 +3243,17 @@ button {
   border-radius: 0.24rem;
 }
 
+.gallery-art-concept {
+  border-color: rgba(93, 183, 232, 0.24);
+  background:
+    linear-gradient(180deg, rgba(28, 30, 35, 0.92), rgba(9, 9, 12, 0.98)),
+    radial-gradient(circle at 50% 0%, rgba(93, 183, 232, 0.16), transparent 45%);
+}
+
+.gallery-art-sensitivity-high {
+  border-color: rgba(255, 226, 150, 0.3);
+}
+
 .gallery-art-tile span {
   margin-top: 0.65rem;
   color: var(--color-gold);
@@ -2783,10 +3263,24 @@ button {
 }
 
 .gallery-art-tile strong {
+  display: -webkit-box;
+  min-height: 2.7rem;
   margin-top: 0.25rem;
+  overflow: hidden;
   color: #fff3cf;
   font-size: 1.25rem;
   line-height: 1.08;
+  overflow-wrap: break-word;
+  word-break: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.gallery-art-tile small {
+  margin-top: 0.22rem;
+  color: rgba(241, 228, 194, 0.5);
+  font-size: 0.72rem;
+  line-height: 1.2;
 }
 
 .gallery-art-tile em {
@@ -2799,6 +3293,25 @@ button {
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.gallery-tile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.55rem;
+}
+
+.gallery-tile-tags b {
+  border: 1px solid rgba(93, 183, 232, 0.2);
+  border-radius: 999px;
+  background: rgba(93, 183, 232, 0.06);
+  padding: 0.2rem 0.38rem;
+  color: rgba(220, 239, 255, 0.72);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .gallery-fullscreen {
@@ -2818,8 +3331,11 @@ button {
 }
 
 .gallery-fullscreen-copy {
+  display: flex;
+  flex-direction: column;
   max-height: 100%;
   min-height: 0;
+  overflow-y: auto;
   padding: 1rem;
 }
 
@@ -2874,6 +3390,34 @@ button {
   }
 }
 
+@media (max-height: 760px) and (min-width: 1024px) {
+  .home-screen-grid {
+    gap: 0.75rem;
+  }
+
+  .home-identity-copy span {
+    margin-top: 0.45rem;
+    font-size: 0.62rem;
+  }
+
+  .home-flow-panel h3 {
+    font-size: 1.24rem;
+  }
+
+  .home-flow-panel > span {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .home-role-list {
+    gap: 0.5rem;
+  }
+
+  .home-role-list > div {
+    padding: 0.75rem 0.85rem;
+  }
+}
+
 @media (max-width: 860px) {
   .landing-title-screen {
     grid-template-columns: minmax(0, 1fr);
@@ -2899,7 +3443,8 @@ button {
   .home-screen-grid,
   .collection-screen,
   .gallery-header-panel,
-  .gallery-fullscreen {
+  .gallery-fullscreen,
+  .hero-card-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 

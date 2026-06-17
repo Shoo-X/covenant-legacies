@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
@@ -166,7 +167,16 @@ export function CombatScreen({
         <section className="combat-main-board" aria-label="Combat board">
           <GamePanel className="combat-enemy-zone">
             <div className="combat-portrait combat-portrait-enemy">
-              <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
+              {enemy.imagePath ? (
+                <CombatArtPortrait
+                  alt={enemy.artworkTitle ?? enemy.name}
+                  imagePath={enemy.imagePath}
+                  objectPosition={enemy.imageObjectPosition}
+                  sizes="96px"
+                />
+              ) : (
+                <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
+              )}
               {latestDamageFeedback && (
                 <span
                   className="combat-portrait-hit-flash"
@@ -269,19 +279,31 @@ export function CombatScreen({
               latestGuardFeedback ? "combat-player-guard-pulse" : ""
             } ${latestHealingFeedback ? "combat-player-heal-pulse" : ""}`}
           >
-            <div className="min-w-0">
-              <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
-                Champion
-              </p>
-              <h3 className="mt-1 truncate text-xl font-black text-[#fff3cf]">
-                {hero.name}
-              </h3>
-              <Meter
-                current={combat.player.health}
-                label="Player Health"
-                max={combat.player.maxHealth}
-                tone="player"
-              />
+            <div className="combat-player-identity">
+              {hero.imagePath && (
+                <div className="combat-portrait combat-portrait-player">
+                  <CombatArtPortrait
+                    alt={hero.artworkTitle ?? hero.name}
+                    imagePath={hero.imagePath}
+                    objectPosition={hero.imageObjectPosition}
+                    sizes="72px"
+                  />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
+                  Champion
+                </p>
+                <h3 className="mt-1 truncate text-xl font-black text-[#fff3cf]">
+                  {hero.name}
+                </h3>
+                <Meter
+                  current={combat.player.health}
+                  label="Player Health"
+                  max={combat.player.maxHealth}
+                  tone="player"
+                />
+              </div>
             </div>
 
             <div className="combat-player-stats">
@@ -529,6 +551,35 @@ function ResourcePip({
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function CombatArtPortrait({
+  alt,
+  imagePath,
+  objectPosition,
+  sizes,
+}: {
+  alt: string;
+  imagePath: string;
+  objectPosition?: string;
+  sizes: string;
+}) {
+  return (
+    <>
+      <Image
+        alt={alt}
+        className="combat-portrait-image"
+        fill
+        sizes={sizes}
+        src={imagePath}
+        style={{
+          objectFit: "cover",
+          objectPosition: objectPosition ?? "50% 38%",
+        }}
+      />
+      <div className="combat-portrait-vignette" aria-hidden="true" />
+    </>
   );
 }
 
