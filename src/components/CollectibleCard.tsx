@@ -76,6 +76,22 @@ function getSourceAbbreviation(card: Card) {
   return "Script.";
 }
 
+function getCostGemText(card: Card) {
+  if (card.isPlayable === false) {
+    return "--";
+  }
+
+  if (card.cost.length === 0) {
+    return "0";
+  }
+
+  if (card.cost.length === 1) {
+    return `${card.cost[0].amount}`;
+  }
+
+  return card.cost.map((cost) => cost.amount).join("/");
+}
+
 export function CollectibleCard({
   as,
   card,
@@ -104,7 +120,7 @@ export function CollectibleCard({
       <div className="tcg-card-header">
         <h3 className="tcg-card-title">{card.name}</h3>
         <span className="tcg-card-cost-gem" aria-label={`Cost ${formatCardCost(card)}`}>
-          {formatCardCost(card)}
+          {getCostGemText(card)}
         </span>
       </div>
 

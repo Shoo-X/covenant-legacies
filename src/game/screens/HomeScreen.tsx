@@ -29,7 +29,7 @@ export function HomeScreen({
       <div className="home-screen-grid">
         <GamePanel className="home-identity-panel">
           {featuredCard && (
-            <CardArtwork card={featuredCard} priority variant="banner" />
+            <CardArtwork card={featuredCard} priority variant="keyArt" />
           )}
           <div className="home-identity-copy">
             <p>Covenant: Legacies</p>
@@ -83,7 +83,7 @@ export function HomeScreen({
           <h3>War of the Watchers</h3>
           <span>The Valley of the Giant is the first campaign map.</span>
           <div className="home-role-list mt-5">
-            <HomeRole label="Start Run" value="Hero Select -> Campaign Map -> Combat" />
+            <HomeRole label="Start Run" value="Hero Select / Campaign Map / Combat" />
             <HomeRole label="Collection" value="Card archive and future deck-building home" />
             <HomeRole label="Gallery" value="Showcase art and concept pieces" />
             <HomeRole label="Codex" value="Scripture, lore, theology notes, and references" />

@@ -15,16 +15,20 @@ interface CardArtworkProps {
     | "inspect"
     | "collection"
     | "gallery"
+    | "galleryLarge"
+    | "keyArt"
     | "banner";
 }
 
 const imageSizesByVariant: Record<NonNullable<CardArtworkProps["variant"]>, string> = {
   banner: "(max-width: 900px) 90vw, 45vw",
   card: "180px",
-  collection: "(max-width: 768px) 45vw, 220px",
+  collection: "220px",
   gallery: "(max-width: 768px) 90vw, 360px",
+  galleryLarge: "(max-width: 900px) 95vw, 70vw",
   hand: "120px",
   inspect: "420px",
+  keyArt: "(max-width: 900px) 90vw, 45vw",
   preview: "160px",
   reward: "260px",
 };
@@ -43,7 +47,11 @@ export function CardArtwork({
         kind="card"
         label={card.artworkTitle ?? card.name}
         subject={card}
-        variant={variant === "banner" ? "wide" : "card"}
+        variant={
+          variant === "banner" || variant === "galleryLarge" || variant === "keyArt"
+            ? "wide"
+            : "card"
+        }
       />
     );
   }

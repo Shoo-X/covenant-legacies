@@ -50,7 +50,7 @@ export function LandingPage({ onOpenCodex, onStart }: LandingPageProps) {
 
           <div className="key-art-frame landing-showcase-frame h-[min(74dvh,48rem)] min-h-[26rem]">
             {featuredCard && (
-              <CardArtwork card={featuredCard} priority variant="banner" />
+              <CardArtwork card={featuredCard} priority variant="keyArt" />
             )}
             <div className="landing-showcase-strip" aria-hidden="true">
               {showcaseCards.slice(1).map((card) => (

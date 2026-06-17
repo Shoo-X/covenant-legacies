@@ -244,7 +244,7 @@ button {
   border: 1px solid rgba(215, 180, 93, 0.22);
 }
 
-.landing-showcase-frame .card-artwork-banner {
+.landing-showcase-frame .card-artwork-keyArt {
   position: absolute;
   inset: 0;
 }
@@ -1035,8 +1035,10 @@ button {
   background: rgba(0, 0, 0, 0.5);
 }
 
+.card-artwork-banner,
 .card-artwork-gallery,
-.card-artwork-banner {
+.card-artwork-galleryLarge,
+.card-artwork-keyArt {
   width: 100%;
   height: 100%;
 }
@@ -1140,20 +1142,24 @@ button {
 
 .tcg-card-footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
   color: rgba(241, 228, 194, 0.46);
 }
 
-.tcg-card-rarity-label,
-.tcg-card-source-badge {
+.tcg-card-rarity-label {
+  flex: 1 1 auto;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .tcg-card-source-badge {
-  flex: 0 1 auto;
+  flex: 0 1 58%;
+  max-width: 58%;
+  min-width: 0;
+  overflow: hidden;
   border: 1px solid rgba(203, 185, 143, 0.14);
   border-radius: 999px;
   padding: 0.1rem 0.38rem;
@@ -1305,13 +1311,23 @@ button {
   width: 100%;
 }
 
+.tcg-card-collection .tcg-card-title {
+  font-size: 0.95rem;
+  line-height: 1.12;
+}
+
+.tcg-card-collection .tcg-card-footer {
+  gap: 0.35rem;
+}
+
 .tcg-card-viewer {
   width: min(100%, 22rem);
 }
 
 .tcg-card-inspect {
-  width: min(100%, 20rem);
-  min-height: 28rem;
+  width: min(100%, 19rem);
+  height: min(72dvh, 28rem);
+  min-height: 0;
 }
 
 .tcg-card-preview {
@@ -1497,6 +1513,23 @@ button {
 .reward-skip-row {
   display: flex;
   justify-content: flex-start;
+}
+
+.hero-card-layout {
+  display: grid;
+  grid-template-columns: minmax(16rem, 0.72fr) minmax(0, 1.28fr);
+  gap: 0.75rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  background: rgba(255, 255, 255, 0.035);
+  padding: 1rem;
+}
+
+.hero-art-panel {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .starting-deck-preview-grid {
@@ -2178,7 +2211,7 @@ button {
   pointer-events: none;
   position: absolute;
   left: clamp(1rem, 24vw, 18rem);
-  bottom: calc(100% - 0.35rem);
+  bottom: calc(100% + 0.2rem);
   z-index: 25;
   width: min(20rem, 38vw);
   filter: drop-shadow(0 30px 52px rgba(0, 0, 0, 0.62));
@@ -2186,6 +2219,11 @@ button {
 
 .combat-hand-inspector .tcg-card {
   transform: translateY(0);
+}
+
+.combat-hand-inspector .tcg-card-inspect {
+  width: min(17rem, 34vw);
+  height: min(52dvh, 24rem);
 }
 
 .combat-hand-header,
@@ -2370,7 +2408,7 @@ button {
   overflow: hidden;
 }
 
-.home-identity-panel .card-artwork-banner {
+.home-identity-panel .card-artwork-keyArt {
   position: absolute;
   inset: 0;
 }
@@ -2379,7 +2417,7 @@ button {
   position: absolute;
   left: 1.2rem;
   right: 1.2rem;
-  bottom: 1.2rem;
+  bottom: clamp(1.6rem, 3vh, 2.2rem);
   z-index: 5;
 }
 
@@ -2398,9 +2436,9 @@ button {
 .home-identity-copy h2 {
   margin-top: 0.35rem;
   color: #fff3cf;
-  font-size: clamp(2rem, 3.2vw, 3.5rem);
+  font-size: clamp(1.9rem, 3vw, 3.35rem);
   font-weight: 950;
-  line-height: 0.9;
+  line-height: 0.92;
   text-shadow: 0 18px 42px rgba(0, 0, 0, 0.7);
 }
 
@@ -2450,6 +2488,7 @@ button {
 
 .home-role-list {
   display: grid;
+  flex: 1 1 auto;
   min-height: 0;
   gap: 0.65rem;
   overflow-y: auto;
@@ -2694,11 +2733,13 @@ button {
 
 .card-detail-modal {
   display: grid;
-  grid-template-columns: minmax(16rem, 24rem) minmax(0, 36rem);
+  grid-template-columns: minmax(14rem, 21rem) minmax(0, 33rem);
   gap: 1rem;
-  width: min(72rem, calc(100% - 2rem));
-  max-height: calc(100% - 2rem);
+  width: min(62rem, calc(100% - 1.5rem));
+  height: min(41.5rem, calc(100% - 1rem));
+  max-height: calc(100% - 1rem);
   min-height: 0;
+  overflow: hidden;
   border: 1px solid rgba(215, 180, 93, 0.32);
   border-radius: var(--panel-radius);
   background: linear-gradient(180deg, rgba(28, 23, 20, 0.98), rgba(9, 9, 12, 0.99));
@@ -2712,9 +2753,25 @@ button {
   place-items: center;
 }
 
+.card-detail-preview .tcg-card-inspect {
+  height: min(100%, 28rem);
+}
+
 .card-detail-copy {
   min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
   padding: 0.4rem 0.3rem 0.4rem 0;
+}
+
+.card-detail-copy > .flex,
+.gallery-fullscreen-copy > .flex {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  align-items: flex-start;
+  padding-bottom: 0.55rem;
+  background: linear-gradient(180deg, rgba(28, 23, 20, 0.98), rgba(28, 23, 20, 0.86) 72%, transparent);
 }
 
 .card-detail-copy h2,
@@ -2900,8 +2957,11 @@ button {
 }
 
 .gallery-fullscreen-copy {
+  display: flex;
+  flex-direction: column;
   max-height: 100%;
   min-height: 0;
+  overflow-y: auto;
   padding: 1rem;
 }
 
@@ -2956,6 +3016,34 @@ button {
   }
 }
 
+@media (max-height: 760px) and (min-width: 1024px) {
+  .home-screen-grid {
+    gap: 0.75rem;
+  }
+
+  .home-identity-copy span {
+    margin-top: 0.45rem;
+    font-size: 0.62rem;
+  }
+
+  .home-flow-panel h3 {
+    font-size: 1.24rem;
+  }
+
+  .home-flow-panel > span {
+    font-size: 0.84rem;
+    line-height: 1.45;
+  }
+
+  .home-role-list {
+    gap: 0.5rem;
+  }
+
+  .home-role-list > div {
+    padding: 0.75rem 0.85rem;
+  }
+}
+
 @media (max-width: 860px) {
   .landing-title-screen {
     grid-template-columns: minmax(0, 1fr);
@@ -2981,7 +3069,8 @@ button {
   .home-screen-grid,
   .collection-screen,
   .gallery-header-panel,
-  .gallery-fullscreen {
+  .gallery-fullscreen,
+  .hero-card-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 

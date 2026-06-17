@@ -99,7 +99,7 @@ export function GalleryScreen() {
       {expandedCard && (
         <div className="gallery-fullscreen" role="dialog" aria-modal="true">
           <div className="gallery-fullscreen-art">
-            <CardArtwork card={expandedCard} priority variant="banner" />
+            <CardArtwork card={expandedCard} priority variant="galleryLarge" />
           </div>
           <GamePanel className="gallery-fullscreen-copy game-scroll">
             <div className="flex items-start justify-between gap-4">
