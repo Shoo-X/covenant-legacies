@@ -1,4 +1,11 @@
 import type { Card } from "@/types/game";
+import { getArtAssetPath } from "@/data/artAssets";
+
+const openAiConceptArtistCredit = "ChatGPT / OpenAI image generation concept art";
+
+function artAssetPath(assetId: string, fallbackPath: string) {
+  return getArtAssetPath(assetId) ?? fallbackPath;
+}
 
 export const showcaseCardIds = [
   "card-david-vs-goliath",
@@ -16,7 +23,7 @@ export const cards: Card[] = [
       { amount: 1, resource: "Faith" },
     ],
     text: "Deal 18 damage. If target has Giant or Nephilim, deal +12 damage. Remove Fear.",
-    type: "Attack/Courage",
+    type: "Legacy/Courage",
     rarity: "Legendary",
     archetypeTags: ["Courage", "Covenant"],
     synergyNotes:
@@ -29,13 +36,16 @@ export const cards: Card[] = [
       removeFear: true,
       note: "The battle belongs to the Lord.",
     },
-    imagePath: "/art/cards/david-vs-goliath.png",
+    imagePath: artAssetPath(
+      "art-david-goliath-portrait",
+      "/art/cards/david-vs-goliath.png",
+    ),
     artworkTitle: "David vs Goliath",
-    artistCredit: "User-supplied flagship concept art",
+    artistCredit: openAiConceptArtistCredit,
     cardSet: "War of the Watchers",
     flavorText:
       "The shepherd stood small before the giant, yet the covenant promise towered higher.",
-    visualTags: ["giant", "valley", "courage", "sunlit battlefield"],
+    visualTags: ["giant", "valley", "courage", "covenant", "deliverance"],
     sourceTier: "Scripture",
     references: ["1 Samuel 17"],
     theologyNote:
@@ -50,7 +60,7 @@ export const cards: Card[] = [
       { amount: 1, resource: "Authority" },
     ],
     text: "Gain 14 Guard. Draw 2 cards. Remove Fear.",
-    type: "Prophet/Deliverance",
+    type: "Legacy/Deliverance",
     rarity: "Legendary",
     archetypeTags: ["Covenant"],
     synergyNotes:
@@ -62,13 +72,16 @@ export const cards: Card[] = [
       removeFear: true,
       note: "A way opens where no road stood before.",
     },
-    imagePath: "/art/cards/moses-divider-of-seas.png",
-    artworkTitle: "Moses Parting the Red Sea",
-    artistCredit: "User-supplied flagship concept art",
+    imagePath: artAssetPath(
+      "art-moses-divider-of-seas",
+      "/art/cards/moses-divider-of-seas.png",
+    ),
+    artworkTitle: "Moses, Divider of Seas",
+    artistCredit: openAiConceptArtistCredit,
     cardSet: "War of the Watchers",
     flavorText:
       "Between the waters and the sword, deliverance came as command and wonder.",
-    visualTags: ["red sea", "deliverance", "prophet", "divine light"],
+    visualTags: ["red sea", "deliverance", "prophet", "covenant", "divine light"],
     sourceTier: "Scripture",
     references: ["Exodus 14"],
     theologyNote:
@@ -95,17 +108,20 @@ export const cards: Card[] = [
       removeFear: true,
       note: "Hope rises at the empty tomb.",
     },
-    imagePath: "/art/cards/mary-magdalene-empty-tomb.png",
+    imagePath: artAssetPath(
+      "art-mary-empty-tomb",
+      "/art/cards/mary-magdalene-empty-tomb.png",
+    ),
     artworkTitle: "Mary Magdalene at the Empty Tomb",
-    artistCredit: "User-supplied flagship concept art",
+    artistCredit: openAiConceptArtistCredit,
     cardSet: "War of the Watchers",
     flavorText:
       "She came bearing grief and departed bearing witness to glory.",
-    visualTags: ["empty tomb", "witness", "dawn", "hope"],
+    visualTags: ["empty tomb", "witness", "resurrection", "dawn", "hope"],
     sourceTier: "Scripture",
     references: ["John 20:1-18", "Matthew 28:1-10"],
     theologyNote:
-      "Mary Magdalene is represented as a faithful witness to the resurrection, with the mystery treated reverently.",
+      "Mary Magdalene is represented as a faithful witness to resurrection hope, not as a magical unit or combat summon.",
     gameplayRole: "Support",
   },
   {
@@ -116,7 +132,7 @@ export const cards: Card[] = [
       { amount: 2, resource: "Faith" },
     ],
     text: "Deal 14 damage. Gain 12 Guard. Remove 2 Corruption.",
-    type: "Heavenly Host/Judgment",
+    type: "Angelic Intervention/Judgment",
     rarity: "Mythic Legendary",
     archetypeTags: ["Kingdom", "Covenant"],
     synergyNotes:
@@ -128,9 +144,12 @@ export const cards: Card[] = [
       removeCorruption: 2,
       note: "Heavenly authority stands under the command of God.",
     },
-    imagePath: "/art/cards/archangel-michael.png",
+    imagePath: artAssetPath(
+      "art-archangel-michael",
+      "/art/cards/archangel-michael.png",
+    ),
     artworkTitle: "Archangel Michael",
-    artistCredit: "User-supplied flagship concept art",
+    artistCredit: openAiConceptArtistCredit,
     cardSet: "War of the Watchers",
     flavorText:
       "Radiance did not flatter the darkness; it judged, guarded, and passed on.",
@@ -138,7 +157,7 @@ export const cards: Card[] = [
     sourceTier: "Scripture",
     references: ["Daniel 10:13", "Daniel 12:1", "Jude 1:9", "Revelation 12:7-9"],
     theologyNote:
-      "Michael is depicted as a servant within God's authority. The card avoids angelic worship and frames power as delegated judgment.",
+      "Michael is depicted as a servant under God's authority. Gameplay frames this as delegated heavenly intervention, not a summoned creature or object of worship.",
     gameplayRole: "Judgment",
   },
   {
@@ -349,6 +368,16 @@ export const cards: Card[] = [
     synergyNotes: "Primary Courage payoff against the Valley's giant enemies.",
     upgradedVersion: "Deal 11 damage. If target has Giant or Nephilim, deal +8 damage.",
     combatEffect: { damage: 9, antiGiantDamage: 6 },
+    imagePath: artAssetPath(
+      "art-david-goliath-portrait",
+      "/art/cards/david-vs-goliath.png",
+    ),
+    artworkTitle: "David and Goliath",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "War of the Watchers",
+    flavorText:
+      "The valley remembered that pride can tower high and still fall.",
+    visualTags: ["giant", "valley", "courage", "covenant"],
     sourceTier: "Speculative Fiction",
     references: ["Original card", "1 Samuel 17 as thematic inspiration"],
     theologyNote: "Anti-giant combat points to deliverance rather than heroic boasting.",
@@ -462,6 +491,16 @@ export const cards: Card[] = [
     synergyNotes: "Premium Psalm answer to Fear while preserving hand size.",
     upgradedVersion: "Gain 8 Guard. Remove Fear. Draw 1 card.",
     combatEffect: { guard: 6, removeFear: true, draw: 1 },
+    imagePath: artAssetPath(
+      "art-moses-divider-of-seas",
+      "/art/cards/moses-divider-of-seas.png",
+    ),
+    artworkTitle: "Moses at the Red Sea",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "War of the Watchers",
+    flavorText:
+      "Deliverance opened as prayer remembered the way through the waters.",
+    visualTags: ["red sea", "deliverance", "prayer", "covenant"],
     sourceTier: "Scripture",
     references: ["Psalms"],
     theologyNote: "Deliverance language is treated as prayerful dependence.",

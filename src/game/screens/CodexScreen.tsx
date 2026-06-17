@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { cards } from "@/data/cards";
 import { codexEntries } from "@/data/codexEntries";
 import { encounters } from "@/data/encounters";
@@ -13,6 +14,8 @@ type CodexEntry = SourceBackedContent & {
   id: string;
   name: string;
   category: string;
+  imagePath?: string;
+  artworkTitle?: string;
   details: Array<{
     label: string;
     value: string;
@@ -172,6 +175,18 @@ export function CodexScreen({
             <p className="mt-4 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
               {entry.theologyNote}
             </p>
+            {entry.category === "Codex" && entry.imagePath && (
+              <div className="codex-entry-art" aria-label={entry.artworkTitle ?? entry.name}>
+                <Image
+                  alt={entry.artworkTitle ?? entry.name}
+                  className="card-artwork-image"
+                  fill
+                  sizes="(max-width: 900px) 90vw, 300px"
+                  src={entry.imagePath}
+                />
+                <div className="card-artwork-vignette" aria-hidden="true" />
+              </div>
+            )}
             <div className="mt-4 grid gap-3">
               {entry.details.map((detail) => (
                 <div key={detail.label}>

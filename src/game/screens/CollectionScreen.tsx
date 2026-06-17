@@ -11,6 +11,7 @@ import {
   cardRarityFilters,
   cardSetFilters,
   getCardSet,
+  isShowcaseCard,
   sortCardsForShowcase,
 } from "@/game/cardArt";
 import type { Card, CardRarity, CardSet, StartingDeckCard } from "@/types/game";
@@ -112,7 +113,12 @@ export function CollectionScreen({
         <GamePanel className="collection-card-stage game-scroll">
           <div className="collection-card-grid">
             {filteredCards.map((card) => (
-              <div className="collection-card-cell" key={card.id}>
+              <div
+                className={`collection-card-cell ${
+                  isShowcaseCard(card) ? "is-showcase-card" : ""
+                }`}
+                key={card.id}
+              >
                 <CollectibleCard
                   card={card}
                   onClick={() => setSelectedCard(card)}

@@ -215,6 +215,8 @@ export interface CodexSectionSet {
 export interface CodexLoreEntry extends SourceBackedContent {
   id: string;
   title: string;
+  imagePath?: string;
+  artworkTitle?: string;
   sections: CodexSectionSet;
 }
 

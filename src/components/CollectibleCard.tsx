@@ -29,6 +29,15 @@ function getCardTone(card: Card) {
     return "sacred";
   }
 
+  if (
+    card.type.includes("Intervention") ||
+    card.type.includes("Judgment") ||
+    card.type.includes("Legacy") ||
+    card.type.includes("Witness")
+  ) {
+    return "sacred";
+  }
+
   if (card.type.includes("Attack")) {
     return "attack";
   }
@@ -54,6 +63,14 @@ function getArtSymbol(card: Card) {
   }
 
   if (card.type.includes("Covenant")) {
+    return "seal";
+  }
+
+  if (
+    card.type.includes("Intervention") ||
+    card.type.includes("Legacy") ||
+    card.type.includes("Witness")
+  ) {
     return "seal";
   }
 
