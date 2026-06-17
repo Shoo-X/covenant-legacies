@@ -8,5 +8,7 @@ export const screens: Array<{
   { id: "hero-select", label: "Hero Select" },
   { id: "map", label: "Campaign Map" },
   { id: "combat", label: "Combat" },
+  { id: "collection", label: "Collection" },
+  { id: "gallery", label: "Gallery" },
   { id: "codex", label: "Codex" },
 ];

@@ -1,6 +1,146 @@
 import type { Card } from "@/types/game";
 
+export const showcaseCardIds = [
+  "card-david-vs-goliath",
+  "card-moses-divider-of-seas",
+  "card-mary-witness-to-glory",
+  "card-archangel-michael",
+];
+
 export const cards: Card[] = [
+  {
+    id: "card-david-vs-goliath",
+    name: "David vs Goliath",
+    cost: [
+      { amount: 2, resource: "Resolve" },
+      { amount: 1, resource: "Faith" },
+    ],
+    text: "Deal 18 damage. If target has Giant or Nephilim, deal +12 damage. Remove Fear.",
+    type: "Attack/Courage",
+    rarity: "Legendary",
+    archetypeTags: ["Courage", "Covenant"],
+    synergyNotes:
+      "Flagship anti-Giant finisher that rewards Courage decks facing the Valley's largest threats.",
+    upgradedVersion:
+      "Deal 22 damage. If target has Giant or Nephilim, deal +16 damage. Remove Fear.",
+    combatEffect: {
+      damage: 18,
+      antiGiantDamage: 12,
+      removeFear: true,
+      note: "The battle belongs to the Lord.",
+    },
+    imagePath: "/art/cards/david-vs-goliath.png",
+    artworkTitle: "David vs Goliath",
+    artistCredit: "User-supplied flagship concept art",
+    cardSet: "War of the Watchers",
+    flavorText:
+      "The shepherd stood small before the giant, yet the covenant promise towered higher.",
+    visualTags: ["giant", "valley", "courage", "sunlit battlefield"],
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17"],
+    theologyNote:
+      "David's courage is grounded in trust in the Lord and covenant deliverance, not in spectacle or self-exaltation.",
+    gameplayRole: "Anti-Giant",
+  },
+  {
+    id: "card-moses-divider-of-seas",
+    name: "Moses, Divider of Seas",
+    cost: [
+      { amount: 2, resource: "Faith" },
+      { amount: 1, resource: "Authority" },
+    ],
+    text: "Gain 14 Guard. Draw 2 cards. Remove Fear.",
+    type: "Prophet/Deliverance",
+    rarity: "Legendary",
+    archetypeTags: ["Covenant"],
+    synergyNotes:
+      "A premium defensive reset that turns Faith and Authority into time, protection, and fresh options.",
+    upgradedVersion: "Gain 18 Guard. Draw 2 cards. Remove Fear. Gain 1 Faith.",
+    combatEffect: {
+      guard: 14,
+      draw: 2,
+      removeFear: true,
+      note: "A way opens where no road stood before.",
+    },
+    imagePath: "/art/cards/moses-divider-of-seas.png",
+    artworkTitle: "Moses Parting the Red Sea",
+    artistCredit: "User-supplied flagship concept art",
+    cardSet: "War of the Watchers",
+    flavorText:
+      "Between the waters and the sword, deliverance came as command and wonder.",
+    visualTags: ["red sea", "deliverance", "prophet", "divine light"],
+    sourceTier: "Scripture",
+    references: ["Exodus 14"],
+    theologyNote:
+      "The card presents the Red Sea crossing as divine deliverance through obedient leadership, not as human magic.",
+    gameplayRole: "Defense",
+  },
+  {
+    id: "card-mary-witness-to-glory",
+    name: "Mary Magdalene, Witness to Glory",
+    cost: [
+      { amount: 1, resource: "Faith" },
+      { amount: 1, resource: "Wisdom" },
+    ],
+    text: "Heal 8. Draw 2 cards. Remove Fear.",
+    type: "Witness/Hope",
+    rarity: "Rare",
+    archetypeTags: ["Psalm", "Covenant"],
+    synergyNotes:
+      "A restorative card for Faith and Wisdom decks that converts testimony into endurance and clarity.",
+    upgradedVersion: "Heal 10. Draw 2 cards. Remove Fear. Remove 1 Corruption.",
+    combatEffect: {
+      heal: 8,
+      draw: 2,
+      removeFear: true,
+      note: "Hope rises at the empty tomb.",
+    },
+    imagePath: "/art/cards/mary-magdalene-empty-tomb.png",
+    artworkTitle: "Mary Magdalene at the Empty Tomb",
+    artistCredit: "User-supplied flagship concept art",
+    cardSet: "War of the Watchers",
+    flavorText:
+      "She came bearing grief and departed bearing witness to glory.",
+    visualTags: ["empty tomb", "witness", "dawn", "hope"],
+    sourceTier: "Scripture",
+    references: ["John 20:1-18", "Matthew 28:1-10"],
+    theologyNote:
+      "Mary Magdalene is represented as a faithful witness to the resurrection, with the mystery treated reverently.",
+    gameplayRole: "Support",
+  },
+  {
+    id: "card-archangel-michael",
+    name: "Archangel Michael",
+    cost: [
+      { amount: 2, resource: "Authority" },
+      { amount: 2, resource: "Faith" },
+    ],
+    text: "Deal 14 damage. Gain 12 Guard. Remove 2 Corruption.",
+    type: "Heavenly Host/Judgment",
+    rarity: "Mythic Legendary",
+    archetypeTags: ["Kingdom", "Covenant"],
+    synergyNotes:
+      "A mythic payoff for Kingdom and Covenant decks that combines judgment, protection, and cleansing.",
+    upgradedVersion: "Deal 18 damage. Gain 15 Guard. Remove 3 Corruption.",
+    combatEffect: {
+      damage: 14,
+      guard: 12,
+      removeCorruption: 2,
+      note: "Heavenly authority stands under the command of God.",
+    },
+    imagePath: "/art/cards/archangel-michael.png",
+    artworkTitle: "Archangel Michael",
+    artistCredit: "User-supplied flagship concept art",
+    cardSet: "War of the Watchers",
+    flavorText:
+      "Radiance did not flatter the darkness; it judged, guarded, and passed on.",
+    visualTags: ["archangel", "heavenly host", "radiance", "judgment"],
+    sourceTier: "Scripture",
+    references: ["Daniel 10:13", "Daniel 12:1", "Jude 1:9", "Revelation 12:7-9"],
+    theologyNote:
+      "Michael is depicted as a servant within God's authority. The card avoids angelic worship and frames power as delegated judgment.",
+    gameplayRole: "Judgment",
+  },
   {
     id: "card-sling-stone",
     name: "Sling Stone",

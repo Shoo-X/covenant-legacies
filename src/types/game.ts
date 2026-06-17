@@ -59,6 +59,25 @@ export interface ResourceCost {
 
 export type ArchetypeTag = "Courage" | "Psalm" | "Kingdom" | "Covenant";
 
+export type CardRarity =
+  | "Common"
+  | "Uncommon"
+  | "Rare"
+  | "Legendary"
+  | "Mythic Legendary"
+  | "Mystery";
+
+export type CardSet = "War of the Watchers" | "Core Covenant";
+
+export interface CardArtMetadata {
+  imagePath?: string;
+  artworkTitle?: string;
+  artistCredit?: string;
+  cardSet?: CardSet;
+  flavorText?: string;
+  visualTags?: string[];
+}
+
 export interface CardCombatEffect {
   damage?: number;
   antiGiantDamage?: number;
@@ -78,14 +97,14 @@ export interface CardCombatEffect {
   note?: string;
 }
 
-export interface Card extends SourceBackedContent {
+export interface Card extends SourceBackedContent, CardArtMetadata {
   id: string;
   name: string;
   cost: ResourceCost[];
   isPlayable?: boolean;
   text: string;
   type: string;
-  rarity: "Common" | "Uncommon" | "Rare" | "Mystery";
+  rarity: CardRarity;
   archetypeTags?: ArchetypeTag[];
   synergyNotes?: string;
   upgradeId?: string;
@@ -214,4 +233,6 @@ export type GameScreen =
   | "mystery"
   | "reward"
   | "memorial-reward"
+  | "collection"
+  | "gallery"
   | "codex";

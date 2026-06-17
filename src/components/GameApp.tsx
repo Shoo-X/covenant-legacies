@@ -10,6 +10,8 @@ import { mysteryEncounters } from "@/data/mysteryEncounters";
 import { LandingPage } from "@/components/LandingPage";
 import { CombatScreen } from "@/game/screens/CombatScreen";
 import { CodexScreen } from "@/game/screens/CodexScreen";
+import { CollectionScreen } from "@/game/screens/CollectionScreen";
+import { GalleryScreen } from "@/game/screens/GalleryScreen";
 import { HeroSelectScreen } from "@/game/screens/HeroSelectScreen";
 import { HomeScreen } from "@/game/screens/HomeScreen";
 import { MapScreen } from "@/game/screens/MapScreen";
@@ -131,7 +133,7 @@ export function GameApp() {
     setScreen("reward");
   }
 
-  function addRewardCard(cardId: string) {
+  function addCardToRunDeck(cardId: string) {
     setRunDeck((current) => {
       const existing = current.find((entry) => entry.cardId === cardId);
 
@@ -145,6 +147,30 @@ export function GameApp() {
 
       return [...current, { cardId, quantity: 1 }];
     });
+  }
+
+  function removeCardFromRunDeck(cardId: string) {
+    setRunDeck((current) => {
+      const existing = current.find((entry) => entry.cardId === cardId);
+
+      if (!existing) {
+        return current;
+      }
+
+      if (existing.quantity <= 1) {
+        return current.filter((entry) => entry.cardId !== cardId);
+      }
+
+      return current.map((entry) =>
+        entry.cardId === cardId
+          ? { ...entry, quantity: entry.quantity - 1 }
+          : entry,
+      );
+    });
+  }
+
+  function addRewardCard(cardId: string) {
+    addCardToRunDeck(cardId);
     setScreen("map");
   }
 
@@ -270,6 +296,14 @@ export function GameApp() {
           rewardCards={rewardCards}
         />
       )}
+      {screen === "collection" && (
+        <CollectionScreen
+          onAddToDeck={addCardToRunDeck}
+          onRemoveFromDeck={removeCardFromRunDeck}
+          runDeck={runDeck}
+        />
+      )}
+      {screen === "gallery" && <GalleryScreen />}
       {screen === "codex" && (
         <CodexScreen
           runMemorials={getRunMemorials()}

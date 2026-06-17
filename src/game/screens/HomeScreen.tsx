@@ -1,4 +1,6 @@
+import { CardArtwork } from "@/components/CardArtwork";
 import { encounters } from "@/data/encounters";
+import { cards, showcaseCardIds } from "@/data/cards";
 import { heroes } from "@/data/heroes";
 import { GamePanel } from "@/components/GamePanel";
 import { OrnamentalDivider } from "@/components/OrnamentalDivider";
@@ -11,13 +13,29 @@ interface HomeScreenProps {
 }
 
 export function HomeScreen({ onNavigate }: HomeScreenProps) {
+  const showcaseCards = showcaseCardIds
+    .map((id) => cards.find((card) => card.id === id))
+    .filter((card): card is NonNullable<typeof card> => Boolean(card));
+  const featuredCard = showcaseCards[1] ?? showcaseCards[0];
+
   return (
     <ScreenFrame>
-      <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <div className="home-screen-grid">
+        <GamePanel className="home-identity-panel">
+          {featuredCard && (
+            <CardArtwork card={featuredCard} priority variant="banner" />
+          )}
+          <div className="home-identity-copy">
+            <p>Covenant: Legacies</p>
+            <h2>COVENANT: LEGACIES</h2>
+            <span>A Biblical Fantasy Trading Card Game</span>
+          </div>
+        </GamePanel>
+
         <GamePanel className="flex flex-col justify-between p-6 md:p-8">
           <div>
             <p className="text-xs uppercase tracking-[0.34em] text-[var(--color-gold)]">
-              Sanctuary Gate
+              Sanctuary Gate / War of the Watchers
             </p>
             <h2 className="mt-3 max-w-3xl text-4xl font-black leading-[0.95] text-[#fff3cf] md:text-6xl">
               Prepare the covenant company.
@@ -29,12 +47,18 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
             </p>
           </div>
 
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
+          <div className="mt-6 grid gap-3 md:grid-cols-5">
             <PrimaryButton onClick={() => onNavigate("hero-select")}>
               Choose Hero
             </PrimaryButton>
             <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
               View Map
+            </PrimaryButton>
+            <PrimaryButton onClick={() => onNavigate("collection")} tone="secondary">
+              Collection
+            </PrimaryButton>
+            <PrimaryButton onClick={() => onNavigate("gallery")} tone="secondary">
+              Gallery
             </PrimaryButton>
             <PrimaryButton onClick={() => onNavigate("codex")} tone="secondary">
               Codex
@@ -49,6 +73,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
           <dl className="mt-5 grid gap-3">
             <RunFact label="Heroes" value={heroes.length} />
             <RunFact label="Encounters" value={encounters.length} />
+            <RunFact label="Showcase Art" value={showcaseCards.length} />
             <RunFact label="Campaign" value="The Valley of the Giant" />
             <RunFact label="Current Shell" value="Full-screen game UI" />
           </dl>

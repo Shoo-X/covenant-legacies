@@ -1,4 +1,5 @@
 import { formatCardCost } from "@/game/cardText";
+import { CardArtwork } from "@/components/CardArtwork";
 import type { Card } from "@/types/game";
 
 interface CollectibleCardProps {
@@ -11,7 +12,7 @@ interface CollectibleCardProps {
   onFocus?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-  size?: "reward" | "hand";
+  size?: "reward" | "hand" | "collection" | "viewer";
 }
 
 function getCardTone(card: Card) {
@@ -58,6 +59,10 @@ function getArtSymbol(card: Card) {
   return "altar";
 }
 
+function getRarityClass(card: Card) {
+  return card.rarity.toLowerCase().replaceAll(" ", "-");
+}
+
 export function CollectibleCard({
   card,
   disabled = false,
@@ -72,10 +77,11 @@ export function CollectibleCard({
 }: CollectibleCardProps) {
   const tone = getCardTone(card);
   const artSymbol = getArtSymbol(card);
+  const rarityClass = getRarityClass(card);
 
   return (
     <button
-      className={`tcg-card tcg-card-${size} tcg-card-${tone} ${
+      className={`tcg-card tcg-card-${size} tcg-card-${tone} tcg-card-rarity-${rarityClass} ${
         isPlayable ? "is-playable" : "is-unplayable"
       } ${isSelected ? "is-selected" : ""}`}
       disabled={disabled || !isPlayable}
@@ -93,14 +99,18 @@ export function CollectibleCard({
           <span>{formatCardCost(card)}</span>
         </div>
 
-        <div className={`tcg-card-art tcg-card-art-${artSymbol}`} aria-hidden="true">
-          <div className="tcg-card-sigil" />
-        </div>
+        <CardArtwork
+          card={card}
+          className={`tcg-card-art tcg-card-art-${artSymbol}`}
+          loading={size === "hand" ? "eager" : "lazy"}
+          priority={card.imagePath !== undefined && size === "reward"}
+        />
 
         <div className="tcg-card-type-line">{card.type}</div>
 
         <div className="tcg-card-effect">
           <p>{card.text}</p>
+          {card.flavorText && <em>{card.flavorText}</em>}
         </div>
 
         <div className="tcg-card-footer">

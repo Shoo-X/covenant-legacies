@@ -244,6 +244,40 @@ button {
   border: 1px solid rgba(215, 180, 93, 0.22);
 }
 
+.landing-showcase-frame .card-artwork-banner {
+  position: absolute;
+  inset: 0;
+}
+
+.landing-showcase-frame::after,
+.home-identity-panel::after {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 243, 207, 0.34), transparent 18rem),
+    linear-gradient(180deg, transparent 42%, rgba(0, 0, 0, 0.78) 100%);
+  animation: sacred-pulse 6.5s ease-in-out infinite;
+}
+
+.landing-showcase-strip {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 5rem));
+  gap: 0.55rem;
+}
+
+.landing-showcase-strip .card-artwork-gallery {
+  aspect-ratio: 5 / 7;
+  border: 1px solid rgba(255, 243, 207, 0.24);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.42);
+}
+
 .key-art-scene,
 .key-art-scene > * {
   position: absolute;
@@ -347,6 +381,29 @@ button {
     box-shadow 180ms ease;
 }
 
+.tcg-card::before,
+.tcg-card::after {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+}
+
+.tcg-card::before {
+  opacity: 0.42;
+  background:
+    linear-gradient(90deg, transparent 0 9%, rgba(255, 255, 255, 0.08) 10%, transparent 11% 89%, rgba(255, 255, 255, 0.08) 90%, transparent 91%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 18% 82%, rgba(0, 0, 0, 0.24));
+  mix-blend-mode: overlay;
+}
+
+.tcg-card::after {
+  inset: 0.34rem;
+  border: 1px solid rgba(255, 243, 207, 0.12);
+}
+
 .tcg-card:hover,
 .tcg-card:focus-visible,
 .tcg-card.is-selected {
@@ -370,8 +427,10 @@ button {
 }
 
 .tcg-card-inner {
+  position: relative;
+  z-index: 3;
   display: grid;
-  grid-template-rows: auto 34% auto minmax(0, 1fr) auto;
+  grid-template-rows: auto 38% auto minmax(0, 1fr) auto;
   gap: 0.45rem;
   width: 100%;
   height: 100%;
@@ -424,6 +483,46 @@ button {
     radial-gradient(circle at 50% 32%, rgba(93, 183, 232, 0.14), transparent 34%),
     linear-gradient(155deg, rgba(215, 180, 93, 0.12), rgba(8, 7, 5, 0.52));
   box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.44);
+}
+
+.card-artwork {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 32%, rgba(93, 183, 232, 0.14), transparent 34%),
+    linear-gradient(155deg, rgba(215, 180, 93, 0.12), rgba(8, 7, 5, 0.52));
+}
+
+.card-artwork-image {
+  object-fit: cover;
+}
+
+.card-artwork-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 28%, transparent 24%, rgba(0, 0, 0, 0.18) 72%),
+    linear-gradient(180deg, rgba(255, 243, 207, 0.14), transparent 24% 68%, rgba(0, 0, 0, 0.34));
+}
+
+.card-artwork-placeholder {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  text-align: center;
+}
+
+.card-artwork-placeholder span {
+  color: rgba(255, 243, 207, 0.62);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.card-artwork-gallery,
+.card-artwork-banner {
+  width: 100%;
+  height: 100%;
 }
 
 .tcg-card-art::before,
@@ -515,6 +614,14 @@ button {
   -webkit-line-clamp: 5;
 }
 
+.tcg-card-effect em {
+  display: none;
+  margin-top: 0.35rem;
+  color: rgba(215, 180, 93, 0.66);
+  font-size: 0.66rem;
+  line-height: 1.28;
+}
+
 .tcg-card-footer {
   display: flex;
   justify-content: space-between;
@@ -525,6 +632,70 @@ button {
 .tcg-card-mystery {
   background:
     linear-gradient(145deg, rgba(124, 218, 255, 0.5), rgba(215, 180, 93, 0.9) 42%, rgba(19, 15, 13, 0.98) 78%);
+}
+
+.tcg-card-rarity-common {
+  background:
+    linear-gradient(145deg, rgba(155, 106, 50, 0.82), rgba(70, 56, 43, 0.96) 42%, rgba(19, 15, 13, 0.98) 78%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 7px);
+}
+
+.tcg-card-rarity-uncommon {
+  background:
+    linear-gradient(145deg, rgba(195, 207, 216, 0.88), rgba(87, 101, 111, 0.88) 42%, rgba(19, 15, 13, 0.98) 78%);
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.34),
+    0 0 24px rgba(154, 209, 230, 0.12);
+}
+
+.tcg-card-rarity-rare {
+  background:
+    linear-gradient(145deg, rgba(255, 224, 145, 0.94), rgba(215, 180, 93, 0.9) 42%, rgba(43, 28, 15, 0.98) 78%);
+  box-shadow:
+    0 22px 54px rgba(0, 0, 0, 0.38),
+    0 0 30px rgba(215, 180, 93, 0.16);
+}
+
+.tcg-card-rarity-legendary {
+  background:
+    conic-gradient(from 120deg, rgba(255, 243, 207, 0.92), rgba(215, 180, 93, 0.96), rgba(96, 55, 23, 0.94), rgba(255, 243, 207, 0.92));
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.46),
+    0 0 42px rgba(215, 180, 93, 0.2);
+  animation: legendary-aura 5.4s ease-in-out infinite;
+}
+
+.tcg-card-rarity-legendary .tcg-card-inner {
+  background:
+    linear-gradient(180deg, rgba(50, 33, 18, 0.98), rgba(12, 10, 10, 0.98)),
+    radial-gradient(circle at 50% 0, rgba(215, 180, 93, 0.2), transparent 44%);
+}
+
+.tcg-card-rarity-mythic-legendary {
+  clip-path: polygon(50% 0, 96% 5%, 100% 50%, 94% 96%, 50% 100%, 6% 96%, 0 50%, 4% 5%);
+  background:
+    conic-gradient(from 0deg, rgba(255, 243, 207, 1), rgba(93, 183, 232, 0.9), rgba(215, 180, 93, 1), rgba(255, 243, 207, 1));
+  box-shadow:
+    0 32px 84px rgba(0, 0, 0, 0.52),
+    0 0 56px rgba(93, 183, 232, 0.22),
+    0 0 42px rgba(215, 180, 93, 0.28);
+  animation: mythic-radiance 4.8s ease-in-out infinite;
+}
+
+.tcg-card-rarity-mythic-legendary .tcg-card-inner {
+  clip-path: polygon(50% 0, 96% 5%, 100% 50%, 94% 96%, 50% 100%, 6% 96%, 0 50%, 4% 5%);
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 243, 207, 0.24), transparent 42%),
+    linear-gradient(180deg, rgba(30, 29, 31, 0.98), rgba(9, 9, 12, 0.98));
+}
+
+.tcg-card-rarity-mythic-legendary::before {
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 243, 207, 0.52) 0 0.1rem, transparent 0.12rem),
+    radial-gradient(circle at 76% 34%, rgba(93, 183, 232, 0.5) 0 0.09rem, transparent 0.11rem),
+    radial-gradient(circle at 62% 78%, rgba(215, 180, 93, 0.48) 0 0.11rem, transparent 0.13rem);
+  animation: particle-drift 5.5s ease-in-out infinite alternate;
+  opacity: 0.8;
 }
 
 .tcg-card-forbidden {
@@ -546,6 +717,21 @@ button {
   flex: 0 0 8.4rem;
   height: calc(100% - 1.35rem);
   border-radius: 0.44rem;
+}
+
+.tcg-card-collection {
+  width: 100%;
+}
+
+.tcg-card-viewer {
+  width: min(100%, 22rem);
+}
+
+.tcg-card-viewer .tcg-card-effect em {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .tcg-card-hand .tcg-card-inner {
@@ -1222,7 +1408,500 @@ button {
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.58);
 }
 
+.home-screen-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr) minmax(17rem, 0.48fr);
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.home-identity-panel {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.home-identity-panel .card-artwork-banner {
+  position: absolute;
+  inset: 0;
+}
+
+.home-identity-copy {
+  position: absolute;
+  left: 1.2rem;
+  right: 1.2rem;
+  bottom: 1.2rem;
+  z-index: 5;
+}
+
+.home-identity-copy p,
+.home-identity-copy span,
+.collection-title-block p,
+.collection-panel-eyebrow,
+.gallery-header-panel p,
+.gallery-fullscreen-copy p:first-child {
+  color: var(--color-gold);
+  font-size: 0.68rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.home-identity-copy h2 {
+  margin-top: 0.35rem;
+  color: #fff3cf;
+  font-size: clamp(2rem, 3.2vw, 3.5rem);
+  font-weight: 950;
+  line-height: 0.9;
+  text-shadow: 0 18px 42px rgba(0, 0, 0, 0.7);
+}
+
+.home-identity-copy span {
+  display: block;
+  margin-top: 0.7rem;
+  color: rgba(241, 228, 194, 0.82);
+  letter-spacing: 0.14em;
+}
+
+.collection-screen {
+  display: grid;
+  grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr) minmax(16rem, 20rem);
+  gap: 0.75rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.collection-toolbar,
+.collection-deck-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.collection-title-block h2,
+.gallery-header-panel h2 {
+  margin-top: 0.35rem;
+  color: #fff3cf;
+  font-size: clamp(1.8rem, 2.5vw, 2.6rem);
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.collection-mode-toggle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.collection-mode-toggle button,
+.collection-filter-rail button,
+.collection-deck-actions button {
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(241, 228, 194, 0.68);
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.collection-mode-toggle button {
+  min-height: 2.45rem;
+  padding: 0.45rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.collection-mode-toggle button.is-active,
+.collection-filter-rail button.is-active {
+  border-color: rgba(255, 226, 150, 0.66);
+  background: rgba(215, 180, 93, 0.16);
+  color: #fff3cf;
+}
+
+.collection-search span,
+.collection-filter-rail > span,
+.gallery-controls span {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: rgba(241, 228, 194, 0.52);
+  font-size: 0.64rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.collection-search input,
+.gallery-controls select {
+  width: 100%;
+  min-height: 2.45rem;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  border-radius: 0.18rem;
+  background: rgba(8, 7, 5, 0.42);
+  color: #fff3cf;
+  padding: 0 0.75rem;
+  outline: none;
+}
+
+.collection-search input:focus,
+.gallery-controls select:focus {
+  border-color: rgba(93, 183, 232, 0.58);
+  box-shadow: 0 0 0 2px rgba(93, 183, 232, 0.12);
+}
+
+.collection-filter-rail div {
+  display: flex;
+  max-height: 8.8rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  overflow: auto;
+}
+
+.collection-filter-rail button {
+  border-radius: 999px;
+  padding: 0.36rem 0.55rem;
+  font-size: 0.62rem;
+}
+
+.collection-card-stage {
+  min-height: 0;
+  padding: 1rem;
+}
+
+.collection-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.collection-card-cell {
+  min-width: 0;
+}
+
+.collection-card-cell .tcg-card:hover,
+.collection-card-cell .tcg-card:focus-visible {
+  transform: translateY(-0.45rem) scale(1.035);
+}
+
+.collection-deck-actions {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) 2.4rem;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+
+.collection-deck-actions button {
+  min-height: 2rem;
+  border-radius: 999px;
+  color: #fff3cf;
+  font-size: 1.1rem;
+}
+
+.collection-deck-actions span {
+  color: rgba(241, 228, 194, 0.72);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.collection-deck-panel h3 {
+  color: #fff3cf;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.collection-panel-copy {
+  color: rgba(241, 228, 194, 0.7);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.collection-deck-list {
+  display: grid;
+  min-height: 0;
+  gap: 0.42rem;
+}
+
+.collection-deck-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  border: 1px solid rgba(215, 180, 93, 0.14);
+  border-radius: 0.22rem;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.65rem;
+  color: rgba(241, 228, 194, 0.76);
+  text-align: left;
+}
+
+.collection-deck-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.collection-deck-row strong {
+  color: var(--color-gold);
+}
+
+.card-detail-overlay,
+.gallery-fullscreen {
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.74);
+  backdrop-filter: blur(6px);
+}
+
+.card-detail-modal {
+  display: grid;
+  grid-template-columns: minmax(16rem, 24rem) minmax(0, 36rem);
+  gap: 1rem;
+  width: min(72rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  min-height: 0;
+  border: 1px solid rgba(215, 180, 93, 0.32);
+  border-radius: var(--panel-radius);
+  background: linear-gradient(180deg, rgba(28, 23, 20, 0.98), rgba(9, 9, 12, 0.99));
+  padding: 1rem;
+  box-shadow: 0 42px 100px rgba(0, 0, 0, 0.64);
+}
+
+.card-detail-preview {
+  display: grid;
+  min-height: 0;
+  place-items: center;
+}
+
+.card-detail-copy {
+  min-height: 0;
+  padding: 0.4rem 0.3rem 0.4rem 0;
+}
+
+.card-detail-copy h2,
+.gallery-fullscreen-copy h2 {
+  color: #fff3cf;
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 900;
+  line-height: 0.98;
+}
+
+.card-detail-art {
+  height: 12rem;
+  margin: 1rem 0;
+  border: 1px solid rgba(215, 180, 93, 0.18);
+  border-radius: 0.25rem;
+}
+
+.card-detail-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 1rem 0;
+}
+
+.card-detail-facts div,
+.card-detail-copy section {
+  border: 1px solid rgba(215, 180, 93, 0.14);
+  border-radius: 0.22rem;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.75rem;
+}
+
+.card-detail-facts dt,
+.card-detail-copy h3 {
+  color: rgba(215, 180, 93, 0.76);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.card-detail-facts dd,
+.card-detail-copy p,
+.gallery-fullscreen-copy p {
+  margin-top: 0.35rem;
+  color: rgba(241, 228, 194, 0.76);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.card-detail-copy section + section {
+  margin-top: 0.55rem;
+}
+
+.card-detail-flavor,
+.gallery-flavor {
+  color: #fff3cf;
+  font-style: italic;
+}
+
+.card-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.card-tag-row span {
+  border: 1px solid rgba(93, 183, 232, 0.26);
+  border-radius: 999px;
+  background: rgba(93, 183, 232, 0.08);
+  padding: 0.32rem 0.55rem;
+  color: #dcefff;
+  font-size: 0.68rem;
+}
+
+.card-detail-credit {
+  color: rgba(241, 228, 194, 0.46);
+  font-size: 0.75rem;
+}
+
+.gallery-screen {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.gallery-header-panel {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.gallery-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: 1rem;
+  min-height: 0;
+  padding: 0.15rem 0.15rem 1rem;
+}
+
+.gallery-art-tile {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  min-height: 26rem;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.22);
+  border-radius: var(--panel-radius);
+  background: linear-gradient(180deg, rgba(35, 27, 19, 0.94), rgba(9, 9, 12, 0.98));
+  padding: 0.65rem;
+  text-align: left;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.36);
+  transition:
+    border-color 160ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.gallery-art-tile:hover,
+.gallery-art-tile:focus-visible {
+  z-index: 4;
+  border-color: rgba(255, 226, 150, 0.64);
+  box-shadow: 0 30px 78px rgba(0, 0, 0, 0.52), 0 0 42px rgba(215, 180, 93, 0.16);
+  transform: translateY(-0.35rem);
+}
+
+.gallery-art-tile .card-artwork-gallery {
+  min-height: 18rem;
+  border-radius: 0.24rem;
+}
+
+.gallery-art-tile span {
+  margin-top: 0.65rem;
+  color: var(--color-gold);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.gallery-art-tile strong {
+  margin-top: 0.25rem;
+  color: #fff3cf;
+  font-size: 1.25rem;
+  line-height: 1.08;
+}
+
+.gallery-art-tile em {
+  display: -webkit-box;
+  min-height: 0;
+  margin-top: 0.45rem;
+  overflow: hidden;
+  color: rgba(241, 228, 194, 0.68);
+  font-size: 0.86rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.gallery-fullscreen {
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.gallery-fullscreen-art {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(215, 180, 93, 0.28);
+  border-radius: var(--panel-radius);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, 0.54);
+}
+
+.gallery-fullscreen-copy {
+  max-height: 100%;
+  min-height: 0;
+  padding: 1rem;
+}
+
 @media (max-width: 1180px) {
+  .landing-title-screen {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.8fr);
+  }
+
+  .home-screen-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.52fr);
+    grid-template-rows: minmax(13rem, 0.7fr) minmax(0, 1fr);
+  }
+
+  .home-identity-panel {
+    grid-column: 1 / -1;
+  }
+
+  .collection-screen {
+    grid-template-columns: minmax(13rem, 16rem) minmax(0, 1fr);
+  }
+
+  .collection-deck-panel {
+    display: none;
+  }
+
+  .collection-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  }
+
   .combat-board-grid {
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 18rem);
   }
@@ -1245,6 +1924,115 @@ button {
 
   .combat-memorial-bank {
     display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .landing-title-screen {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 0.95fr) minmax(15rem, 1.05fr);
+  }
+
+  .landing-copy-panel {
+    max-width: none;
+  }
+
+  .landing-title {
+    font-size: clamp(2.25rem, 9vw, 3.4rem);
+  }
+
+  .landing-title span {
+    font-size: clamp(1.9rem, 8vw, 3rem);
+  }
+
+  .landing-showcase-strip {
+    grid-template-columns: repeat(3, minmax(0, 4rem));
+  }
+
+  .home-screen-grid,
+  .collection-screen,
+  .gallery-header-panel,
+  .gallery-fullscreen {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-screen-grid {
+    grid-template-rows: minmax(11rem, 0.62fr) minmax(0, 1fr) auto;
+  }
+
+  .collection-toolbar {
+    max-height: 15rem;
+  }
+
+  .collection-card-stage {
+    min-height: 0;
+  }
+
+  .collection-card-grid {
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  }
+
+  .card-detail-modal {
+    grid-template-columns: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .card-detail-preview {
+    display: none;
+  }
+
+  .gallery-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+
+  .gallery-fullscreen-art {
+    min-height: 0;
+  }
+
+  .gallery-fullscreen-copy {
+    max-height: 42dvh;
+  }
+}
+
+@media (max-width: 720px) {
+  .game-topbar {
+    --topbar-height: 4.4rem;
+  }
+
+  .tcg-card-inner {
+    gap: 0.32rem;
+    padding: 0.5rem;
+  }
+
+  .tcg-card-header h3 {
+    font-size: 0.82rem;
+  }
+
+  .tcg-card-effect p {
+    font-size: 0.68rem;
+    -webkit-line-clamp: 4;
+  }
+
+  .collection-toolbar {
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .collection-filter-rail div {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .gallery-art-tile {
+    min-height: 21rem;
+  }
+
+  .gallery-art-tile .card-artwork-gallery {
+    min-height: 13rem;
   }
 }
 
@@ -1280,5 +2068,51 @@ button {
   50% {
     opacity: 1;
     transform: scale(1.035);
+  }
+}
+
+@keyframes legendary-aura {
+  0%,
+  100% {
+    box-shadow:
+      0 28px 72px rgba(0, 0, 0, 0.46),
+      0 0 34px rgba(215, 180, 93, 0.18);
+  }
+
+  50% {
+    box-shadow:
+      0 30px 78px rgba(0, 0, 0, 0.5),
+      0 0 48px rgba(215, 180, 93, 0.28);
+  }
+}
+
+@keyframes mythic-radiance {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+
+  50% {
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes particle-drift {
+  from {
+    transform: translate3d(-0.2rem, 0.15rem, 0);
+  }
+
+  to {
+    transform: translate3d(0.25rem, -0.2rem, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
