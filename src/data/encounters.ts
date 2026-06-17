@@ -1,0 +1,92 @@
+import type { Encounter } from "@/types/game";
+
+export const encounters: Encounter[] = [
+  {
+    id: "encounter-valley-battle-1",
+    name: "Raiders at the Valley Mouth",
+    nodeType: "Battle",
+    region: "The Valley of the Giant",
+    enemyIds: ["enemy-corrupted-raider"],
+    rewardPreview: "Choose 1 of 3 cards",
+    difficulty: "Low",
+    sourceTier: "Speculative Fiction",
+    references: ["Original encounter"],
+    theologyNote:
+      "A fictional opening fight establishing the valley as morally and physically dangerous.",
+    gameplayRole: "Map Node",
+  },
+  {
+    id: "encounter-valley-battle-2",
+    name: "Priest of the Carved Stone",
+    nodeType: "Battle",
+    region: "The Valley of the Giant",
+    enemyIds: ["enemy-idol-priest"],
+    rewardPreview: "Choose 1 of 3 cards",
+    difficulty: "Medium",
+    sourceTier: "Speculative Fiction",
+    references: ["Original encounter", "Idolatry as broad biblical theme"],
+    theologyNote:
+      "A fictional idolatry encounter that frames false worship as fear and spiritual compromise.",
+    gameplayRole: "Map Node",
+  },
+  {
+    id: "encounter-valley-mystery",
+    name: "Veil at the Valley Road",
+    nodeType: "Mystery Encounter",
+    region: "The Valley of the Giant",
+    enemyIds: [],
+    mysteryEncounterIds: [
+      "mystery-king-priest-of-salem",
+      "mystery-medium-at-endor",
+    ],
+    rewardPreview: "Rare biblical wonder encounter",
+    difficulty: "Low",
+    sourceTier: "Scripture",
+    references: ["Genesis 14", "Psalm 110", "Hebrews 5-7", "1 Samuel 28"],
+    theologyNote:
+      "A conversation-starting mystery node for reverent or cautionary biblical wonder encounters.",
+    gameplayRole: "Map Node",
+  },
+  {
+    id: "encounter-valley-elite",
+    name: "Forge Beneath the Ridge",
+    nodeType: "Elite",
+    region: "The Valley of the Giant",
+    enemyIds: ["enemy-watcher-taught-smith"],
+    rewardPreview: "Choose 1 of 3 cards",
+    difficulty: "High",
+    sourceTier: "Interpretive Tradition",
+    references: ["Genesis 6:1-4 as interpretive inspiration"],
+    theologyNote:
+      "The elite fight treats forbidden teaching as corruption, not spectacle or aspiration.",
+    gameplayRole: "Trial",
+  },
+  {
+    id: "encounter-valley-rest",
+    name: "Spring Beneath the Shepherd's Rock",
+    nodeType: "Rest / Upgrade",
+    region: "The Valley of the Giant",
+    enemyIds: [],
+    rewardPreview: "Future rest and upgrade choice",
+    difficulty: "Low",
+    sourceTier: "Speculative Fiction",
+    references: ["Original encounter", "Psalm 23 as thematic resonance"],
+    theologyNote:
+      "A rest node using shepherd imagery as care and restoration rather than sentimentality.",
+    gameplayRole: "Support",
+  },
+  {
+    id: "encounter-valley-boss",
+    name: "High Place of the Giant",
+    nodeType: "Boss",
+    region: "The Valley of the Giant",
+    enemyIds: ["enemy-giant-of-the-high-place"],
+    rewardPreview: "Campaign victory",
+    difficulty: "Boss",
+    sourceTier: "Speculative Fiction",
+    references: ["Genesis 6:1-4", "1 Samuel 17 as thematic inspiration"],
+    theologyNote:
+      "The boss combines original speculative elements with biblical motifs while remaining separate from named biblical events.",
+    gameplayRole: "Boss",
+  },
+];

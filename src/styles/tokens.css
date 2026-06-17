@@ -1,0 +1,44 @@
+:root {
+  --topbar-height: 4rem;
+  --screen-padding: clamp(0.5rem, 1vw, 1rem);
+  --panel-radius: 0.375rem;
+  --gold: #d7b45d;
+  --bronze: #9b6a32;
+  --parchment: #cbb98f;
+  --sacred-blue: #5db7e8;
+  --corruption-violet: #7f235f;
+  --color-void: #080705;
+  --color-night: #121015;
+  --color-ash: #1f1a17;
+  --color-parchment: #cbb98f;
+  --color-aged-parchment: #8f7a55;
+  --color-bronze: #9b6a32;
+  --color-bronze-deep: #4f2c14;
+  --color-gold: #d7b45d;
+  --color-ember: #9f3d28;
+  --color-indigo: #38435d;
+  --color-sacred-blue: #5db7e8;
+  --color-corruption: #7f235f;
+  --color-ivory: #fff3cf;
+  --color-ink: #f1e4c2;
+  --shadow-panel: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+.covenant-panel {
+  border: 1px solid rgba(215, 180, 93, 0.22);
+  background:
+    linear-gradient(180deg, rgba(35, 27, 19, 0.94), rgba(15, 13, 13, 0.96)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.025) 0,
+      rgba(255, 255, 255, 0.025) 1px,
+      transparent 1px,
+      transparent 9px
+    );
+  box-shadow: var(--shadow-panel);
+}
+
+.covenant-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(215, 180, 93, 0.7), transparent);
+}
