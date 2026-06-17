@@ -2885,7 +2885,7 @@ button {
 .gallery-art-tile {
   position: relative;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto auto auto;
+  grid-template-rows: minmax(0, 1fr) auto auto auto auto auto;
   min-height: 26rem;
   overflow: hidden;
   border: 1px solid rgba(215, 180, 93, 0.22);
@@ -2913,6 +2913,17 @@ button {
   border-radius: 0.24rem;
 }
 
+.gallery-art-concept {
+  border-color: rgba(93, 183, 232, 0.24);
+  background:
+    linear-gradient(180deg, rgba(28, 30, 35, 0.92), rgba(9, 9, 12, 0.98)),
+    radial-gradient(circle at 50% 0%, rgba(93, 183, 232, 0.16), transparent 45%);
+}
+
+.gallery-art-sensitivity-high {
+  border-color: rgba(255, 226, 150, 0.3);
+}
+
 .gallery-art-tile span {
   margin-top: 0.65rem;
   color: var(--color-gold);
@@ -2928,6 +2939,13 @@ button {
   line-height: 1.08;
 }
 
+.gallery-art-tile small {
+  margin-top: 0.22rem;
+  color: rgba(241, 228, 194, 0.5);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
 .gallery-art-tile em {
   display: -webkit-box;
   min-height: 0;
@@ -2938,6 +2956,25 @@ button {
   line-height: 1.45;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.gallery-tile-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.55rem;
+}
+
+.gallery-tile-tags b {
+  border: 1px solid rgba(93, 183, 232, 0.2);
+  border-radius: 999px;
+  background: rgba(93, 183, 232, 0.06);
+  padding: 0.2rem 0.38rem;
+  color: rgba(220, 239, 255, 0.72);
+  font-size: 0.58rem;
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .gallery-fullscreen {
