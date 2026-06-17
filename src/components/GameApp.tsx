@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { cards } from "@/data/cards";
+import { enemies } from "@/data/enemies";
 import { encounters } from "@/data/encounters";
 import { heroes } from "@/data/heroes";
 import { memorials } from "@/data/memorials";
@@ -64,6 +65,11 @@ export function GameApp() {
   const activeCombatEncounter = encounters.find(
     (encounter) => encounter.id === activeCombatEncounterId,
   );
+  const activeCombatIsReady = Boolean(
+    activeCombatEncounter &&
+      hasValidCombatEnemy(activeCombatEncounter) &&
+      hasValidRunDeck(runDeck),
+  );
   const selectedMysteryEncounter =
     mysteryEncounters.find((encounter) => encounter.id === selectedMysteryEncounterId) ??
     mysteryEncounters[0];
@@ -95,6 +101,10 @@ export function GameApp() {
   }
 
   function navigate(screenId: GameScreen) {
+    if (screen === "combat" && screenId !== "combat") {
+      setActiveCombatEncounterId(undefined);
+    }
+
     setScreen(screenId);
   }
 
@@ -110,6 +120,12 @@ export function GameApp() {
     }
 
     if (encounter.enemyIds.length > 0) {
+      if (!hasValidCombatEnemy(encounter) || !hasValidRunDeck(runDeck)) {
+        setActiveCombatEncounterId(undefined);
+        setScreen("map");
+        return;
+      }
+
       setActiveCombatEncounterId(encounter.id);
       setScreen("combat");
     }
@@ -209,6 +225,12 @@ export function GameApp() {
 
   function addRewardCard(cardId: string) {
     addCardToRunDeck(cardId);
+    setRewardCards([]);
+    setScreen("map");
+  }
+
+  function skipReward() {
+    setRewardCards([]);
     setScreen("map");
   }
 
@@ -303,7 +325,7 @@ export function GameApp() {
           />
         ))}
       {screen === "combat" && (
-        runStarted && activeCombatEncounter ? (
+        runStarted && activeCombatEncounter && activeCombatIsReady ? (
           <CombatScreen
             encounter={activeCombatEncounter}
             key={activeCombatEncounter.id}
@@ -317,7 +339,7 @@ export function GameApp() {
           <RunRequiredState
             body={
               runStarted
-                ? "Select an available encounter from The Valley of the Giant before entering combat."
+                ? "Select an available encounter from The Valley of the Giant with a valid run deck before entering combat."
                 : "Start a run before entering combat."
             }
             cta={runStarted ? "Open Map" : "Choose Hero"}
@@ -362,7 +384,7 @@ export function GameApp() {
         runStarted && rewardCards.length > 0 ? (
           <RewardScreen
             onChooseCard={addRewardCard}
-            onSkip={() => setScreen("map")}
+            onSkip={skipReward}
             rewardCards={rewardCards}
           />
         ) : (
@@ -389,6 +411,19 @@ export function GameApp() {
         />
       )}
     </AppShell>
+  );
+}
+
+function hasValidCombatEnemy(encounter: Encounter) {
+  return encounter.enemyIds.some((enemyId) =>
+    enemies.some((enemy) => enemy.id === enemyId),
+  );
+}
+
+function hasValidRunDeck(runDeck: StartingDeckCard[]) {
+  return runDeck.some((entry) =>
+    entry.quantity > 0 &&
+    cards.some((card) => card.id === entry.cardId && card.isPlayable !== false),
   );
 }
 
