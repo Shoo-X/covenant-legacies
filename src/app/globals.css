@@ -2558,6 +2558,10 @@ button {
   animation: combat-intent-pulse 980ms ease-out both;
 }
 
+.combat-intent-next-reveal {
+  animation: combat-next-intent-reveal 680ms ease-out both;
+}
+
 .combat-intent-high-danger {
   border-color: rgba(255, 90, 70, 0.68);
   background:
@@ -2768,7 +2772,7 @@ button {
 
 .combat-turn-banner {
   top: 0.72rem;
-  animation: combat-turn-banner-in 900ms ease-out both;
+  animation: combat-turn-banner-in 560ms ease-out both;
 }
 
 .combat-turn-enemy {
@@ -2809,7 +2813,7 @@ button {
   background:
     radial-gradient(circle at 50% 0, rgba(255, 226, 150, 0.1), transparent 5rem),
     linear-gradient(180deg, rgba(8, 7, 5, 0.82), rgba(29, 19, 15, 0.76));
-  animation: combat-action-title-in 900ms ease-out both;
+  animation: combat-action-title-in 560ms ease-out both;
 }
 
 .combat-action-title strong {
@@ -2970,7 +2974,7 @@ button {
   text-align: center;
   text-transform: uppercase;
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.36);
-  animation: combat-popup-rise 1250ms ease-out both;
+  animation: combat-popup-rise 820ms ease-out both;
 }
 
 .combat-popup-damage {
@@ -3012,6 +3016,23 @@ button {
   top: 31%;
   color: #f0d4ff;
   border-color: rgba(127, 35, 95, 0.5);
+}
+
+.combat-popup-corruption {
+  right: 17%;
+  top: 40%;
+  color: #ffd7f0;
+  border-color: rgba(127, 35, 95, 0.56);
+  background:
+    radial-gradient(circle at 50% 0, rgba(127, 35, 95, 0.22), transparent 3rem),
+    rgba(8, 7, 5, 0.78);
+}
+
+.combat-popup-enemy-guard {
+  right: 18%;
+  top: 19%;
+  color: #fff3cf;
+  border-color: rgba(215, 180, 93, 0.46);
 }
 
 .combat-played-card-cue {
@@ -3383,9 +3404,9 @@ button {
 
 .combat-log-entry-latest {
   box-shadow:
-    inset 0 0 0 1px rgba(255, 243, 207, 0.08),
-    0 0 18px rgba(215, 180, 93, 0.08);
-  animation: combat-log-new 620ms ease-out both;
+    inset 0 0 0 1px rgba(255, 243, 207, 0.14),
+    0 0 22px rgba(215, 180, 93, 0.12);
+  animation: combat-log-new 780ms ease-out both;
 }
 
 .combat-result-overlay {
@@ -4656,6 +4677,24 @@ button {
       inset 0 0 0 1px rgba(255, 226, 150, 0.12),
       0 0 30px rgba(159, 61, 40, 0.24);
     transform: translateY(-1px);
+  }
+}
+
+@keyframes combat-next-intent-reveal {
+  0% {
+    border-color: rgba(93, 183, 232, 0.24);
+    box-shadow: 0 0 0 rgba(93, 183, 232, 0);
+    transform: translateY(0.12rem);
+  }
+
+  45% {
+    border-color: rgba(93, 183, 232, 0.48);
+    box-shadow: 0 0 24px rgba(93, 183, 232, 0.16);
+    transform: translateY(-1px);
+  }
+
+  100% {
+    transform: translateY(0);
   }
 }
 

@@ -40,6 +40,10 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
     guardGain: step.guard,
     iconTone: getIntentTone(step.intentType),
     intentType: step.intentType,
+    resourceChanges:
+      step.corruptionIfAltarActive && !state.destroyedAltarOrStructure
+        ? { corruption: step.corruptionIfAltarActive }
+        : undefined,
     statusesApplied: step.statusesApplied,
     summary: summaryParts.join(" - "),
   };
@@ -63,7 +67,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
       damage,
       intentType: intent.intentType,
       logKind: "enemy",
-      logMessage: `${state.enemy.name} begins ${intent.actionName}.`,
+      logMessage: `${state.enemy.name} begins ${intent.actionName}: ${intent.summary}.`,
       presentation: "windup",
       target: "Player",
     }),
@@ -119,7 +123,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
         actionName: step.actionName,
         intentType: step.intentType,
         logKind: "enemy",
-        logMessage: `Player gains ${step.statusesApplied.join(", ")}.`,
+        logMessage: formatStatusesApplied(step.statusesApplied),
         presentation: "status",
         statusesApplied: step.statusesApplied,
         target: "Player",
@@ -164,7 +168,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
         hpDamage,
         intentType: intent.intentType,
         logKind: "damage",
-        logMessage: `Player loses ${hpDamage} health.`,
+        logMessage: `${hpDamage} damage taken.`,
         presentation: "damage",
         target: "Player",
       }),
@@ -188,7 +192,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
         actionName: "Altar Corruption",
         intentType: "Special",
         logKind: "resource",
-        logMessage: `The active altar adds ${step.corruptionIfAltarActive} Corruption.`,
+        logMessage: `+${step.corruptionIfAltarActive} Corruption from the active altar.`,
         presentation: "resource",
         resourceChanges: { corruption: step.corruptionIfAltarActive },
         target: "Player",
@@ -203,7 +207,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
         hpDamage: 3,
         intentType: "Special",
         logKind: "enemy",
-        logMessage: "Shadow of the Watchers deals 3 damage.",
+        logMessage: "Shadow of the Watchers: 3 damage taken.",
         presentation: "damage",
         target: "Player",
       }),
@@ -325,34 +329,34 @@ export function getCombatPresentationDelay(
   if (activeAction) {
     switch (activeAction.presentation) {
       case "windup":
-        return 1250;
+        return 620;
       case "damage":
-        return 1250;
+        return 620;
       case "block":
       case "buff":
       case "status":
-        return 1100;
+        return 560;
       case "cleanup":
       case "intent":
       case "resource":
       case "banner":
-        return 900;
+        return 540;
     }
   }
 
   switch (phase) {
     case "BattleIntro":
-      return 900;
+      return 680;
     case "PlayerTurnStart":
-      return 760;
+      return 560;
     case "PlayerTurnEnd":
-      return 520;
+      return 420;
     case "EnemyTurnStart":
-      return 1050;
+      return 620;
     case "EnemyActing":
-      return 260;
+      return 180;
     case "RoundCleanup":
-      return 900;
+      return 560;
     default:
       return 0;
   }
@@ -396,6 +400,14 @@ function getStepDamage(state: CombatState, baseDamage = 0) {
   }
 
   return baseDamage + state.enemyState.might;
+}
+
+function formatStatusesApplied(statuses: CombatStatusName[]) {
+  if (statuses.length === 1) {
+    return `${statuses[0]} applied.`;
+  }
+
+  return `${statuses.join(", ")} applied.`;
 }
 
 function applyResourceChanges(

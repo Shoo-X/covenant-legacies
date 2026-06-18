@@ -254,7 +254,7 @@ export function CombatScreen({
     (item) => item.kind === "damage" && item.message.includes("enemy health"),
   );
   const latestPlayerDamageFeedback = feedbackByNewest.find(
-    (item) => item.kind === "damage" && item.message.includes("Player loses"),
+    (item) => item.kind === "damage" && item.message.includes("damage taken"),
   );
   const latestGuardFeedback = feedbackByNewest.find(
     (item) => item.kind === "guard" && !item.message.includes("Healed"),
@@ -329,6 +329,8 @@ export function CombatScreen({
                 combat.phase === "EnemyTurnStart" || combat.phase === "EnemyActing"
                   ? "combat-intent-active"
                   : ""
+              } ${
+                combat.phase === "PlayerTurnStart" ? "combat-intent-next-reveal" : ""
               } ${isHighDangerIntent ? "combat-intent-high-danger" : ""}`}
             >
               <span className="combat-intent-icon" aria-hidden="true" />
@@ -336,7 +338,8 @@ export function CombatScreen({
                 <p>Intent</p>
                 <h3>{intentDetails.actionName}</h3>
                 <span>
-                  {intentDetails.intentType} - {intentDetails.summary}
+                  {formatIntentTypeLabel(intentDetails, enemy)} -{" "}
+                  {intentDetails.summary}
                 </span>
               </div>
             </div>
@@ -356,11 +359,11 @@ export function CombatScreen({
             </div>
           </GamePanel>
 
-            <div
-              className={`combat-battlefield-zone combat-battlefield-${getBattlefieldTone(
-                combat.phase,
-              )}`}
-            >
+          <div
+            className={`combat-battlefield-zone combat-battlefield-${getBattlefieldTone(
+              combat.phase,
+            )}`}
+          >
             <div className="combat-valley-bg" aria-hidden="true" />
             <div className="combat-high-place-bg" aria-hidden="true" />
             <div className="combat-battlefield-glow" aria-hidden="true" />
@@ -379,7 +382,7 @@ export function CombatScreen({
                 }`}
                 key={`active-action-${combat.activeAction.id}`}
               >
-                <p>{combat.activeAction.intentType}</p>
+                <p>{formatIntentTypeLabel(combat.activeAction, enemy)}</p>
                 <strong>{combat.activeAction.actionName}</strong>
                 <span>{formatQueuedActionSummary(combat.activeAction)}</span>
               </div>
@@ -426,8 +429,29 @@ export function CombatScreen({
             {lastResolvedAction?.mightChange ? (
               <ActionPopup
                 key={`might-${lastResolvedAction.id}`}
-                label={`+${lastResolvedAction.mightChange} Might`}
+                label={formatMightPopup(lastResolvedAction)}
                 tone="status"
+              />
+            ) : null}
+            {lastResolvedAction?.guardValue ? (
+              <ActionPopup
+                key={`enemy-guard-${lastResolvedAction.id}`}
+                label={`Enemy +${lastResolvedAction.guardValue} Guard`}
+                tone="enemy-guard"
+              />
+            ) : null}
+            {lastResolvedAction?.statusesApplied?.length ? (
+              <ActionPopup
+                key={`status-${lastResolvedAction.id}`}
+                label={formatStatusPopup(lastResolvedAction)}
+                tone="status"
+              />
+            ) : null}
+            {lastResolvedAction?.resourceChanges?.corruption ? (
+              <ActionPopup
+                key={`corruption-${lastResolvedAction.id}`}
+                label={`+${lastResolvedAction.resourceChanges.corruption} Corruption`}
+                tone="corruption"
               />
             ) : null}
             {latestPlayerFeedback && (
@@ -755,7 +779,7 @@ function Meter({ current, label, max, tone }: MeterProps) {
       </div>
       <div className="mt-1 h-2.5 overflow-hidden rounded-full border border-[rgba(215,180,93,0.18)] bg-[rgba(0,0,0,0.36)]">
         <div
-          className={`h-full rounded-full transition-[width] duration-300 ${barClass}`}
+          className={`h-full rounded-full transition-[width] duration-500 ${barClass}`}
           style={{ width }}
         />
       </div>
@@ -926,7 +950,7 @@ function ActionPopup({
   tone,
 }: {
   label: string;
-  tone: "block" | "hit" | "status";
+  tone: "block" | "hit" | "status" | "corruption" | "enemy-guard";
 }) {
   return <span className={`combat-popup combat-popup-${tone}`}>{label}</span>;
 }
@@ -950,15 +974,15 @@ function formatQueuedActionSummary(action: QueuedCombatAction) {
   const parts: string[] = [];
 
   if (action.damage) {
-    parts.push(`${action.damage} incoming damage`);
+    parts.push(`${action.damage} damage`);
   }
 
   if (action.hpDamage) {
-    parts.push(`${action.hpDamage} health damage`);
+    parts.push(`${action.hpDamage} damage taken`);
   }
 
   if (action.blockedValue) {
-    parts.push(`${action.blockedValue} blocked`);
+    parts.push(`${action.blockedValue} blocked by Guard`);
   }
 
   if (action.guardValue) {
@@ -966,11 +990,11 @@ function formatQueuedActionSummary(action: QueuedCombatAction) {
   }
 
   if (action.mightChange) {
-    parts.push(`${action.mightChange > 0 ? "+" : ""}${action.mightChange} Might`);
+    parts.push(formatMightPopup(action));
   }
 
   if (action.statusesApplied?.length) {
-    parts.push(`applies ${action.statusesApplied.join(", ")}`);
+    parts.push(formatStatusPopup(action));
   }
 
   if (action.resourceChanges?.corruption) {
@@ -982,6 +1006,53 @@ function formatQueuedActionSummary(action: QueuedCombatAction) {
   }
 
   return action.logMessage;
+}
+
+function formatMightPopup(action: QueuedCombatAction) {
+  const amount = action.mightChange ?? 0;
+
+  if (amount > 0) {
+    return `${action.target === "Self" ? "Enemy " : ""}+${amount} Might`;
+  }
+
+  return `${action.target === "Self" ? "Enemy " : ""}${amount} Might`;
+}
+
+function formatStatusPopup(action: QueuedCombatAction) {
+  if (!action.statusesApplied?.length) {
+    return "Status applied";
+  }
+
+  if (action.statusesApplied.length === 1) {
+    return `${action.statusesApplied[0]} applied`;
+  }
+
+  return `${action.statusesApplied.join(", ")} applied`;
+}
+
+function formatIntentTypeLabel(
+  intent: {
+    intentType: string;
+    resourceChanges?: Partial<ResourceState>;
+  },
+  enemy: Enemy,
+) {
+  if ((intent.resourceChanges?.corruption ?? 0) > 0) {
+    return "Corrupt";
+  }
+
+  if (
+    enemy.traits.includes("Boss") &&
+    (intent.intentType === "Special" || intent.intentType === "Heavy Attack")
+  ) {
+    return "Boss Action";
+  }
+
+  if (intent.intentType === "Heavy Attack") {
+    return "Heavy";
+  }
+
+  return intent.intentType;
 }
 
 function getIsHighDangerIntent(
