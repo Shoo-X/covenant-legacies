@@ -434,39 +434,59 @@ export function getCombatPresentationDelay(
   }
 
   if (activeAction) {
+    const readabilityBonus = getActionReadabilityBonus(activeAction);
+
     switch (activeAction.presentation) {
       case "windup":
-        return 620;
+        return 1180 + readabilityBonus;
       case "damage":
-        return 620;
+        return 1120 + readabilityBonus;
       case "block":
+        return 980 + readabilityBonus;
       case "buff":
       case "status":
-        return 560;
+        return 1040 + readabilityBonus;
       case "cleanup":
       case "intent":
       case "resource":
       case "banner":
-        return 540;
+        return 980 + readabilityBonus;
     }
   }
 
   switch (phase) {
     case "BattleIntro":
-      return 680;
+      return 900;
     case "PlayerTurnStart":
-      return 560;
+      return 960;
     case "PlayerTurnEnd":
-      return 420;
+      return 760;
     case "EnemyTurnStart":
-      return 620;
+      return 1040;
     case "EnemyActing":
-      return 180;
+      return 260;
     case "RoundCleanup":
-      return 560;
+      return 900;
     default:
       return 0;
   }
+}
+
+function getActionReadabilityBonus(action: QueuedCombatAction) {
+  const isMajorAction =
+    action.intentType === "Heavy Attack" ||
+    action.intentType === "Ritual" ||
+    action.intentType === "Special" ||
+    (action.hpDamage ?? action.damage ?? 0) >= 12 ||
+    (action.blockedValue ?? 0) >= 10 ||
+    Math.abs(action.mightChange ?? 0) >= 2 ||
+    Boolean(action.resourceChanges?.corruption);
+
+  if (action.actionName.includes("Shadow of the Watchers")) {
+    return 520;
+  }
+
+  return isMajorAction ? 340 : 0;
 }
 
 function createQueuedAction(

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
 import { heroes } from "@/data/heroes";
@@ -77,13 +77,24 @@ const feedbackTone: Record<CombatFeedbackKind, string> = {
   system: "border-[rgba(215,180,93,0.24)] text-[rgba(241,228,194,0.7)]",
 };
 
-type CombatCueTone = "attack" | "guard" | "prayer" | "forbidden" | "mystery";
+type CombatCueTone =
+  | "attack"
+  | "covenant"
+  | "forbidden"
+  | "guard"
+  | "mystery"
+  | "prayer"
+  | "wisdom";
 type CombatCueTarget = "enemy" | "player" | "center" | "structure";
+type CombatImpactIntensity = "minor" | "normal" | "heavy" | "boss";
 
 interface PlayedCue {
   cardName: string;
+  effectLabel: string;
+  impact: CombatImpactIntensity;
   id: string;
   target: CombatCueTarget;
+  targetLabel: string;
   tone: CombatCueTone;
 }
 
@@ -136,6 +147,14 @@ export function CombatScreen({
   const activeStructures = combat.structures.filter(
     (structure) => structure.health > 0,
   );
+  const spendableResources = resourceOrder.filter(
+    (resource) => resource !== "Corruption",
+  );
+  const activeStateLabels = [
+    ...(combat.hasFear ? ["Fear"] : []),
+    ...combat.playerStatuses,
+  ];
+  const primaryStructure = activeStructures[0];
   const activeCombatTargetId = getActiveCombatTargetId(
     selectedCombatTargetId,
     activeStructures,
@@ -249,8 +268,11 @@ export function CombatScreen({
       cueIdRef.current += 1;
       setPlayedCue({
         cardName: card.name,
+        effectLabel: getCardCueLabel(card),
+        impact: getCardCueImpact(card),
         id: `${instanceId}-${combat.feedback.length + 1}-${cueIdRef.current}`,
         target: getCardCueTarget(card, targetId),
+        targetLabel: getCardTargetLabel(targetId, enemy, activeStructures),
         tone: getCardCueTone(card),
       });
     }
@@ -285,6 +307,12 @@ export function CombatScreen({
   const latestEnemyDamageFeedback = feedbackByNewest.find(
     (item) => item.kind === "damage" && item.message.includes("enemy health"),
   );
+  const latestStructureDamageFeedback = feedbackByNewest.find(
+    (item) =>
+      item.kind === "damage" &&
+      item.message.includes(" health") &&
+      !item.message.includes("enemy health"),
+  );
   const latestPlayerDamageFeedback = feedbackByNewest.find(
     (item) => item.kind === "damage" && item.message.includes("damage taken"),
   );
@@ -298,6 +326,42 @@ export function CombatScreen({
   const latestResourceFeedback = feedbackByNewest.find(
     (item) => item.kind === "resource",
   );
+  const latestSpendFeedback = feedbackByNewest.find(
+    (item) => item.kind === "resource" && /^-\d+/.test(item.message),
+  );
+  const latestCourageFeedback = feedbackByNewest.find((item) =>
+    item.message.toLowerCase().includes("courage"),
+  );
+  const latestCorruptionFeedback = feedbackByNewest.find((item) =>
+    item.message.toLowerCase().includes("corruption"),
+  );
+  const activeActionImpact = combat.activeAction
+    ? getActionImpactIntensity(combat.activeAction, enemy)
+    : undefined;
+  const latestEnemyDamageImpact = latestEnemyDamageFeedback
+    ? getFeedbackImpactIntensity(latestEnemyDamageFeedback)
+    : undefined;
+  const latestStructureDamageImpact = latestStructureDamageFeedback
+    ? getFeedbackImpactIntensity(latestStructureDamageFeedback)
+    : undefined;
+  const latestPlayerImpact = latestPlayerDamageFeedback
+    ? getFeedbackImpactIntensity(latestPlayerDamageFeedback)
+    : undefined;
+  const latestGuardImpact = latestGuardFeedback
+    ? getFeedbackImpactIntensity(latestGuardFeedback)
+    : undefined;
+  const latestCorruptionImpact =
+    latestCorruptionFeedback && !latestCorruptionFeedback.message.includes("New turn")
+      ? getFeedbackImpactIntensity(latestCorruptionFeedback)
+      : undefined;
+  const currentImpact = getDominantImpact([
+    activeActionImpact,
+    playedCue?.impact,
+    latestEnemyDamageImpact,
+    latestStructureDamageImpact,
+    latestPlayerImpact,
+    latestCorruptionImpact,
+  ]);
   const latestPrayerFeedback =
     feedbackByNewest.find(
       (item) =>
@@ -313,9 +377,23 @@ export function CombatScreen({
 
   return (
     <ScreenFrame>
-      <div className="combat-board-grid">
+      <div
+        className={`combat-board-grid combat-phase-${getCombatPhaseClass(
+          combat.phase,
+        )} ${isPlayerInputLocked ? "combat-input-locked" : ""} ${
+          currentImpact ? `combat-impact-${currentImpact}` : ""
+        } ${playedCue ? `combat-card-impact-${playedCue.tone}` : ""} ${
+          latestCorruptionImpact ? "combat-corruption-warning" : ""
+        } ${latestStructureDamageFeedback ? "combat-structure-impact" : ""}`}
+      >
         <section className="combat-main-board" aria-label="Combat board">
-          <GamePanel className="combat-enemy-zone">
+          <GamePanel
+            className={`combat-enemy-zone ${
+              latestEnemyDamageImpact
+                ? `combat-enemy-hit-${latestEnemyDamageImpact}`
+                : ""
+            }`}
+          >
             <div className="combat-portrait combat-portrait-enemy">
               {enemy.imagePath ? (
                 <CombatArtPortrait
@@ -341,7 +419,7 @@ export function CombatScreen({
               )}
             </div>
 
-            <div className="min-w-0">
+            <div className="combat-enemy-summary">
               <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
                 {enemy.title}
               </p>
@@ -364,10 +442,14 @@ export function CombatScreen({
               } ${
                 combat.phase === "PlayerTurnStart" ? "combat-intent-next-reveal" : ""
               } ${isHighDangerIntent ? "combat-intent-high-danger" : ""}`}
+              title={`Enemy intent: ${intentDetails.actionName}. ${formatIntentTypeLabel(
+                intentDetails,
+                enemy,
+              )}. ${intentDetails.summary}`}
             >
               <span className="combat-intent-icon" aria-hidden="true" />
               <div className="combat-intent-copy">
-                <p>Intent</p>
+                <p>Enemy Intent</p>
                 <h3>{intentDetails.actionName}</h3>
                 <span>
                   {formatIntentTypeLabel(intentDetails, enemy)} -{" "}
@@ -378,15 +460,34 @@ export function CombatScreen({
 
             <div className="combat-chip-bank">
               {enemy.traits.map((trait) => (
-                <Chip key={trait} label={trait} tone="gold" />
+                <Chip
+                  key={trait}
+                  label={trait}
+                  tone="gold"
+                  title={getKeywordTooltip(trait)}
+                />
               ))}
-              <Chip label={`Might ${combat.enemyState.might}`} tone="crimson" />
+              <Chip
+                label={`Might ${combat.enemyState.might}`}
+                tone="crimson"
+                title={getKeywordTooltip("Might")}
+              />
               {combat.enemyState.guard > 0 && (
-                <Chip label={`Guard ${combat.enemyState.guard}`} tone="blue" />
+                <Chip
+                  label={`Guard ${combat.enemyState.guard}`}
+                  tone="blue"
+                  title={getKeywordTooltip("Guard")}
+                />
               )}
-              {combat.hasFear && <Chip label="Fear" tone="violet" />}
+              {combat.hasFear && (
+                <Chip label="Fear" tone="violet" title={getKeywordTooltip("Fear")} />
+              )}
               {combat.bossPhase > 0 && (
-                <Chip label={`Phase ${combat.bossPhase}`} tone="crimson" />
+                <Chip
+                  label={`Phase ${combat.bossPhase}`}
+                  tone="crimson"
+                  title="Boss phase: this enemy changes behavior as its health falls."
+                />
               )}
             </div>
           </GamePanel>
@@ -394,13 +495,18 @@ export function CombatScreen({
           <div
             className={`combat-battlefield-zone combat-battlefield-${getBattlefieldTone(
               combat.phase,
-            )}`}
+            )} ${playedCue ? `combat-cast-${playedCue.tone}` : ""}`}
           >
             <div className="combat-valley-bg" aria-hidden="true" />
             <div className="combat-high-place-bg" aria-hidden="true" />
             <div className="combat-battlefield-glow" aria-hidden="true" />
             {phaseBanner && (
-              <div className={`combat-turn-banner combat-turn-${phaseBanner.tone}`}>
+              <div
+                className={`combat-turn-banner combat-turn-${phaseBanner.tone}`}
+                key={`phase-${combat.phase}-${combat.turn}`}
+                role="status"
+                aria-live="polite"
+              >
                 <p>{phaseBanner.title}</p>
                 <span>{phaseBanner.subtitle}</span>
               </div>
@@ -411,20 +517,33 @@ export function CombatScreen({
                   getIsHighDangerIntent(combat.activeAction)
                     ? "combat-action-high-danger"
                     : ""
+                } ${
+                  activeActionImpact
+                    ? `combat-action-impact-${activeActionImpact}`
+                    : ""
                 }`}
+                data-impact-sound={getImpactSoundHook(
+                  combat.activeAction,
+                  activeActionImpact ?? "normal",
+                )}
                 key={`active-action-${combat.activeAction.id}`}
+                role="status"
+                aria-live="polite"
               >
                 <p>{formatIntentTypeLabel(combat.activeAction, enemy)}</p>
-                <strong>{combat.activeAction.actionName}</strong>
-                <span>{formatQueuedActionSummary(combat.activeAction)}</span>
+                <strong>{formatQueuedActionHeading(combat.activeAction)}</strong>
+                <span>{formatQueuedActionSubtext(combat.activeAction)}</span>
               </div>
             )}
             {playedCue && (
               <div
-                className={`combat-played-card-cue combat-played-card-${playedCue.tone} combat-played-card-to-${playedCue.target}`}
+                className={`combat-played-card-cue combat-played-card-${playedCue.tone} combat-played-card-to-${playedCue.target} combat-played-card-impact-${playedCue.impact}`}
+                data-impact-sound={getCardSoundHook(playedCue)}
                 key={playedCue.id}
               >
-                <span>{playedCue.cardName}</span>
+                <p>{playedCue.effectLabel}</p>
+                <strong>{playedCue.cardName}</strong>
+                <span>{playedCue.targetLabel}</span>
               </div>
             )}
             {!phaseBanner && combat.bossPhase > 1 && (
@@ -440,14 +559,24 @@ export function CombatScreen({
             {latestEnemyDamageFeedback && (
               <CombatPopup
                 feedback={latestEnemyDamageFeedback}
+                intensity={latestEnemyDamageImpact}
                 key={`damage-${latestEnemyDamageFeedback.id}`}
                 tone="damage"
+              />
+            )}
+            {latestStructureDamageFeedback && (
+              <ActionPopup
+                key={`structure-damage-${latestStructureDamageFeedback.id}`}
+                label={formatStructureDamagePopup(latestStructureDamageFeedback)}
+                intensity={latestStructureDamageImpact}
+                tone="structure-hit"
               />
             )}
             {lastResolvedAction?.blockedValue ? (
               <ActionPopup
                 key={`blocked-${lastResolvedAction.id}`}
                 label={`${lastResolvedAction.blockedValue} Blocked`}
+                intensity={activeActionImpact}
                 tone="block"
               />
             ) : null}
@@ -455,6 +584,7 @@ export function CombatScreen({
               <ActionPopup
                 key={`hp-${lastResolvedAction.id}`}
                 label={`-${lastResolvedAction.hpDamage} Health`}
+                intensity={activeActionImpact}
                 tone="hit"
               />
             ) : null}
@@ -462,6 +592,7 @@ export function CombatScreen({
               <ActionPopup
                 key={`might-${lastResolvedAction.id}`}
                 label={formatMightPopup(lastResolvedAction)}
+                intensity={activeActionImpact}
                 tone="status"
               />
             ) : null}
@@ -469,6 +600,7 @@ export function CombatScreen({
               <ActionPopup
                 key={`enemy-guard-${lastResolvedAction.id}`}
                 label={`Enemy +${lastResolvedAction.guardValue} Guard`}
+                intensity={activeActionImpact}
                 tone="enemy-guard"
               />
             ) : null}
@@ -476,6 +608,7 @@ export function CombatScreen({
               <ActionPopup
                 key={`status-${lastResolvedAction.id}`}
                 label={formatStatusPopup(lastResolvedAction)}
+                intensity={activeActionImpact}
                 tone="status"
               />
             ) : null}
@@ -483,18 +616,52 @@ export function CombatScreen({
               <ActionPopup
                 key={`corruption-${lastResolvedAction.id}`}
                 label={`+${lastResolvedAction.resourceChanges.corruption} Corruption`}
+                intensity="heavy"
                 tone="corruption"
               />
             ) : null}
+            {latestCourageFeedback && (
+              <ActionPopup
+                key={`courage-${latestCourageFeedback.id}`}
+                label={formatShortFeedback(latestCourageFeedback)}
+                intensity={getFeedbackImpactIntensity(latestCourageFeedback)}
+                tone="courage"
+              />
+            )}
+            {latestSpendFeedback && (
+              <ActionPopup
+                key={`resource-${latestSpendFeedback.id}`}
+                label={formatShortFeedback(latestSpendFeedback)}
+                intensity="minor"
+                tone="resource"
+              />
+            )}
+            {latestCorruptionFeedback && !latestCorruptionFeedback.message.includes("New turn") && (
+              <ActionPopup
+                key={`resource-corruption-${latestCorruptionFeedback.id}`}
+                label={formatShortFeedback(latestCorruptionFeedback)}
+                intensity={latestCorruptionImpact}
+                tone={
+                  latestCorruptionFeedback.message.toLowerCase().includes("removed")
+                    ? "cleansing"
+                    : "corruption"
+                }
+              />
+            )}
             {latestPlayerFeedback && (
               <CombatPopup
                 feedback={latestPlayerFeedback}
+                intensity={
+                  latestHealingFeedback
+                    ? getFeedbackImpactIntensity(latestHealingFeedback)
+                    : latestGuardImpact
+                }
                 key={`player-${latestPlayerFeedback.id}`}
                 tone={latestHealingFeedback ? "heal" : "guard"}
               />
             )}
             <div className="combat-field-slot combat-field-slot-left">
-              <p>Attack Effects</p>
+              <p>Target / Damage</p>
               <button
                 className={`combat-target-card combat-target-enemy ${
                   activeCombatTargetId === "enemy" ? "is-selected" : ""
@@ -517,15 +684,21 @@ export function CombatScreen({
             </div>
             <div className="combat-confrontation-line" aria-hidden="true" />
             <div className="combat-field-slot combat-field-slot-center">
-              <p>Prayer / Covenant</p>
-              {latestPrayerFeedback && (
+              <p>This Turn</p>
+              {latestPrayerFeedback ? (
                 <span className="combat-float-number combat-float-prayer">
                   {latestPrayerFeedback.message}
+                </span>
+              ) : (
+                <span className="combat-structure-empty">
+                  {combat.phase === "PlayerMain"
+                    ? "Choose a card or end the turn."
+                    : formatCombatPhase(combat.phase)}
                 </span>
               )}
             </div>
             <div className="combat-field-slot combat-field-slot-right">
-              <p>Altar / Structure</p>
+              <p>Structure Pressure</p>
               {activeStructures.length > 0 ? (
                 <div className="combat-structure-list">
                   {activeStructures.map((structure) => (
@@ -550,9 +723,15 @@ export function CombatScreen({
                   No active structure pressure.
                 </span>
               )}
-              {(latestGuardFeedback ?? battlefieldFeedback[1]) && (
+              {(latestStructureDamageFeedback ??
+                latestGuardFeedback ??
+                battlefieldFeedback[1]) && (
                 <span className="combat-float-number">
-                  {(latestGuardFeedback ?? battlefieldFeedback[1])?.message}
+                  {(
+                    latestStructureDamageFeedback ??
+                    latestGuardFeedback ??
+                    battlefieldFeedback[1]
+                  )?.message}
                 </span>
               )}
             </div>
@@ -568,6 +747,10 @@ export function CombatScreen({
               latestPlayerDamageFeedback || lastResolvedAction?.hpDamage
                 ? "combat-player-hit-pulse"
                 : ""
+            } ${
+              latestGuardImpact ? `combat-player-guard-${latestGuardImpact}` : ""
+            } ${
+              latestPlayerImpact ? `combat-player-hit-${latestPlayerImpact}` : ""
             }`}
           >
             <div className="combat-player-identity">
@@ -597,18 +780,29 @@ export function CombatScreen({
               </div>
             </div>
 
-            <div className="combat-player-stats">
-              <Stat
+            <div className="combat-defense-bank" aria-label="Defense and Courage">
+              <DefenseMetric
+                detail="Blocks damage"
+                helpText={getKeywordTooltip("Guard")}
                 isChanged={Boolean(latestGuardFeedback || latestHealingFeedback)}
+                impact={latestGuardImpact}
+                kind="guard"
                 key={`guard-${latestGuardFeedback?.id ?? latestHealingFeedback?.id ?? "stable"}`}
                 label="Guard"
                 value={combat.player.guard}
-                tone="blue"
               />
-              <Stat
+              <DefenseMetric
+                detail="Attack focus"
+                helpText={getKeywordTooltip("Courage")}
                 isChanged={Boolean(
                   latestResourceFeedback?.message.toLowerCase().includes("courage"),
                 )}
+                impact={
+                  latestCourageFeedback
+                    ? getFeedbackImpactIntensity(latestCourageFeedback)
+                    : undefined
+                }
+                kind="courage"
                 key={`courage-${
                   latestResourceFeedback?.message.toLowerCase().includes("courage")
                     ? latestResourceFeedback.id
@@ -617,12 +811,10 @@ export function CombatScreen({
                 label="Courage"
                 value={`${combat.courage}/3`}
               />
-              <Stat label="Draw" value={combat.drawPile.length} />
-              <Stat label="Discard" value={combat.discardPile.length} />
             </div>
 
-            <div className="combat-resource-bank">
-              {resourceOrder.map((resource) => (
+            <ResourceGroup className="combat-spendable-bank" title="Spend">
+              {spendableResources.map((resource) => (
                 <ResourcePip
                   isChanged={Boolean(
                     latestResourceFeedback?.message
@@ -637,27 +829,71 @@ export function CombatScreen({
                       : "stable"
                   }`}
                   resource={resource}
-                  thresholdName={
-                    resource === "Corruption" ? corruptionThreshold.name : undefined
-                  }
                   value={combat.resources[resourceVisuals[resource].key]}
                 />
               ))}
-            </div>
+            </ResourceGroup>
 
-            <div className="combat-memorial-bank">
-              {combat.hasFear && <Chip label="Fear" tone="violet" />}
-              {combat.playerStatuses.map((status) => (
-                <Chip key={status} label={status} tone="blue" />
-              ))}
-              {combat.memorials.length === 0 && !combat.hasFear && combat.playerStatuses.length === 0 ? (
-                <Chip label="No Memorials" tone="muted" />
+            <ResourceGroup className="combat-state-bank" title="State">
+              <ResourcePip
+                isChanged={Boolean(
+                  latestResourceFeedback?.message.toLowerCase().includes("corruption"),
+                )}
+                impact={latestCorruptionImpact}
+                key={`corruption-${
+                  latestResourceFeedback?.message.toLowerCase().includes("corruption")
+                    ? latestResourceFeedback.id
+                    : "stable"
+                }`}
+                resource="Corruption"
+                thresholdName={corruptionThreshold.name}
+                value={combat.resources.corruption}
+              />
+              {activeStateLabels.length === 0 ? (
+                <StateChip
+                  label="No Harmful Status"
+                  tone="muted"
+                  title="David has no active harmful status right now."
+                />
               ) : (
-                combat.memorials.map((memorial) => (
-                  <Chip key={memorial.id} label={memorial.name} tone="gold" />
+                activeStateLabels.map((status) => (
+                  <StateChip
+                    key={status}
+                    label={status}
+                    tone="danger"
+                    title={getKeywordTooltip(status)}
+                  />
                 ))
               )}
-            </div>
+            </ResourceGroup>
+
+            <ResourceGroup className="combat-context-bank" title="Run">
+              {combat.memorials.length === 0 ? (
+                <StateChip
+                  label="No Memorials"
+                  tone="muted"
+                  title="No memorial effects are active in this run."
+                />
+              ) : (
+                combat.memorials.map((memorial) => (
+                  <StateChip
+                    key={memorial.id}
+                    label={memorial.name}
+                    tone="gold"
+                    title="Active run memorial."
+                  />
+                ))
+              )}
+              <StateChip
+                label={primaryStructure ? primaryStructure.name : "No Altar"}
+                tone={primaryStructure ? "warning" : "muted"}
+                title={
+                  primaryStructure
+                    ? "A targetable enemy structure is active on the battlefield."
+                    : "No targetable altar or enemy structure is active."
+                }
+              />
+            </ResourceGroup>
 
             {(latestGuardFeedback || latestHealingFeedback) && (
               <span
@@ -669,11 +905,20 @@ export function CombatScreen({
             )}
           </GamePanel>
 
-          <GamePanel className="combat-hand-tray">
+          <GamePanel
+            className={`combat-hand-tray ${
+              isPlayerInputLocked ? "combat-hand-locked" : ""
+            }`}
+          >
             <div className="combat-hand-header">
               <p>Hand</p>
               <span>{handCards.length} cards</span>
             </div>
+            {isPlayerInputLocked && combat.status === "active" && (
+              <div className="combat-hand-lock-caption" aria-live="polite">
+                {getInputLockLabel(combat.phase)}
+              </div>
+            )}
             {selectedHandCard && (
               <div className="combat-hand-inspector" aria-live="polite">
                 <CollectibleCard
@@ -705,6 +950,7 @@ export function CombatScreen({
                     onMouseEnter={() => setSelectedCardId(instance.instanceId)}
                     onMouseLeave={() => setSelectedCardId(undefined)}
                     onClick={() => playCard(instance.instanceId)}
+                    disabled={isPlayerInputLocked}
                     size="hand"
                   />
                 );
@@ -714,79 +960,86 @@ export function CombatScreen({
         </section>
 
         <aside className="combat-command-rail" aria-label="Combat command rail">
-          <GamePanel className="combat-actions-panel">
-            <p className="text-[0.65rem] uppercase tracking-[0.22em] text-[var(--color-gold)]">
-              Command
-            </p>
-            <PrimaryButton
-              disabled={isPlayerInputLocked}
-              onClick={requestEndTurn}
-            >
-              End Turn
-            </PrimaryButton>
-            {combat.phase === "PlayerMain" && isEndTurnWarningOpen && (
-              <div
-                className={`combat-end-turn-confirm combat-end-turn-${endTurnRisk.severity}`}
-                role="alertdialog"
-                aria-label="End turn risk warning"
-              >
-                <div>
-                  <p>Danger Before Ending Turn</p>
-                  <h3>{endTurnRisk.actionName}</h3>
-                </div>
-                <ul>
-                  {endTurnRisk.reasons.map((reason) => (
-                    <li key={reason}>{reason}</li>
-                  ))}
-                </ul>
-                <div className="combat-end-turn-confirm-actions">
-                  <PrimaryButton onClick={confirmEndTurn} tone="danger">
-                    End Turn Anyway
-                  </PrimaryButton>
-                  <PrimaryButton
-                    onClick={() => setIsEndTurnWarningOpen(false)}
-                    tone="secondary"
-                  >
-                    Stay and Play Cards
-                  </PrimaryButton>
-                </div>
-              </div>
-            )}
-            {combat.status === "active" && (
-              <PrimaryButton
-                disabled={isPlayerInputLocked}
-                onClick={() => onNavigate("map")}
-                tone="secondary"
-              >
-                Return to Map
-              </PrimaryButton>
-            )}
-          </GamePanel>
-
           <GamePanel className="combat-log-panel" scroll>
             <div className="combat-log-header">
-              <p>Battle Record</p>
-              <span>Latest</span>
+              <p>Recent Battle Events</p>
+              <span>Newest first</span>
             </div>
-            <div className="mt-2 space-y-2">
-              {latestFeedback.map((item, index) => (
-                <p
-                  className={`combat-feedback-pop ${
-                    index === 0 ? "combat-log-entry-latest" : ""
-                  } rounded-sm border bg-[rgba(255,255,255,0.035)] px-3 py-2 text-xs leading-5 ${feedbackTone[item.kind]}`}
-                  key={item.id}
-                >
-                  {item.message}
-                </p>
-              ))}
+            <div className="combat-log-list">
+              {latestFeedback.map((item, index) => {
+                const impact = getFeedbackImpactIntensity(item);
+
+                return (
+                  <p
+                    className={`combat-feedback-pop combat-log-entry ${
+                      index === 0 ? "combat-log-entry-latest" : ""
+                    } ${feedbackTone[item.kind]} combat-log-impact-${impact}`}
+                    key={item.id}
+                  >
+                    {index === 0 && <span>Latest</span>}
+                    {item.message}
+                  </p>
+                );
+              })}
             </div>
           </GamePanel>
 
-          <GamePanel className="combat-piles-panel">
-            <Stat label="Draw Pile" value={combat.drawPile.length} />
-            <Stat label="Discard" value={combat.discardPile.length} />
-            <Stat label="Turn" value={combat.turn} />
-          </GamePanel>
+          <div className="combat-lower-command-stack">
+            <GamePanel className="combat-piles-panel">
+              <Stat label="Draw Pile" value={combat.drawPile.length} />
+              <Stat label="Discard" value={combat.discardPile.length} />
+              <Stat label="Turn" value={combat.turn} />
+            </GamePanel>
+
+            <GamePanel className="combat-actions-panel">
+              <p className="text-[0.65rem] uppercase tracking-[0.22em] text-[var(--color-gold)]">
+                Command
+              </p>
+              <PrimaryButton
+                disabled={isPlayerInputLocked}
+                onClick={requestEndTurn}
+              >
+                {isPlayerInputLocked ? getCommandLockLabel(combat.phase) : "End Turn"}
+              </PrimaryButton>
+              {combat.phase === "PlayerMain" && isEndTurnWarningOpen && (
+                <div
+                  className={`combat-end-turn-confirm combat-end-turn-${endTurnRisk.severity}`}
+                  role="alertdialog"
+                  aria-label="End turn risk warning"
+                >
+                  <div>
+                    <p>Danger Before Ending Turn</p>
+                    <h3>{endTurnRisk.actionName}</h3>
+                  </div>
+                  <ul>
+                    {endTurnRisk.reasons.map((reason) => (
+                      <li key={reason}>{reason}</li>
+                    ))}
+                  </ul>
+                  <div className="combat-end-turn-confirm-actions">
+                    <PrimaryButton onClick={confirmEndTurn} tone="danger">
+                      End Turn Anyway
+                    </PrimaryButton>
+                    <PrimaryButton
+                      onClick={() => setIsEndTurnWarningOpen(false)}
+                      tone="secondary"
+                    >
+                      Stay and Play Cards
+                    </PrimaryButton>
+                  </div>
+                </div>
+              )}
+              {combat.status === "active" && (
+                <PrimaryButton
+                  disabled={isPlayerInputLocked}
+                  onClick={() => onNavigate("map")}
+                  tone="secondary"
+                >
+                  Return to Map
+                </PrimaryButton>
+              )}
+            </GamePanel>
+          </div>
         </aside>
 
         {combat.status !== "active" && (
@@ -921,12 +1174,81 @@ function Stat({ isChanged = false, label, value, tone = "default" }: StatProps) 
   );
 }
 
+function ResourceGroup({
+  children,
+  className = "",
+  title,
+}: {
+  children: ReactNode;
+  className?: string;
+  title: string;
+}) {
+  return (
+    <section className={`combat-resource-group ${className}`} aria-label={title}>
+      <p className="combat-resource-group-title">{title}</p>
+      <div className="combat-resource-group-body">{children}</div>
+    </section>
+  );
+}
+
+function DefenseMetric({
+  detail,
+  helpText,
+  impact,
+  isChanged = false,
+  kind,
+  label,
+  value,
+}: {
+  detail: string;
+  helpText: string;
+  impact?: CombatImpactIntensity;
+  isChanged?: boolean;
+  kind: "guard" | "courage";
+  label: string;
+  value: number | string;
+}) {
+  return (
+    <div
+      className={`combat-defense-metric combat-defense-${kind} ${
+        isChanged ? "combat-stat-pulse" : ""
+      } ${impact ? `combat-defense-impact-${impact}` : ""}`}
+      title={`${label}: ${value}. ${helpText}`}
+    >
+      <span className="combat-defense-symbol" aria-hidden="true" />
+      <div>
+        <p>{label}</p>
+        <strong>{value}</strong>
+        <em>{detail}</em>
+      </div>
+    </div>
+  );
+}
+
+function StateChip({
+  label,
+  title,
+  tone,
+}: {
+  label: string;
+  title?: string;
+  tone: "danger" | "gold" | "muted" | "warning";
+}) {
+  return (
+    <span className={`combat-state-chip combat-state-${tone}`} title={title}>
+      {label}
+    </span>
+  );
+}
+
 function ResourcePip({
+  impact,
   isChanged = false,
   resource,
   thresholdName,
   value,
 }: {
+  impact?: CombatImpactIntensity;
   isChanged?: boolean;
   resource: ResourceName;
   thresholdName?: string;
@@ -936,9 +1258,11 @@ function ResourcePip({
 
   return (
     <div
-      className={`combat-resource-pip ${
-        danger ? "combat-resource-corruption" : "combat-resource-faith"
-      } ${isChanged ? "combat-resource-pulse" : ""}`}
+      className={`combat-resource-pip combat-resource-${
+        resourceVisuals[resource].key
+      } ${danger ? "combat-resource-danger" : ""} ${
+        isChanged ? "combat-resource-pulse" : ""
+      } ${impact ? `combat-resource-impact-${impact}` : ""}`}
       title={getResourceBarTooltip(resource, value, thresholdName)}
     >
       <ResourceBadge
@@ -1038,13 +1362,19 @@ function EncounterIntroOverlay({
 
 function CombatPopup({
   feedback,
+  intensity,
   tone,
 }: {
   feedback: CombatFeedback;
+  intensity?: CombatImpactIntensity;
   tone: "damage" | "guard" | "heal";
 }) {
   return (
-    <span className={`combat-popup combat-popup-${tone}`}>
+    <span
+      className={`combat-popup combat-popup-${tone} combat-popup-${
+        intensity ?? "normal"
+      }`}
+    >
       {formatFeedbackPopup(feedback, tone)}
     </span>
   );
@@ -1099,13 +1429,41 @@ function StructureTargetCard({
 }
 
 function ActionPopup({
+  intensity,
   label,
   tone,
 }: {
+  intensity?: CombatImpactIntensity;
   label: string;
-  tone: "block" | "hit" | "status" | "corruption" | "enemy-guard";
+  tone:
+    | "block"
+    | "cleansing"
+    | "corruption"
+    | "courage"
+    | "enemy-guard"
+    | "hit"
+    | "resource"
+    | "status"
+    | "structure-hit";
 }) {
-  return <span className={`combat-popup combat-popup-${tone}`}>{label}</span>;
+  return (
+    <span
+      className={`combat-popup combat-popup-${tone} combat-popup-${
+        intensity ?? "normal"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+function formatShortFeedback(feedback: CombatFeedback) {
+  return feedback.message.replace(/\.$/, "");
+}
+
+function formatStructureDamagePopup(feedback: CombatFeedback) {
+  const damage = feedback.message.match(/-(\d+)/)?.[1];
+  return damage ? `-${damage} Structure` : "Structure Hit";
 }
 
 function formatFeedbackPopup(feedback: CombatFeedback, tone: "damage" | "guard" | "heal") {
@@ -1159,6 +1517,151 @@ function formatQueuedActionSummary(action: QueuedCombatAction) {
   }
 
   return action.logMessage;
+}
+
+const impactRanks: Record<CombatImpactIntensity, number> = {
+  minor: 1,
+  normal: 2,
+  heavy: 3,
+  boss: 4,
+};
+
+function getDominantImpact(
+  impacts: Array<CombatImpactIntensity | undefined>,
+): CombatImpactIntensity | undefined {
+  return impacts.reduce<CombatImpactIntensity | undefined>((strongest, impact) => {
+    if (!impact) {
+      return strongest;
+    }
+
+    if (!strongest || impactRanks[impact] > impactRanks[strongest]) {
+      return impact;
+    }
+
+    return strongest;
+  }, undefined);
+}
+
+function getActionImpactIntensity(
+  action: QueuedCombatAction,
+  enemy: Enemy,
+): CombatImpactIntensity {
+  const damageValue = action.damage ?? action.hpDamage ?? 0;
+  const blockValue = action.blockedValue ?? 0;
+  const isBossAction =
+    enemy.traits.includes("Boss") &&
+    (action.intentType === "Heavy Attack" ||
+      action.intentType === "Special" ||
+      action.actionName.toLowerCase().includes("shadow"));
+
+  if (isBossAction) {
+    return "boss";
+  }
+
+  if (
+    action.intentType === "Special" ||
+    action.intentType === "Ritual" ||
+    action.intentType === "Heavy Attack" ||
+    (action.resourceChanges?.corruption ?? 0) > 0 ||
+    Math.abs(action.mightChange ?? 0) >= 2 ||
+    damageValue >= 15 ||
+    blockValue >= 12
+  ) {
+    return "heavy";
+  }
+
+  if (
+    damageValue > 0 ||
+    blockValue > 0 ||
+    action.guardValue ||
+    action.statusesApplied?.length ||
+    action.structureChargeChange
+  ) {
+    return "normal";
+  }
+
+  return "minor";
+}
+
+function getFeedbackImpactIntensity(feedback: CombatFeedback): CombatImpactIntensity {
+  const message = feedback.message.toLowerCase();
+  const amount =
+    Number(feedback.message.match(/[-+](\d+)/)?.[1]) ||
+    Number(feedback.message.match(/(\d+)\s+damage/)?.[1]) ||
+    0;
+
+  if (
+    message.includes("boss phase") ||
+    message.includes("shadow of the watchers") ||
+    message.includes("enemy defeated")
+  ) {
+    return "boss";
+  }
+
+  if (
+    message.includes("corruption") ||
+    message.includes("altar is broken") ||
+    message.includes("triggers") ||
+    message.includes("courage spent") ||
+    amount >= 12
+  ) {
+    return "heavy";
+  }
+
+  if (
+    amount >= 5 ||
+    message.includes("guard") ||
+    message.includes("healed") ||
+    message.includes("fear")
+  ) {
+    return "normal";
+  }
+
+  return "minor";
+}
+
+function getImpactSoundHook(
+  action: QueuedCombatAction,
+  intensity: CombatImpactIntensity,
+) {
+  return `${action.presentation}:${intensity}`;
+}
+
+function getCardSoundHook(cue: PlayedCue) {
+  return `${cue.tone}:${cue.impact}`;
+}
+
+function formatQueuedActionHeading(action: QueuedCombatAction) {
+  const summary = formatQueuedActionSummary(action);
+
+  if (!summary || summary === action.logMessage) {
+    return action.actionName;
+  }
+
+  return `${action.actionName} - ${summary}`;
+}
+
+function formatQueuedActionSubtext(action: QueuedCombatAction) {
+  switch (action.presentation) {
+    case "windup":
+      return "Enemy action begins.";
+    case "block":
+      return "Guard resolves before health loss.";
+    case "damage":
+      return "Health changes now.";
+    case "status":
+      return "Status changes now.";
+    case "buff":
+      return "Enemy state changes now.";
+    case "resource":
+      return "Run pressure changes now.";
+    case "cleanup":
+      return "The round settles.";
+    case "intent":
+      return "Next intent is revealed.";
+    case "banner":
+      return "Phase change.";
+  }
 }
 
 function formatMightPopup(action: QueuedCombatAction) {
@@ -1240,6 +1743,12 @@ function getBattlefieldTone(phase: CombatPhase) {
   return "neutral";
 }
 
+function getCombatPhaseClass(phase: CombatPhase) {
+  return phase
+    .replace(/([a-z])([A-Z])/g, "$1-$2")
+    .toLowerCase();
+}
+
 function hasStoredEncounterIntro(enemyId: string) {
   if (typeof window === "undefined") {
     return false;
@@ -1271,7 +1780,7 @@ function getCombatPhaseBanner(phase: CombatPhase) {
     case "PlayerTurnStart":
       return {
         title: "Player Turn",
-        subtitle: "Choose your action.",
+        subtitle: "Resources refresh, cards are drawn, and the next intent is revealed.",
         tone: "player" as const,
       };
     case "PlayerTurnEnd":
@@ -1283,7 +1792,7 @@ function getCombatPhaseBanner(phase: CombatPhase) {
     case "EnemyTurnStart":
       return {
         title: "Enemy Turn",
-        subtitle: "The intent is revealed.",
+        subtitle: "Player input is locked while the enemy acts.",
         tone: "enemy" as const,
       };
     case "RoundCleanup":
@@ -1295,6 +1804,38 @@ function getCombatPhaseBanner(phase: CombatPhase) {
     default:
       return undefined;
   }
+}
+
+function getInputLockLabel(phase: CombatPhase) {
+  if (phase === "EnemyTurnStart" || phase === "EnemyActing") {
+    return "Enemy action resolving";
+  }
+
+  if (phase === "PlayerTurnStart") {
+    return "Drawing cards and revealing intent";
+  }
+
+  if (phase === "PlayerTurnEnd") {
+    return "Passing initiative";
+  }
+
+  if (phase === "RoundCleanup") {
+    return "Preparing next turn";
+  }
+
+  return "Battle transition";
+}
+
+function getCommandLockLabel(phase: CombatPhase) {
+  if (phase === "EnemyTurnStart" || phase === "EnemyActing") {
+    return "Enemy Acting";
+  }
+
+  if (phase === "PlayerTurnStart" || phase === "RoundCleanup") {
+    return "Ready Soon";
+  }
+
+  return "Resolving";
 }
 
 function formatCombatPhase(phase: CombatPhase) {
@@ -1356,11 +1897,21 @@ function getCardCueTone(card: Card): CombatCueTone {
     return card.type.includes("Forbidden") ? "forbidden" : "mystery";
   }
 
+  if (card.type.includes("Covenant") || card.type.includes("Blessing")) {
+    return "covenant";
+  }
+
+  if (
+    card.type.includes("Wisdom") ||
+    card.type.includes("Discernment") ||
+    hasCardEffectType(card, ["RevealIntent"])
+  ) {
+    return "wisdom";
+  }
+
   if (
     card.type.includes("Prayer") ||
-    card.type.includes("Psalm") ||
-    card.type.includes("Covenant") ||
-    card.type.includes("Blessing")
+    card.type.includes("Psalm")
   ) {
     return "prayer";
   }
@@ -1370,6 +1921,89 @@ function getCardCueTone(card: Card): CombatCueTone {
   }
 
   return "attack";
+}
+
+function getCardCueImpact(card: Card): CombatImpactIntensity {
+  if (card.rarity === "Mythic Legendary") {
+    return "boss";
+  }
+
+  if (
+    card.rarity === "Legendary" ||
+    card.type.includes("Forbidden") ||
+    hasCardEffectType(card, ["GainCorruption", "DestroyAltarOrStructure"])
+  ) {
+    return "heavy";
+  }
+
+  if (
+    card.type.includes("Attack") ||
+    card.type.includes("Prayer") ||
+    card.type.includes("Psalm") ||
+    card.type.includes("Covenant") ||
+    hasCardEffectType(card, ["DealDamage", "GainGuard", "Heal"])
+  ) {
+    return "normal";
+  }
+
+  return "minor";
+}
+
+function getCardCueLabel(card: Card) {
+  if (card.type.includes("Forbidden")) {
+    return "Forbidden Warning";
+  }
+
+  if (card.rarity === "Mystery") {
+    return "Mystery";
+  }
+
+  if (hasCardEffectType(card, ["DealDamage"])) {
+    return "Attack";
+  }
+
+  if (hasCardEffectType(card, ["GainGuard"])) {
+    return "Guard";
+  }
+
+  if (hasCardEffectType(card, ["Heal"])) {
+    return "Healing";
+  }
+
+  if (card.type.includes("Covenant") || card.type.includes("Blessing")) {
+    return "Covenant";
+  }
+
+  if (
+    card.type.includes("Wisdom") ||
+    card.type.includes("Discernment") ||
+    hasCardEffectType(card, ["RevealIntent"])
+  ) {
+    return "Discernment";
+  }
+
+  if (card.type.includes("Prayer") || card.type.includes("Psalm")) {
+    return "Prayer";
+  }
+
+  return card.type.split("/")[0] ?? "Card";
+}
+
+function getCardTargetLabel(
+  targetId: CombatTargetId,
+  enemy: Enemy,
+  activeStructures: CombatStructureState[],
+) {
+  if (targetId === "enemy") {
+    return `Target: ${enemy.name}`;
+  }
+
+  const structureId = targetId.slice("structure:".length);
+  const structure = activeStructures.find(
+    (candidate) => candidate.instanceId === structureId,
+  );
+
+  return `Target: ${structure?.name ?? "Structure"}`;
 }
 
 function getCardCueTarget(card: Card, targetId: CombatTargetId): CombatCueTarget {
@@ -1398,11 +2032,53 @@ function getCardCueTarget(card: Card, targetId: CombatTargetId): CombatCueTarget
   return "center";
 }
 
+function getKeywordTooltip(keyword: string) {
+  const normalized = keyword.toLowerCase();
+
+  const descriptions: Record<string, string> = {
+    authority:
+      "Authority: spendable resource for command, kingdom, judgment, and ordered leadership cards.",
+    boss: "Boss: major encounter with stronger intent patterns and phase changes.",
+    courage:
+      "Courage: David's combat focus. Stacks up to 3 and is spent by attacks for bonus damage.",
+    corruption:
+      "Corruption: dangerous run pressure. It is a consequence to manage, not a normal resource.",
+    demon: "Demon: enemy trait used by cards and effects that care about spiritual opposition.",
+    empire: "Empire: enemy trait used by cards and effects that care about oppressive powers.",
+    faith:
+      "Faith: spendable resource for prayer, psalm, covenant, and deliverance cards.",
+    fear: "Fear: harmful status that weakens attacks until removed.",
+    giant: "Giant: enemy trait. David's sling and courage cards often gain bonuses against Giants.",
+    guard: "Guard: blocks incoming damage first, then usually resets at the next turn.",
+    human: "Human: enemy trait used by cards and encounter effects.",
+    idol: "Idol: enemy trait tied to altar, structure, and false-worship pressure.",
+    might: "Might: enemy power. Each Might usually increases enemy damage or pressure.",
+    nephilim:
+      "Nephilim: enemy trait. Anti-Giant and judgment effects often care about this threat.",
+    oppressed:
+      "Oppressed: high Corruption threshold. Enemy pressure becomes more dangerous.",
+    resolve:
+      "Resolve: spendable resource for attacks, courage cards, and direct pressure.",
+    tainted: "Tainted: Corruption threshold where prayer and covenant choices become riskier.",
+    watcher:
+      "Watcher: enemy trait tied to forbidden knowledge, corruption, and high-place threats.",
+    wisdom:
+      "Wisdom: spendable resource for discernment, careful support, and planning cards.",
+  };
+
+  return (
+    descriptions[normalized] ??
+    `${keyword}: trait or status that may be referenced by cards, enemies, or encounter effects.`
+  );
+}
+
 function Chip({
   label,
+  title,
   tone,
 }: {
   label: string;
+  title?: string;
   tone: "gold" | "crimson" | "violet" | "blue" | "muted";
 }) {
   const toneClass = {
@@ -1416,6 +2092,7 @@ function Chip({
   return (
     <span
       className={`rounded-full border bg-[rgba(8,7,5,0.34)] px-2 py-1 text-[0.68rem] uppercase tracking-[0.12em] ${toneClass}`}
+      title={title}
     >
       {label}
     </span>

@@ -484,17 +484,28 @@ function startNextPlayerTurn(
   );
   const nextIntent = getEnemyIntentDetails(nextState);
 
-  nextState = addFeedback(
-    nextState,
-    "enemy",
-    `Next intent: ${nextIntent.actionName} - ${nextIntent.summary}.`,
-  );
   nextState = applyHeartOfCourageRevealBonus(nextState);
 
-  return drawCards(
-    applyStartOfTurnMemorials(nextState),
+  const beforeDrawState = applyStartOfTurnMemorials(nextState);
+  const drawnState = drawCards(
+    beforeDrawState,
     getOpeningHandSize(state.hero),
     context.random,
+  );
+  const drawnCount = Math.max(0, drawnState.hand.length - beforeDrawState.hand.length);
+  const readyState =
+    drawnCount > 0
+      ? addFeedback(
+          drawnState,
+          "draw",
+          `Drew ${drawnCount} ${drawnCount === 1 ? "card" : "cards"}.`,
+        )
+      : drawnState;
+
+  return addFeedback(
+    readyState,
+    "enemy",
+    `Next intent: ${nextIntent.actionName} - ${nextIntent.summary}.`,
   );
 }
 
