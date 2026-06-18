@@ -100,6 +100,17 @@ export interface EnemyIntentDetails {
   summary: string;
 }
 
+export interface EndTurnRiskAssessment {
+  actionName: string;
+  blockedByGuard: number;
+  expectedDamage: number;
+  expectedHpDamage: number;
+  projectedHealth: number;
+  reasons: string[];
+  severity: "warning" | "danger";
+  shouldWarn: boolean;
+}
+
 export interface CombatMetrics {
   roundsTaken: number;
   startingHealth: number;

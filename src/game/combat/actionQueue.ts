@@ -5,6 +5,7 @@ import type {
   CombatIntentType,
   CombatPhase,
   CombatState,
+  EndTurnRiskAssessment,
   EnemyIntentDetails,
   QueuedCombatAction,
 } from "./types";
@@ -49,18 +50,79 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
   };
 }
 
+export function getEndTurnRiskAssessment(
+  state: CombatState,
+): EndTurnRiskAssessment {
+  const intent = getEnemyIntentDetails(state);
+  const step = getEnemyPatternStep(state);
+  const damagePreview = getIncomingDamagePreview(state, intent.expectedDamage);
+  const projectedHealth = Math.max(0, state.player.health - damagePreview.hpDamage);
+  const reasons: string[] = [];
+  const altarWillTrigger =
+    !state.destroyedAltarOrStructure &&
+    Boolean(step.corruptionIfAltarActive || step.requiresActiveAltar);
+  const bossSpecial =
+    state.enemy.traits.includes("Boss") &&
+    (intent.intentType === "Special" || intent.intentType === "Ritual");
+  const majorStatusApplied = intent.statusesApplied?.length
+    ? intent.statusesApplied.filter((status) =>
+        ["Fear", "Weaken", "Might", "Burning"].includes(status),
+      )
+    : [];
+
+  if (damagePreview.hpDamage >= 10) {
+    reasons.push(
+      `Enemy intends ${intent.expectedDamage} damage. You have ${state.player.guard} Guard. Expected damage: ${damagePreview.hpDamage}.`,
+    );
+  }
+
+  if (damagePreview.hpDamage >= state.player.health && damagePreview.hpDamage > 0) {
+    reasons.push("This attack may defeat you.");
+  } else if (
+    damagePreview.hpDamage > 0 &&
+    projectedHealth <= Math.ceil(state.player.maxHealth * 0.25)
+  ) {
+    reasons.push("This attack may leave you below 25% health.");
+  }
+
+  if (altarWillTrigger) {
+    reasons.push("A corrupted altar is about to trigger.");
+  }
+
+  if (majorStatusApplied.length > 0) {
+    reasons.push(`Enemy will apply ${majorStatusApplied.join(", ")}.`);
+  }
+
+  if ((intent.resourceChanges?.corruption ?? 0) > 0) {
+    reasons.push(`You may gain ${intent.resourceChanges?.corruption} Corruption.`);
+  }
+
+  if (bossSpecial) {
+    reasons.push("Boss special action incoming.");
+  }
+
+  return {
+    actionName: intent.actionName,
+    blockedByGuard: damagePreview.guardBlocked,
+    expectedDamage: intent.expectedDamage,
+    expectedHpDamage: damagePreview.hpDamage,
+    projectedHealth,
+    reasons,
+    severity:
+      damagePreview.hpDamage >= state.player.health || bossSpecial ? "danger" : "warning",
+    shouldWarn: reasons.length > 0,
+  };
+}
+
 export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[] {
   const intent = getEnemyIntentDetails(state);
   const step = getEnemyPatternStep(state);
   const altarIsActive = !state.destroyedAltarOrStructure;
   const damage = getStepDamage(state, step.damage);
-  const guardBlocked = Math.min(state.player.guard, damage);
-  const afterGuardDamage = Math.max(0, damage - guardBlocked);
-  const protectedBlocked =
-    afterGuardDamage > 0 && state.playerStatuses.includes("Protected")
-      ? Math.min(4, afterGuardDamage)
-      : 0;
-  const hpDamage = Math.max(0, afterGuardDamage - protectedBlocked);
+  const { guardBlocked, hpDamage, protectedBlocked } = getIncomingDamagePreview(
+    state,
+    damage,
+  );
   const queue: QueuedCombatAction[] = [
     createQueuedAction(state, "windup", {
       actionName: intent.actionName,
@@ -400,6 +462,22 @@ function getStepDamage(state: CombatState, baseDamage = 0) {
   }
 
   return baseDamage + state.enemyState.might;
+}
+
+function getIncomingDamagePreview(state: CombatState, damage: number) {
+  const guardBlocked = Math.min(state.player.guard, damage);
+  const afterGuardDamage = Math.max(0, damage - guardBlocked);
+  const protectedBlocked =
+    afterGuardDamage > 0 && state.playerStatuses.includes("Protected")
+      ? Math.min(4, afterGuardDamage)
+      : 0;
+  const hpDamage = Math.max(0, afterGuardDamage - protectedBlocked);
+
+  return {
+    guardBlocked,
+    hpDamage,
+    protectedBlocked,
+  };
 }
 
 function formatStatusesApplied(statuses: CombatStatusName[]) {

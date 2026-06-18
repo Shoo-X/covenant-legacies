@@ -18,6 +18,7 @@ import { ScreenFrame } from "@/components/ScreenFrame";
 import { SymbolicArt } from "@/components/SymbolicArt";
 import {
   getCombatPresentationDelay,
+  getEndTurnRiskAssessment,
   getEnemyIntentDetails,
   shouldAutoAdvanceCombatPresentation,
 } from "@/game/combat/actionQueue";
@@ -109,6 +110,7 @@ export function CombatScreen({
   const cueIdRef = useRef(0);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
+  const [isEndTurnWarningOpen, setIsEndTurnWarningOpen] = useState(false);
   const [hasSeenEncounterIntro, setHasSeenEncounterIntro] = useState(() =>
     hasStoredEncounterIntro(enemy.id),
   );
@@ -132,10 +134,7 @@ export function CombatScreen({
   const isPlayerInputLocked =
     combat.status !== "active" || combat.phase !== "PlayerMain";
   const isHighDangerIntent = getIsHighDangerIntent(intentDetails);
-  const hasLowGuardForIntent =
-    isHighDangerIntent &&
-    intentDetails.expectedDamage > 0 &&
-    combat.player.guard < intentDetails.expectedDamage;
+  const endTurnRisk = getEndTurnRiskAssessment(combat);
   const phaseBanner = getCombatPhaseBanner(combat.phase);
   const lastResolvedAction = combat.lastResolvedAction;
   const shouldAutoAdvancePresentation = shouldAutoAdvanceCombatPresentation(combat);
@@ -195,6 +194,24 @@ export function CombatScreen({
     dispatch({ type: "advance-presentation" });
   }
 
+  function requestEndTurn() {
+    if (isPlayerInputLocked) {
+      return;
+    }
+
+    if (endTurnRisk.shouldWarn) {
+      setIsEndTurnWarningOpen(true);
+      return;
+    }
+
+    dispatch({ type: "end-turn" });
+  }
+
+  function confirmEndTurn() {
+    setIsEndTurnWarningOpen(false);
+    dispatch({ type: "end-turn" });
+  }
+
   function playCard(instanceId: string) {
     if (isPlayerInputLocked) {
       return;
@@ -226,6 +243,7 @@ export function CombatScreen({
     }
 
     setSelectedCardId(instanceId);
+    setIsEndTurnWarningOpen(false);
     dispatch({
       type: "play-card",
       instanceId,
@@ -638,14 +656,37 @@ export function CombatScreen({
             </p>
             <PrimaryButton
               disabled={isPlayerInputLocked}
-              onClick={() => dispatch({ type: "end-turn" })}
+              onClick={requestEndTurn}
             >
               End Turn
             </PrimaryButton>
-            {combat.phase === "PlayerMain" && hasLowGuardForIntent && (
-              <p className="combat-end-turn-warning">
-                Warning: {intentDetails.actionName} can break through current Guard.
-              </p>
+            {combat.phase === "PlayerMain" && isEndTurnWarningOpen && (
+              <div
+                className={`combat-end-turn-confirm combat-end-turn-${endTurnRisk.severity}`}
+                role="alertdialog"
+                aria-label="End turn risk warning"
+              >
+                <div>
+                  <p>Danger Before Ending Turn</p>
+                  <h3>{endTurnRisk.actionName}</h3>
+                </div>
+                <ul>
+                  {endTurnRisk.reasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+                <div className="combat-end-turn-confirm-actions">
+                  <PrimaryButton onClick={confirmEndTurn} tone="danger">
+                    End Turn Anyway
+                  </PrimaryButton>
+                  <PrimaryButton
+                    onClick={() => setIsEndTurnWarningOpen(false)}
+                    tone="secondary"
+                  >
+                    Stay and Play Cards
+                  </PrimaryButton>
+                </div>
+              </div>
             )}
             {combat.status === "active" && (
               <PrimaryButton
