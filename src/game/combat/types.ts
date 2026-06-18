@@ -22,6 +22,17 @@ export interface CombatantState {
 
 export type CombatStatus = "active" | "victory" | "defeat";
 
+export type CombatPhase =
+  | "BattleIntro"
+  | "PlayerTurnStart"
+  | "PlayerMain"
+  | "PlayerTurnEnd"
+  | "EnemyTurnStart"
+  | "EnemyActing"
+  | "RoundCleanup"
+  | "Victory"
+  | "Defeat";
+
 export type CombatFeedbackKind =
   | "damage"
   | "guard"
@@ -30,10 +41,61 @@ export type CombatFeedbackKind =
   | "enemy"
   | "system";
 
+export type CombatIntentType =
+  | "Attack"
+  | "Heavy Attack"
+  | "Buff"
+  | "Debuff"
+  | "Ritual"
+  | "Special";
+
+export type CombatActionActor = "Enemy" | "Player" | "System";
+export type CombatActionTarget = "Enemy" | "Player" | "Self" | "All";
+
+export type CombatActionPresentation =
+  | "banner"
+  | "windup"
+  | "block"
+  | "damage"
+  | "status"
+  | "buff"
+  | "resource"
+  | "cleanup"
+  | "intent";
+
 export interface CombatFeedback {
   id: number;
   kind: CombatFeedbackKind;
   message: string;
+}
+
+export interface QueuedCombatAction {
+  id: string;
+  actor: CombatActionActor;
+  actionName: string;
+  intentType: CombatIntentType;
+  target: CombatActionTarget;
+  presentation: CombatActionPresentation;
+  damage?: number;
+  blockedValue?: number;
+  hpDamage?: number;
+  guardValue?: number;
+  statusesApplied?: CombatStatusName[];
+  resourceChanges?: Partial<ResourceState>;
+  mightChange?: number;
+  logKind: CombatFeedbackKind;
+  logMessage: string;
+}
+
+export interface EnemyIntentDetails {
+  actionName: string;
+  expectedDamage: number;
+  guardGain?: number;
+  iconTone: "attack" | "buff" | "debuff" | "ritual" | "special";
+  intentType: CombatIntentType;
+  statusesApplied?: CombatStatusName[];
+  resourceChanges?: Partial<ResourceState>;
+  summary: string;
 }
 
 export interface CombatState {
@@ -63,6 +125,10 @@ export interface CombatState {
   bossPhase: number;
   destroyedAltarOrStructure: boolean;
   status: CombatStatus;
+  phase: CombatPhase;
+  actionQueue: QueuedCombatAction[];
+  activeAction?: QueuedCombatAction;
+  lastResolvedAction?: QueuedCombatAction;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;
 }
@@ -77,4 +143,5 @@ export interface CombatContext {
 export type CombatAction =
   | { type: "play-card"; instanceId: string }
   | { type: "end-turn" }
+  | { type: "advance-presentation" }
   | { type: "restart" };

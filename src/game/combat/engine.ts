@@ -8,6 +8,11 @@ import type {
   StartingDeckCard,
 } from "@/types/game";
 import { getCorruptionThreshold, isCorruptionAtLeast } from "@/game/corruption";
+import {
+  createEnemyActionQueue,
+  getEnemyIntentDetails,
+  resolveQueuedCombatAction,
+} from "./actionQueue";
 import { applyCardEffect } from "./cardEffects";
 import { buildStartingDeck, drawCards, shuffleDeck } from "./deck";
 import {
@@ -149,6 +154,10 @@ export function createCombatState(
     bossPhase: enemy.traits.includes("Boss") ? 1 : 0,
     destroyedAltarOrStructure: false,
     status: "active",
+    phase: "BattleIntro",
+    actionQueue: [],
+    activeAction: undefined,
+    lastResolvedAction: undefined,
     feedback: initialFeedback,
   };
 
@@ -180,6 +189,10 @@ export function combatReducer(
     );
   }
 
+  if (action.type === "advance-presentation") {
+    return advanceCombatPresentation(state, context);
+  }
+
   if (state.status !== "active") {
     return state;
   }
@@ -188,7 +201,7 @@ export function combatReducer(
     return playCard(state, action.instanceId, context);
   }
 
-  return endTurn(state, context);
+  return endTurn(state);
 }
 
 function playCard(
@@ -196,6 +209,10 @@ function playCard(
   instanceId: string,
   context: CombatContext,
 ): CombatState {
+  if (state.phase !== "PlayerMain") {
+    return state;
+  }
+
   const handIndex = state.hand.findIndex((card) => card.instanceId === instanceId);
   const instance = state.hand[handIndex];
 
@@ -259,116 +276,205 @@ function playCard(
 
   if (state.covenantCardsTriggerTwice && card.type.includes("Covenant")) {
     const secondEffect = applyCardEffect(memorialState, card, context);
-    return applyFearRemovalMemorial(
-      {
-        ...secondEffect,
-        oilOfGladnessUsed: memorialState.oilOfGladnessUsed,
-      },
-      beforeEffectHadFear || memorialState.hasFear,
+    return syncTerminalPhase(
+      applyFearRemovalMemorial(
+        {
+          ...secondEffect,
+          oilOfGladnessUsed: memorialState.oilOfGladnessUsed,
+        },
+        beforeEffectHadFear || memorialState.hasFear,
+      ),
     );
   }
 
-  return applyFearRemovalMemorial(memorialState, beforeEffectHadFear);
+  return syncTerminalPhase(
+    applyFearRemovalMemorial(memorialState, beforeEffectHadFear),
+  );
 }
 
-function endTurn(state: CombatState, context: CombatContext): CombatState {
+function endTurn(state: CombatState): CombatState {
+  if (state.phase !== "PlayerMain") {
+    return state;
+  }
+
+  const actionQueue = createEnemyActionQueue(state);
+
+  return addFeedback(
+    {
+      ...state,
+      phase: "PlayerTurnEnd",
+      actionQueue,
+      activeAction: undefined,
+      lastResolvedAction: undefined,
+      hand: [],
+      discardPile: [...state.discardPile, ...state.hand],
+      lastPlayedInstanceId: undefined,
+    },
+    "system",
+    "Player ends turn.",
+  );
+}
+
+function advanceCombatPresentation(
+  state: CombatState,
+  context: CombatContext,
+): CombatState {
+  if (state.status !== "active") {
+    return syncTerminalPhase(state);
+  }
+
+  switch (state.phase) {
+    case "BattleIntro":
+      return {
+        ...state,
+        phase: "PlayerTurnStart",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "PlayerTurnStart":
+      return {
+        ...state,
+        phase: "PlayerMain",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "PlayerTurnEnd":
+      return {
+        ...state,
+        phase: "EnemyTurnStart",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "EnemyTurnStart":
+      return {
+        ...state,
+        phase: "EnemyActing",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "EnemyActing": {
+      if (state.activeAction) {
+        const resolvedState = syncTerminalPhase(
+          resolveQueuedCombatAction(state, state.activeAction),
+        );
+
+        if (resolvedState.status !== "active") {
+          return resolvedState;
+        }
+
+        return {
+          ...resolvedState,
+          phase:
+            resolvedState.actionQueue.length > 0 ? "EnemyActing" : "RoundCleanup",
+          activeAction: undefined,
+        };
+      }
+
+      if (state.actionQueue.length > 0) {
+        const [activeAction, ...actionQueue] = state.actionQueue;
+
+        return {
+          ...state,
+          actionQueue,
+          activeAction,
+          lastResolvedAction: undefined,
+        };
+      }
+
+      return {
+        ...state,
+        phase: "RoundCleanup",
+        activeAction: undefined,
+      };
+    }
+
+    case "RoundCleanup":
+      return startNextPlayerTurn(state, context);
+
+    case "PlayerMain":
+    case "Victory":
+    case "Defeat":
+      return state;
+  }
+}
+
+function startNextPlayerTurn(
+  state: CombatState,
+  context: CombatContext,
+): CombatState {
   const turnStartResources = getTurnStartResources(
     state.memorials,
     state.startingFaithBonus,
   );
-  const selfBuff = state.enemy.intent.toLowerCase().includes("buff") ? 2 : 0;
-  const nextEnemyMight = state.enemyState.might + selfBuff;
-  const enemyAttackDamage = state.enemy.attackDamage + nextEnemyMight;
-  const markedShadowDamage =
-    state.enemy.traits.includes("Boss") &&
-    (state.bossPhase >= 3 || isCorruptionAtLeast(state.resources.corruption, "Marked"))
-      ? 3
-      : 0;
-  const blockedDamage = Math.min(state.player.guard, enemyAttackDamage);
-  const damageTaken =
-    Math.max(0, enemyAttackDamage - state.player.guard) + markedShadowDamage;
-  const nextHealth = Math.max(0, state.player.health - damageTaken);
-  const enemyFeedback: CombatFeedback[] = [
-    ...(selfBuff > 0
-      ? [
-          {
-            id: state.feedback.length + 1,
-            kind: "enemy" as const,
-            message: `${state.enemy.name} gains ${selfBuff} Might.`,
-          },
-        ]
-      : []),
+  let nextState = addFeedback(
     {
-      id: state.feedback.length + (selfBuff > 0 ? 2 : 1),
-      kind: "enemy",
-      message: `${state.enemy.name} attacks for ${enemyAttackDamage}. ${blockedDamage} blocked, ${damageTaken} taken.`,
+      ...state,
+      phase: "PlayerTurnStart",
+      actionQueue: [],
+      activeAction: undefined,
+      lastResolvedAction: undefined,
+      player: {
+        ...state.player,
+        guard: 0,
+      },
+      runHealth: state.player.health,
+      runResources: {
+        ...state.runResources,
+        corruption: state.resources.corruption,
+      },
+      resources: {
+        ...turnStartResources,
+        corruption: state.resources.corruption,
+      },
+      turn: state.turn + 1,
+      nextAttackBonus: 0,
+      nextPrayerCostReduction: 0,
+      covenantCardsTriggerTwice: false,
+      firstPsalmDiscountUsed: false,
+      lastPlayedInstanceId: undefined,
     },
-    ...(markedShadowDamage > 0
-      ? [
-          {
-            id: state.feedback.length + (selfBuff > 0 ? 3 : 2),
-            kind: "enemy" as const,
-            message: "Shadow of the Watchers: +3 corruption damage.",
-          },
-        ]
-      : []),
-  ];
+    "system",
+    `New turn: Guard reset. Resolve ${turnStartResources.resolve}, Faith ${turnStartResources.faith}. Corruption ${state.resources.corruption}.`,
+  );
+  const nextIntent = getEnemyIntentDetails(nextState);
 
-  const afterEnemy: CombatState = {
-    ...state,
-    player: {
-      ...state.player,
-      health: nextHealth,
-      guard: 0,
-    },
-    enemyState: {
-      ...state.enemyState,
-      might: nextEnemyMight,
-    },
-    hand: [],
-    discardPile: [...state.discardPile, ...state.hand],
-    runHealth: nextHealth,
-    runResources: {
-      ...state.runResources,
-      corruption: state.resources.corruption,
-    },
-    resources: {
-      ...turnStartResources,
-      corruption: state.resources.corruption,
-    },
-    turn: state.turn + 1,
-    nextAttackBonus: 0,
-    nextPrayerCostReduction: 0,
-    covenantCardsTriggerTwice: false,
-    firstPsalmDiscountUsed: false,
-    status: nextHealth === 0 ? "defeat" : state.status,
-    feedback: [
-      ...state.feedback,
-      ...enemyFeedback,
-      ...(nextHealth === 0
-        ? [
-            {
-              id: state.feedback.length + enemyFeedback.length + 1,
-              kind: "system" as const,
-              message: "The hero has fallen.",
-            },
-          ]
-        : [
-            {
-              id: state.feedback.length + enemyFeedback.length + 1,
-              kind: "system" as const,
-              message: `New turn: Guard reset. Resolve 3, Faith 1. Corruption ${state.resources.corruption}.`,
-            },
-          ]),
-    ],
-    lastPlayedInstanceId: undefined,
-  };
+  nextState = addFeedback(
+    nextState,
+    "enemy",
+    `Next intent: ${nextIntent.actionName} - ${nextIntent.summary}.`,
+  );
 
-  if (afterEnemy.status === "defeat") {
-    return afterEnemy;
+  return drawCards(
+    applyStartOfTurnMemorials(nextState),
+    startingHandSize,
+    context.random,
+  );
+}
+
+function syncTerminalPhase(state: CombatState): CombatState {
+  if (state.status === "victory") {
+    return {
+      ...state,
+      phase: "Victory",
+      actionQueue: [],
+      activeAction: undefined,
+    };
   }
 
-  return drawCards(applyStartOfTurnMemorials(afterEnemy), startingHandSize, context.random);
+  if (state.status === "defeat") {
+    return {
+      ...state,
+      phase: "Defeat",
+      actionQueue: [],
+      activeAction: undefined,
+    };
+  }
+
+  return state;
 }
 
 export function canPayForCard(state: CombatState, card: Card) {

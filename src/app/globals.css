@@ -2531,12 +2531,118 @@ button {
     linear-gradient(180deg, rgba(159, 61, 40, 0.08), transparent 42%, rgba(0, 0, 0, 0.42));
 }
 
+.combat-enemy-action-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 226, 150, 0.22), transparent 42%),
+    linear-gradient(90deg, transparent, rgba(159, 61, 40, 0.22), transparent);
+  animation: combat-enemy-action 900ms ease-out both;
+}
+
 .combat-intent-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.55rem;
   min-width: 0;
   padding: 0.6rem;
   border: 1px solid rgba(159, 61, 40, 0.34);
   border-radius: 0.2rem;
   background: rgba(159, 61, 40, 0.1);
+}
+
+.combat-intent-panel.combat-intent-active {
+  animation: combat-intent-pulse 980ms ease-out both;
+}
+
+.combat-intent-icon {
+  position: relative;
+  display: block;
+  width: 2.05rem;
+  height: 2.05rem;
+  border: 1px solid rgba(255, 243, 207, 0.18);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 226, 150, 0.16), transparent 58%),
+    rgba(8, 7, 5, 0.42);
+}
+
+.combat-intent-icon::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.25rem;
+  height: 0.18rem;
+  transform: translate(-50%, -50%) rotate(-28deg);
+  border-radius: 999px;
+  background: rgba(255, 215, 137, 0.82);
+  box-shadow: 0 0 12px rgba(215, 180, 93, 0.32);
+}
+
+.combat-intent-copy {
+  min-width: 0;
+}
+
+.combat-intent-copy p {
+  color: rgba(241, 228, 194, 0.52);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.combat-intent-copy h3 {
+  margin-top: 0.14rem;
+  overflow: hidden;
+  color: #fff3cf;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-intent-copy span {
+  display: block;
+  margin-top: 0.18rem;
+  overflow: hidden;
+  color: rgba(241, 228, 194, 0.72);
+  font-size: 0.68rem;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.combat-intent-buff {
+  border-color: rgba(215, 180, 93, 0.42);
+  background: rgba(215, 180, 93, 0.08);
+}
+
+.combat-intent-buff .combat-intent-icon::before {
+  width: 1.05rem;
+  height: 1.05rem;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border: 1px solid rgba(255, 226, 150, 0.68);
+  background: transparent;
+}
+
+.combat-intent-debuff,
+.combat-intent-special {
+  border-color: rgba(127, 35, 95, 0.48);
+  background: rgba(61, 19, 47, 0.14);
+}
+
+.combat-intent-debuff .combat-intent-icon::before,
+.combat-intent-special .combat-intent-icon::before {
+  width: 1.1rem;
+  height: 1.1rem;
+  transform: translate(-50%, -50%) rotate(0deg);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  border-radius: 0;
+  background: rgba(181, 86, 122, 0.72);
 }
 
 .combat-chip-bank,
@@ -2613,6 +2719,91 @@ button {
     radial-gradient(circle, rgba(215, 180, 93, 0.08), transparent 68%);
   filter: blur(4px);
   animation: combat-solemn-glow 5.2s ease-in-out infinite;
+}
+
+.combat-turn-banner,
+.combat-action-title {
+  position: absolute;
+  left: 50%;
+  z-index: 10;
+  width: min(24rem, 44%);
+  transform: translateX(-50%);
+  border: 1px solid rgba(215, 180, 93, 0.24);
+  border-radius: 0.24rem;
+  background:
+    linear-gradient(180deg, rgba(36, 25, 18, 0.82), rgba(8, 7, 5, 0.72)),
+    rgba(8, 7, 5, 0.5);
+  padding: 0.55rem 0.75rem;
+  text-align: center;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.42);
+}
+
+.combat-turn-banner {
+  top: 0.72rem;
+  animation: combat-turn-banner-in 900ms ease-out both;
+}
+
+.combat-turn-enemy {
+  border-color: rgba(159, 61, 40, 0.42);
+  background:
+    linear-gradient(180deg, rgba(49, 22, 21, 0.78), rgba(8, 7, 5, 0.7)),
+    rgba(8, 7, 5, 0.52);
+}
+
+.combat-turn-player {
+  border-color: rgba(93, 183, 232, 0.3);
+  background:
+    linear-gradient(180deg, rgba(18, 35, 46, 0.74), rgba(8, 7, 5, 0.7)),
+    rgba(8, 7, 5, 0.52);
+}
+
+.combat-turn-banner p,
+.combat-action-title p {
+  color: rgba(215, 180, 93, 0.9);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.combat-turn-banner span,
+.combat-action-title span {
+  display: block;
+  margin-top: 0.16rem;
+  color: rgba(241, 228, 194, 0.72);
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.combat-action-title {
+  top: 37%;
+  border-color: rgba(255, 226, 150, 0.34);
+  background:
+    radial-gradient(circle at 50% 0, rgba(255, 226, 150, 0.1), transparent 5rem),
+    linear-gradient(180deg, rgba(8, 7, 5, 0.82), rgba(29, 19, 15, 0.76));
+  animation: combat-action-title-in 900ms ease-out both;
+}
+
+.combat-action-title strong {
+  display: block;
+  margin-top: 0.14rem;
+  color: #fff3cf;
+  font-size: 1.05rem;
+  font-weight: 950;
+  line-height: 1.1;
+}
+
+.combat-action-damage {
+  border-color: rgba(159, 61, 40, 0.44);
+}
+
+.combat-action-block {
+  border-color: rgba(215, 180, 93, 0.42);
+}
+
+.combat-action-buff,
+.combat-action-status {
+  border-color: rgba(127, 35, 95, 0.46);
 }
 
 .combat-phase-banner {
@@ -2741,7 +2932,7 @@ button {
   text-align: center;
   text-transform: uppercase;
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.36);
-  animation: combat-popup-rise 720ms ease-out both;
+  animation: combat-popup-rise 1250ms ease-out both;
 }
 
 .combat-popup-damage {
@@ -2762,6 +2953,27 @@ button {
 .combat-popup-heal {
   color: #dcefff;
   border-color: rgba(93, 183, 232, 0.42);
+}
+
+.combat-popup-block {
+  left: 14%;
+  bottom: 25%;
+  color: #fff3cf;
+  border-color: rgba(215, 180, 93, 0.44);
+}
+
+.combat-popup-hit {
+  left: 19%;
+  bottom: 16%;
+  color: #ffd7c9;
+  border-color: rgba(159, 61, 40, 0.46);
+}
+
+.combat-popup-status {
+  right: 18%;
+  top: 31%;
+  color: #f0d4ff;
+  border-color: rgba(127, 35, 95, 0.5);
 }
 
 .combat-played-card-cue {
@@ -2874,6 +3086,17 @@ button {
 
 .combat-player-heal-pulse::after {
   border-color: rgba(93, 183, 232, 0.32);
+}
+
+.combat-player-hit-pulse::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  border: 1px solid rgba(159, 61, 40, 0.38);
+  border-radius: var(--panel-radius);
+  background: linear-gradient(90deg, transparent, rgba(159, 61, 40, 0.08), transparent);
+  animation: combat-player-hit-ring 980ms ease-out both;
 }
 
 .combat-player-feedback-ring {
@@ -4145,6 +4368,88 @@ button {
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes combat-turn-banner-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -0.45rem) scale(0.98);
+  }
+
+  28% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes combat-action-title-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0.45rem) scale(0.96);
+  }
+
+  26% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes combat-enemy-action {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scale(1);
+  }
+
+  32% {
+    opacity: 1;
+    transform: translateX(-0.14rem) scale(1.02);
+  }
+
+  64% {
+    transform: translateX(0.14rem) scale(1.01);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes combat-intent-pulse {
+  0%,
+  100% {
+    box-shadow: none;
+    transform: translateY(0);
+  }
+
+  42% {
+    box-shadow: 0 0 24px rgba(215, 180, 93, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes combat-player-hit-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+
+  35% {
+    opacity: 0.75;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.028);
   }
 }
 

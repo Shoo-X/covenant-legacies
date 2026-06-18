@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
 import { heroes } from "@/data/heroes";
@@ -17,6 +17,11 @@ import {
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { SymbolicArt } from "@/components/SymbolicArt";
 import {
+  getCombatPresentationDelay,
+  getEnemyIntentDetails,
+  shouldAutoAdvanceCombatPresentation,
+} from "@/game/combat/actionQueue";
+import {
   combatReducer,
   createCombatState,
   getCardAffordability,
@@ -29,6 +34,8 @@ import type {
   CombatCardInstance,
   CombatFeedback,
   CombatFeedbackKind,
+  CombatPhase,
+  QueuedCombatAction,
 } from "@/game/combat/types";
 import type {
   Card,
@@ -114,21 +121,73 @@ export function CombatScreen({
     ),
   );
   const corruptionThreshold = getCorruptionThreshold(combat.resources.corruption);
+  const intentDetails = getEnemyIntentDetails(combat);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const isPlayerInputLocked =
+    combat.status !== "active" || combat.phase !== "PlayerMain";
+  const phaseBanner = getCombatPhaseBanner(combat.phase);
+  const lastResolvedAction = combat.lastResolvedAction;
+  const shouldAutoAdvancePresentation = shouldAutoAdvanceCombatPresentation(combat);
+  const presentationDelay = getCombatPresentationDelay(
+    combat.phase,
+    combat.activeAction,
+    prefersReducedMotion,
+  );
+  const presentationStepKey = `${combat.status}-${combat.phase}-${
+    combat.activeAction?.id ?? "idle"
+  }-${combat.actionQueue.length}`;
 
   function dispatch(action: CombatAction) {
     setCombat((current) =>
       combatReducer(current, action, {
         cardsById,
+        random: Math.random,
       }),
     );
   }
 
+  useEffect(() => {
+    if (!shouldAutoAdvancePresentation) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setCombat((current) =>
+        combatReducer(
+          current,
+          { type: "advance-presentation" },
+          {
+            cardsById,
+            random: Math.random,
+          },
+        ),
+      );
+    }, presentationDelay);
+
+    return () => window.clearTimeout(timeout);
+  }, [cardsById, presentationDelay, presentationStepKey, shouldAutoAdvancePresentation]);
+
   function playCard(instanceId: string) {
+    if (isPlayerInputLocked) {
+      return;
+    }
+
     const card = cardsById.get(
       combat.hand.find((instance) => instance.instanceId === instanceId)?.cardId ?? "",
     );
 
     if (card) {
+      const affordability = getCardAffordability(combat, card);
+
+      if (!affordability.canPay) {
+        setSelectedCardId(instanceId);
+        dispatch({
+          type: "play-card",
+          instanceId,
+        });
+        return;
+      }
+
       cueIdRef.current += 1;
       setPlayedCue({
         cardName: card.name,
@@ -163,7 +222,12 @@ export function CombatScreen({
 
   const latestFeedback = [...combat.feedback].slice(-8).reverse();
   const feedbackByNewest = [...combat.feedback].reverse();
-  const latestDamageFeedback = feedbackByNewest.find((item) => item.kind === "damage");
+  const latestEnemyDamageFeedback = feedbackByNewest.find(
+    (item) => item.kind === "damage" && item.message.includes("enemy health"),
+  );
+  const latestPlayerDamageFeedback = feedbackByNewest.find(
+    (item) => item.kind === "damage" && item.message.includes("Player loses"),
+  );
   const latestGuardFeedback = feedbackByNewest.find(
     (item) => item.kind === "guard" && !item.message.includes("Healed"),
   );
@@ -203,10 +267,16 @@ export function CombatScreen({
               ) : (
                 <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
               )}
-              {latestDamageFeedback && (
+              {latestEnemyDamageFeedback && (
                 <span
                   className="combat-portrait-hit-flash"
-                  key={`enemy-hit-${latestDamageFeedback.id}`}
+                  key={`enemy-hit-${latestEnemyDamageFeedback.id}`}
+                />
+              )}
+              {combat.activeAction?.actor === "Enemy" && (
+                <span
+                  className="combat-enemy-action-flash"
+                  key={`enemy-action-${combat.activeAction.id}`}
                 />
               )}
             </div>
@@ -226,13 +296,21 @@ export function CombatScreen({
               />
             </div>
 
-            <div className="combat-intent-panel">
-              <p className="text-[0.65rem] uppercase tracking-[0.18em] text-[rgba(241,228,194,0.52)]">
-                Intent
-              </p>
-              <p className="mt-1 text-sm font-semibold leading-5 text-[#fff3cf]">
-                {enemy.intent}
-              </p>
+            <div
+              className={`combat-intent-panel combat-intent-${intentDetails.iconTone} ${
+                combat.phase === "EnemyTurnStart" || combat.phase === "EnemyActing"
+                  ? "combat-intent-active"
+                  : ""
+              }`}
+            >
+              <span className="combat-intent-icon" aria-hidden="true" />
+              <div className="combat-intent-copy">
+                <p>Intent</p>
+                <h3>{intentDetails.actionName}</h3>
+                <span>
+                  {intentDetails.intentType} - {intentDetails.summary}
+                </span>
+              </div>
             </div>
 
             <div className="combat-chip-bank">
@@ -251,6 +329,22 @@ export function CombatScreen({
             <div className="combat-valley-bg" aria-hidden="true" />
             <div className="combat-high-place-bg" aria-hidden="true" />
             <div className="combat-battlefield-glow" aria-hidden="true" />
+            {phaseBanner && (
+              <div className={`combat-turn-banner combat-turn-${phaseBanner.tone}`}>
+                <p>{phaseBanner.title}</p>
+                <span>{phaseBanner.subtitle}</span>
+              </div>
+            )}
+            {combat.activeAction && (
+              <div
+                className={`combat-action-title combat-action-${combat.activeAction.presentation}`}
+                key={`active-action-${combat.activeAction.id}`}
+              >
+                <p>{combat.activeAction.intentType}</p>
+                <strong>{combat.activeAction.actionName}</strong>
+                <span>{formatQueuedActionSummary(combat.activeAction)}</span>
+              </div>
+            )}
             {playedCue && (
               <div
                 className={`combat-played-card-cue combat-played-card-${playedCue.tone} combat-played-card-to-${playedCue.target}`}
@@ -259,7 +353,7 @@ export function CombatScreen({
                 <span>{playedCue.cardName}</span>
               </div>
             )}
-            {combat.bossPhase > 1 && (
+            {!phaseBanner && combat.bossPhase > 1 && (
               <div className="combat-phase-banner">
                 <p>Boss Phase {combat.bossPhase}</p>
                 <span>
@@ -269,13 +363,34 @@ export function CombatScreen({
                 </span>
               </div>
             )}
-            {latestDamageFeedback && (
+            {latestEnemyDamageFeedback && (
               <CombatPopup
-                feedback={latestDamageFeedback}
-                key={`damage-${latestDamageFeedback.id}`}
+                feedback={latestEnemyDamageFeedback}
+                key={`damage-${latestEnemyDamageFeedback.id}`}
                 tone="damage"
               />
             )}
+            {lastResolvedAction?.blockedValue ? (
+              <ActionPopup
+                key={`blocked-${lastResolvedAction.id}`}
+                label={`${lastResolvedAction.blockedValue} Blocked`}
+                tone="block"
+              />
+            ) : null}
+            {lastResolvedAction?.hpDamage ? (
+              <ActionPopup
+                key={`hp-${lastResolvedAction.id}`}
+                label={`-${lastResolvedAction.hpDamage} Health`}
+                tone="hit"
+              />
+            ) : null}
+            {lastResolvedAction?.mightChange ? (
+              <ActionPopup
+                key={`might-${lastResolvedAction.id}`}
+                label={`+${lastResolvedAction.mightChange} Might`}
+                tone="status"
+              />
+            ) : null}
             {latestPlayerFeedback && (
               <CombatPopup
                 feedback={latestPlayerFeedback}
@@ -285,9 +400,9 @@ export function CombatScreen({
             )}
             <div className="combat-field-slot combat-field-slot-left">
               <p>Attack Effects</p>
-              {(latestDamageFeedback ?? battlefieldFeedback[0]) && (
+              {(latestEnemyDamageFeedback ?? battlefieldFeedback[0]) && (
                 <span className="combat-float-number">
-                  {(latestDamageFeedback ?? battlefieldFeedback[0])?.message}
+                  {(latestEnemyDamageFeedback ?? battlefieldFeedback[0])?.message}
                 </span>
               )}
             </div>
@@ -309,14 +424,18 @@ export function CombatScreen({
               )}
             </div>
             <div className="combat-field-caption">
-              Turn {combat.turn} / {encounter.nodeType} / {combat.status}
+              Turn {combat.turn} / {formatCombatPhase(combat.phase)}
             </div>
           </div>
 
           <GamePanel
             className={`combat-player-zone ${
               latestGuardFeedback ? "combat-player-guard-pulse" : ""
-            } ${latestHealingFeedback ? "combat-player-heal-pulse" : ""}`}
+            } ${latestHealingFeedback ? "combat-player-heal-pulse" : ""} ${
+              latestPlayerDamageFeedback || lastResolvedAction?.hpDamage
+                ? "combat-player-hit-pulse"
+                : ""
+            }`}
           >
             <div className="combat-player-identity">
               {hero.imagePath && (
@@ -421,7 +540,7 @@ export function CombatScreen({
             <div className="combat-hand-scroll" aria-label="Card hand">
               {handCards.map(({ instance, card }) => {
                 const affordability = getCardAffordability(combat, card);
-                const playable = affordability.canPay && combat.status === "active";
+                const playable = affordability.canPay && !isPlayerInputLocked;
 
                 return (
                   <CollectibleCard
@@ -451,13 +570,17 @@ export function CombatScreen({
               Command
             </p>
             <PrimaryButton
-              disabled={combat.status !== "active"}
+              disabled={isPlayerInputLocked}
               onClick={() => dispatch({ type: "end-turn" })}
             >
               End Turn
             </PrimaryButton>
             {combat.status === "active" && (
-              <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
+              <PrimaryButton
+                disabled={isPlayerInputLocked}
+                onClick={() => onNavigate("map")}
+                tone="secondary"
+              >
                 Return to Map
               </PrimaryButton>
             )}
@@ -662,6 +785,16 @@ function CombatPopup({
   );
 }
 
+function ActionPopup({
+  label,
+  tone,
+}: {
+  label: string;
+  tone: "block" | "hit" | "status";
+}) {
+  return <span className={`combat-popup combat-popup-${tone}`}>{label}</span>;
+}
+
 function formatFeedbackPopup(feedback: CombatFeedback, tone: "damage" | "guard" | "heal") {
   if (tone === "damage") {
     const damage = feedback.message.match(/-(\d+)/)?.[1];
@@ -675,6 +808,90 @@ function formatFeedbackPopup(feedback: CombatFeedback, tone: "damage" | "guard" 
 
   const guard = feedback.message.match(/\+(\d+)\s+Guard/)?.[1];
   return guard ? `+${guard} Guard` : "Guard";
+}
+
+function formatQueuedActionSummary(action: QueuedCombatAction) {
+  if (action.mightChange) {
+    return `+${action.mightChange} Might`;
+  }
+
+  if (action.blockedValue) {
+    return `${action.blockedValue} blocked by Guard`;
+  }
+
+  if (action.hpDamage) {
+    return `${action.hpDamage} health damage`;
+  }
+
+  if (action.damage) {
+    return `${action.damage} incoming damage`;
+  }
+
+  if (action.statusesApplied?.length) {
+    return action.statusesApplied.join(", ");
+  }
+
+  return action.logMessage;
+}
+
+function getCombatPhaseBanner(phase: CombatPhase) {
+  switch (phase) {
+    case "BattleIntro":
+      return {
+        title: "Battle Begins",
+        subtitle: "The field is set.",
+        tone: "neutral" as const,
+      };
+    case "PlayerTurnStart":
+      return {
+        title: "Player Turn",
+        subtitle: "Choose your action.",
+        tone: "player" as const,
+      };
+    case "PlayerTurnEnd":
+      return {
+        title: "Turn Ends",
+        subtitle: "The enemy prepares to answer.",
+        tone: "neutral" as const,
+      };
+    case "EnemyTurnStart":
+      return {
+        title: "Enemy Turn",
+        subtitle: "The intent is revealed.",
+        tone: "enemy" as const,
+      };
+    case "RoundCleanup":
+      return {
+        title: "Round Cleanup",
+        subtitle: "Guard falls away and resources renew.",
+        tone: "neutral" as const,
+      };
+    default:
+      return undefined;
+  }
+}
+
+function formatCombatPhase(phase: CombatPhase) {
+  return phase
+    .replace(/([A-Z])/g, " $1")
+    .trim()
+    .toUpperCase();
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => mediaQuery.removeEventListener("change", updatePreference);
+  }, []);
+
+  return prefersReducedMotion;
 }
 
 function getCardCueTone(card: Card): CombatCueTone {
