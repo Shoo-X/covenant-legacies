@@ -2,10 +2,12 @@ import type {
   Card,
   CombatStatusName,
   Enemy,
+  EnemyTrait,
   Hero,
   Memorial,
   ResourceState,
   StartingDeckCard,
+  SourceTier,
 } from "@/types/game";
 
 export interface CombatCardInstance {
@@ -20,7 +22,39 @@ export interface CombatantState {
   might: number;
 }
 
+export type CombatTargetId = "enemy" | `structure:${string}`;
+
+export interface EnemyStructureDefinition {
+  id: string;
+  name: string;
+  maxHealth: number;
+  traits: EnemyTrait[];
+  effectText: string;
+  triggerAtCharge?: number;
+  sourceTier: SourceTier;
+  references: string[];
+  theologyNote: string;
+  gameplayRole: string;
+}
+
+export interface CombatStructureState extends EnemyStructureDefinition {
+  instanceId: string;
+  health: number;
+  charge: number;
+}
+
 export type CombatStatus = "active" | "victory" | "defeat";
+
+export type CombatPhase =
+  | "BattleIntro"
+  | "PlayerTurnStart"
+  | "PlayerMain"
+  | "PlayerTurnEnd"
+  | "EnemyTurnStart"
+  | "EnemyActing"
+  | "RoundCleanup"
+  | "Victory"
+  | "Defeat";
 
 export type CombatFeedbackKind =
   | "damage"
@@ -30,10 +64,123 @@ export type CombatFeedbackKind =
   | "enemy"
   | "system";
 
+export type CombatIntentType =
+  | "Attack"
+  | "Heavy Attack"
+  | "Buff"
+  | "Debuff"
+  | "Ritual"
+  | "Special";
+
+export type CombatActionActor = "Enemy" | "Player" | "System";
+export type CombatActionTarget = "Enemy" | "Player" | "Self" | "All";
+
+export type CombatActionPresentation =
+  | "banner"
+  | "windup"
+  | "block"
+  | "damage"
+  | "status"
+  | "buff"
+  | "resource"
+  | "cleanup"
+  | "intent";
+
 export interface CombatFeedback {
   id: number;
   kind: CombatFeedbackKind;
   message: string;
+}
+
+export interface QueuedCombatAction {
+  id: string;
+  actor: CombatActionActor;
+  actionName: string;
+  intentType: CombatIntentType;
+  target: CombatActionTarget;
+  presentation: CombatActionPresentation;
+  damage?: number;
+  blockedValue?: number;
+  guardLoss?: number;
+  hpDamage?: number;
+  guardValue?: number;
+  statusesApplied?: CombatStatusName[];
+  statusesRemoved?: CombatStatusName[];
+  resourceChanges?: Partial<ResourceState>;
+  courageChange?: number;
+  mightChange?: number;
+  structureChargeChange?: number;
+  structureChargeReset?: boolean;
+  structureId?: string;
+  logKind: CombatFeedbackKind;
+  logMessage: string;
+}
+
+export interface EnemyIntentDetails {
+  actionName: string;
+  expectedDamage: number;
+  guardGain?: number;
+  iconTone: "attack" | "buff" | "debuff" | "ritual" | "special";
+  intentType: CombatIntentType;
+  statusesApplied?: CombatStatusName[];
+  resourceChanges?: Partial<ResourceState>;
+  summary: string;
+}
+
+export interface EndTurnRiskAssessment {
+  actionName: string;
+  blockedByGuard: number;
+  expectedDamage: number;
+  expectedHpDamage: number;
+  projectedHealth: number;
+  reasons: string[];
+  severity: "warning" | "danger";
+  shouldWarn: boolean;
+}
+
+export interface CombatMetrics {
+  roundsTaken: number;
+  startingHealth: number;
+  endingHealth: number;
+  damageDealt: number;
+  damageReceived: number;
+  guardGenerated: number;
+  corruptionGained: number;
+  cardsPlayed: number;
+  notableCardName?: string;
+  notableArchetype?: string;
+}
+
+export interface CombatStartSnapshot {
+  hero: Hero;
+  enemy: Enemy;
+  runDeck: StartingDeckCard[];
+  runHealth: number;
+  runResources: ResourceState;
+  memorials: Memorial[];
+  startingFaithBonus: number;
+  player: CombatantState;
+  enemyState: CombatantState;
+  resources: ResourceState;
+  drawPile: CombatCardInstance[];
+  hand: CombatCardInstance[];
+  discardPile: CombatCardInstance[];
+  turn: number;
+  nextAttackBonus: number;
+  nextPrayerCostReduction: number;
+  covenantCardsTriggerTwice: boolean;
+  firstPsalmDiscountUsed: boolean;
+  oilOfGladnessUsed: boolean;
+  hasFear: boolean;
+  playerStatuses: CombatStatusName[];
+  enemyStatuses: CombatStatusName[];
+  courage: number;
+  heartOfCourageUsed: boolean;
+  bossPhase: number;
+  destroyedAltarOrStructure: boolean;
+  structures: CombatStructureState[];
+  metrics: CombatMetrics;
+  feedback: CombatFeedback[];
 }
 
 export interface CombatState {
@@ -59,12 +206,20 @@ export interface CombatState {
   hasFear: boolean;
   playerStatuses: CombatStatusName[];
   enemyStatuses: CombatStatusName[];
+  courage: number;
   heartOfCourageUsed: boolean;
   bossPhase: number;
   destroyedAltarOrStructure: boolean;
+  structures: CombatStructureState[];
   status: CombatStatus;
+  phase: CombatPhase;
+  actionQueue: QueuedCombatAction[];
+  activeAction?: QueuedCombatAction;
+  lastResolvedAction?: QueuedCombatAction;
+  metrics: CombatMetrics;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;
+  startSnapshot?: CombatStartSnapshot;
 }
 
 export interface CombatContext {
@@ -75,6 +230,7 @@ export interface CombatContext {
 }
 
 export type CombatAction =
-  | { type: "play-card"; instanceId: string }
+  | { type: "play-card"; instanceId: string; targetId?: CombatTargetId }
   | { type: "end-turn" }
+  | { type: "advance-presentation" }
   | { type: "restart" };

@@ -9,6 +9,8 @@ import type {
   TemporaryCardDestination,
 } from "@/types/game";
 import { drawCards } from "./deck";
+import { consumeCourageForAttack, gainCourage } from "./courage";
+import { getEnemyCombatConfig } from "./enemyPatterns";
 import { getGiantDamageBonus, getLowHealthAttackBonus } from "./memorials";
 import { gainResource, getResourceValue, spendResource } from "./resources";
 import type {
@@ -16,23 +18,32 @@ import type {
   CombatContext,
   CombatFeedback,
   CombatState,
+  CombatTargetId,
 } from "./types";
+import {
+  getFirstActiveStructure,
+  getTargetedStructure,
+  syncDestroyedStructureFlag,
+} from "./structures";
 
 export function applyCardEffect(
   state: CombatState,
   card: Card,
   context: CombatContext,
+  targetId: CombatTargetId = "enemy",
 ): CombatState {
-  return resolveCardEffects(state, card, context);
+  return resolveCardEffects(state, card, context, targetId);
 }
 
 export function resolveCardEffects(
   state: CombatState,
   card: Card,
   context: CombatContext,
+  targetId: CombatTargetId = "enemy",
 ): CombatState {
   return getCardEffects(card).reduce(
-    (currentState, effect) => resolveEffect(currentState, card, effect, context),
+    (currentState, effect) =>
+      resolveEffect(currentState, card, effect, context, targetId),
     state,
   );
 }
@@ -65,7 +76,8 @@ function effectIncludesType(
   if (
     effect.type === "TriggerIfEnemyTrait" ||
     effect.type === "TriggerIfCorruptionAtMost" ||
-    effect.type === "TriggerIfCorruptionAtLeast"
+    effect.type === "TriggerIfCorruptionAtLeast" ||
+    effect.type === "TriggerIfStatusPresent"
   ) {
     return effect.effects.some((nestedEffect) =>
       effectIncludesType(nestedEffect, effectTypes),
@@ -195,21 +207,27 @@ function resolveEffect(
   card: Card,
   effect: CardEffect,
   context: CombatContext,
+  targetId: CombatTargetId,
 ): CombatState {
   // To add a new card effect, extend CardEffect in src/types/game.ts,
   // handle it here, then reference that effect from card data instead of UI code.
   switch (effect.type) {
     case "DealDamage": {
-      const traitBonus = getTraitDamageBonus(state, effect.bonuses);
-      const totalDamage = effect.amount + traitBonus.amount + state.nextAttackBonus;
+      const traitBonus = getTraitDamageBonus(state, effect.bonuses, targetId);
+      const courageSpend = card.type.includes("Attack")
+        ? consumeCourageForAttack(state)
+        : { state, bonus: 0, consumed: 0 };
+      const totalDamage =
+        effect.amount + traitBonus.amount + state.nextAttackBonus + courageSpend.bonus;
 
       return dealEnemyDamage(
         {
-          ...state,
+          ...courageSpend.state,
           nextAttackBonus: 0,
         },
         totalDamage,
         traitBonus.message ?? effect.message ?? "Attack lands.",
+        targetId,
       );
     }
 
@@ -240,6 +258,9 @@ function resolveEffect(
     case "LoseResource":
       return loseNamedResource(state, effect.resource, effect.amount);
 
+    case "GainCourage":
+      return gainCourage(state, effect.amount, effect.source ?? card.name);
+
     case "ApplyStatus":
       return applyStatus(state, effect.target, effect.status, effect.amount);
 
@@ -265,7 +286,7 @@ function resolveEffect(
       return modifyNextAttack(state, effect.amount);
 
     case "BonusAgainstTrait": {
-      if (!enemyHasAnyTrait(state, effect.traits)) {
+      if (!targetHasAnyTrait(state, targetId, effect.traits)) {
         return state;
       }
 
@@ -280,10 +301,10 @@ function resolveEffect(
     }
 
     case "TriggerIfEnemyTrait":
-      return enemyHasAnyTrait(state, effect.traits)
+      return targetHasAnyTrait(state, targetId, effect.traits)
         ? effect.effects.reduce(
             (nextState, nestedEffect) =>
-              resolveEffect(nextState, card, nestedEffect, context),
+              resolveEffect(nextState, card, nestedEffect, context, targetId),
             state,
           )
         : state;
@@ -292,7 +313,7 @@ function resolveEffect(
       return state.resources.corruption <= effect.amount
         ? effect.effects.reduce(
             (nextState, nestedEffect) =>
-              resolveEffect(nextState, card, nestedEffect, context),
+              resolveEffect(nextState, card, nestedEffect, context, targetId),
             state,
           )
         : state;
@@ -301,7 +322,16 @@ function resolveEffect(
       return state.resources.corruption >= effect.amount
         ? effect.effects.reduce(
             (nextState, nestedEffect) =>
-              resolveEffect(nextState, card, nestedEffect, context),
+              resolveEffect(nextState, card, nestedEffect, context, targetId),
+            state,
+          )
+        : state;
+
+    case "TriggerIfStatusPresent":
+      return hasStatus(state, effect.target, effect.status)
+        ? effect.effects.reduce(
+            (nextState, nestedEffect) =>
+              resolveEffect(nextState, card, nestedEffect, context, targetId),
             state,
           )
         : state;
@@ -314,14 +344,7 @@ function resolveEffect(
       );
 
     case "DestroyAltarOrStructure":
-      return appendFeedback(
-        {
-          ...state,
-          destroyedAltarOrStructure: true,
-        },
-        "system",
-        `${effect.label ?? "Altar or structure"} destroyed.`,
-      );
+      return destroyTargetStructure(state, targetId, effect.label);
 
     case "ModifyNextPrayerCost":
       return appendFeedback(
@@ -354,13 +377,14 @@ function resolveEffect(
 function getTraitDamageBonus(
   state: CombatState,
   bonuses: BonusAgainstTraitEffect[] | undefined,
+  targetId: CombatTargetId,
 ) {
   if (!bonuses?.length) {
     return { amount: 0, message: undefined as string | undefined };
   }
 
   const matchingBonuses = bonuses.filter((bonus) =>
-    enemyHasAnyTrait(state, bonus.traits),
+    targetHasAnyTrait(state, targetId, bonus.traits),
   );
 
   return {
@@ -373,14 +397,56 @@ function enemyHasAnyTrait(state: CombatState, traits: EnemyTrait[]) {
   return traits.some((trait) => state.enemy.traits.includes(trait));
 }
 
+function targetHasAnyTrait(
+  state: CombatState,
+  targetId: CombatTargetId,
+  traits: EnemyTrait[],
+) {
+  const structure = getTargetedStructure(state, targetId);
+
+  if (structure) {
+    return traits.some((trait) => structure.traits.includes(trait));
+  }
+
+  return enemyHasAnyTrait(state, traits);
+}
+
+function hasStatus(
+  state: CombatState,
+  target: "Player" | "Enemy",
+  status: CombatStatusName,
+) {
+  if (status === "Fear" && target === "Player") {
+    return state.hasFear;
+  }
+
+  if (status === "Might") {
+    return target === "Player" ? state.player.might > 0 : state.enemyState.might > 0;
+  }
+
+  const statusKey = target === "Player" ? "playerStatuses" : "enemyStatuses";
+
+  return state[statusKey].includes(status);
+}
+
 export function dealEnemyDamage(
   state: CombatState,
   damage: number,
   message: string,
+  targetId: CombatTargetId = "enemy",
 ): CombatState {
+  const structure = getTargetedStructure(state, targetId);
+
+  if (structure) {
+    return dealStructureDamage(state, structure.instanceId, damage, message);
+  }
+
   const memorialBonus = getLowHealthAttackBonus(state) + getGiantDamageBonus(state);
-  const totalDamage = damage + memorialBonus;
-  const nextHealth = Math.max(0, state.enemyState.health - totalDamage);
+  const fearPenalty = state.hasFear ? Math.min(3, damage + memorialBonus) : 0;
+  const totalDamage = Math.max(0, damage + memorialBonus - fearPenalty);
+  const guardBlocked = Math.min(state.enemyState.guard, totalDamage);
+  const healthDamage = Math.max(0, totalDamage - guardBlocked);
+  const nextHealth = Math.max(0, state.enemyState.health - healthDamage);
   const status = nextHealth === 0 ? "victory" : state.status;
   const nextBossPhase = getNextBossPhase(state, nextHealth);
   const phaseChanged = nextBossPhase > state.bossPhase;
@@ -389,6 +455,7 @@ export function dealEnemyDamage(
     ...state,
     enemyState: {
       ...state.enemyState,
+      guard: Math.max(0, state.enemyState.guard - guardBlocked),
       health: nextHealth,
       might:
         phaseChanged && nextBossPhase >= 3
@@ -397,13 +464,20 @@ export function dealEnemyDamage(
     },
     bossPhase: nextBossPhase,
     hasFear: phaseChanged && nextBossPhase >= 2 ? true : state.hasFear,
+    metrics: {
+      ...state.metrics,
+      damageDealt: state.metrics.damageDealt + healthDamage,
+      roundsTaken: status === "victory" ? state.turn : state.metrics.roundsTaken,
+    },
     status,
   };
 
   nextState = appendFeedback(
     nextState,
     "damage",
-    `${message} -${totalDamage} enemy health${
+    `${message} -${healthDamage} enemy health${
+      guardBlocked > 0 ? ` (${guardBlocked} blocked by Guard)` : ""
+    }${fearPenalty > 0 ? ` (${fearPenalty} lost to Fear)` : ""}${
       memorialBonus > 0 ? ` (${memorialBonus} from Memorials)` : ""
     }.`,
   );
@@ -419,18 +493,107 @@ export function dealEnemyDamage(
   return nextState;
 }
 
+function dealStructureDamage(
+  state: CombatState,
+  structureId: string,
+  damage: number,
+  message: string,
+): CombatState {
+  const structure = getTargetedStructure(state, `structure:${structureId}`);
+
+  if (!structure) {
+    return dealEnemyDamage(state, damage, message, "enemy");
+  }
+
+  const memorialBonus = getLowHealthAttackBonus(state);
+  const totalDamage = Math.max(0, damage + memorialBonus + state.nextAttackBonus);
+  const nextHealth = Math.max(0, structure.health - totalDamage);
+  const wasDestroyed = nextHealth === 0;
+  let nextState = syncDestroyedStructureFlag({
+    ...state,
+    nextAttackBonus: 0,
+    structures: state.structures.map((currentStructure) =>
+      currentStructure.instanceId === structureId
+        ? {
+            ...currentStructure,
+            charge: wasDestroyed ? 0 : currentStructure.charge,
+            health: nextHealth,
+          }
+        : currentStructure,
+    ),
+    metrics: {
+      ...state.metrics,
+      damageDealt: state.metrics.damageDealt + Math.min(structure.health, totalDamage),
+    },
+  });
+
+  nextState = appendFeedback(
+    nextState,
+    "damage",
+    `${message} -${Math.min(structure.health, totalDamage)} ${structure.name} health${
+      memorialBonus > 0 ? ` (${memorialBonus} from Memorials)` : ""
+    }.`,
+  );
+
+  if (wasDestroyed) {
+    nextState = appendFeedback(
+      syncDestroyedStructureFlag(nextState),
+      "system",
+      "The corrupted altar is broken.",
+    );
+  }
+
+  return nextState;
+}
+
+function destroyTargetStructure(
+  state: CombatState,
+  targetId: CombatTargetId,
+  label?: string,
+) {
+  const structure =
+    getTargetedStructure(state, targetId) ?? getFirstActiveStructure(state);
+
+  if (!structure) {
+    return appendFeedback(
+      {
+        ...state,
+        destroyedAltarOrStructure: true,
+      },
+      "system",
+      `${label ?? "Altar or structure"} suppressed.`,
+    );
+  }
+
+  return appendFeedback(
+    syncDestroyedStructureFlag({
+      ...state,
+      structures: state.structures.map((currentStructure) =>
+        currentStructure.instanceId === structure.instanceId
+          ? { ...currentStructure, charge: 0, health: 0 }
+          : currentStructure,
+      ),
+    }),
+    "system",
+    "The corrupted altar is broken.",
+  );
+}
+
 function getNextBossPhase(state: CombatState, nextHealth: number) {
   if (!state.enemy.traits.includes("Boss")) {
     return state.bossPhase;
   }
 
   const healthRatio = nextHealth / state.enemyState.maxHealth;
+  const thresholds = getEnemyCombatConfig(state.enemy.id)?.phaseThresholds;
+  const phase2Threshold = thresholds?.phase2 ?? 0.6;
+  const phase3Threshold = thresholds?.phase3 ?? 0.3;
 
-  if (healthRatio <= 0.3) {
+  if (healthRatio <= phase3Threshold) {
     return 3;
   }
 
-  if (healthRatio <= 0.6) {
+  if (healthRatio <= phase2Threshold) {
     return 2;
   }
 
@@ -462,16 +625,32 @@ export function gainPlayerGuard(
   amount: number,
   source: string,
 ): CombatState {
+  const weakenPenalty = state.playerStatuses.includes("Weaken")
+    ? Math.min(2, amount)
+    : 0;
+  const guardGained = Math.max(0, amount - weakenPenalty);
+  const playerStatuses =
+    weakenPenalty > 0
+      ? state.playerStatuses.filter((status) => status !== "Weaken")
+      : state.playerStatuses;
+
   return appendFeedback(
     {
       ...state,
       player: {
         ...state.player,
-        guard: state.player.guard + amount,
+        guard: state.player.guard + guardGained,
+      },
+      playerStatuses,
+      metrics: {
+        ...state.metrics,
+        guardGenerated: state.metrics.guardGenerated + guardGained,
       },
     },
     "guard",
-    `${source}: +${amount} Guard.`,
+    `${source}: +${guardGained} Guard${
+      weakenPenalty > 0 ? ` (${weakenPenalty} reduced by Weaken)` : ""
+    }.`,
   );
 }
 
@@ -543,6 +722,10 @@ function gainCorruption(state: CombatState, amount: number): CombatState {
       enemyState: {
         ...state.enemyState,
         might: state.enemyState.might + bossMightGain,
+      },
+      metrics: {
+        ...state.metrics,
+        corruptionGained: state.metrics.corruptionGained + amount,
       },
     },
     "resource",

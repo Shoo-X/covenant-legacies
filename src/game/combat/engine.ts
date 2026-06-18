@@ -3,12 +3,20 @@ import type {
   Enemy,
   Hero,
   Memorial,
+  ResourceCost,
   ResourceState,
   StartingDeckCard,
 } from "@/types/game";
 import { getCorruptionThreshold, isCorruptionAtLeast } from "@/game/corruption";
+import {
+  createEnemyActionQueue,
+  getEnemyIntentDetails,
+  resolveQueuedCombatAction,
+} from "./actionQueue";
 import { applyCardEffect } from "./cardEffects";
+import { hasCourageMechanic, startingCourage } from "./courage";
 import { buildStartingDeck, drawCards, shuffleDeck } from "./deck";
+import { getEnemyMaxHealth } from "./enemyPatterns";
 import {
   applyStartOfCombatMemorials,
   applyStartOfTurnMemorials,
@@ -18,9 +26,19 @@ import {
   getTurnStartResources,
 } from "./memorials";
 import { getResourceValue, spendResource } from "./resources";
-import type { CombatAction, CombatContext, CombatFeedback, CombatState } from "./types";
+import type {
+  CombatAction,
+  CombatCardInstance,
+  CombatContext,
+  CombatFeedback,
+  CombatStartSnapshot,
+  CombatState,
+  CombatantState,
+  CombatTargetId,
+} from "./types";
+import { createEncounterStructures } from "./structures";
 
-const startingHandSize = 5;
+const defaultOpeningHandSize = 5;
 
 export function createCombatState(
   hero: Hero,
@@ -34,17 +52,9 @@ export function createCombatState(
   runHealth = hero.maxHealth,
 ): CombatState {
   const deck = shuffleDeck(buildStartingDeck(runDeck, cardsById), random);
+  const enemyMaxHealth = getEnemyMaxHealth(enemy.id, enemy.maxHealth);
+  const playerStartHealth = Math.max(1, Math.min(hero.maxHealth, runHealth));
   const turnStartResources = getTurnStartResources(memorials, startingFaithBonus);
-  const hasGiantThreat = enemy.traits.some(
-    (trait) => trait === "Giant" || trait === "Nephilim",
-  );
-  const courageResources = hasGiantThreat
-    ? {
-        ...turnStartResources,
-        resolve: turnStartResources.resolve + 1,
-        faith: turnStartResources.faith + 1,
-      }
-    : turnStartResources;
   const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
   const oppressedMight =
     isCorruptionAtLeast(runResources.corruption, "Oppressed") &&
@@ -58,14 +68,6 @@ export function createCombatState(
       ? 1
       : 0;
   const initialFeedback: CombatFeedback[] = [];
-
-  if (hasGiantThreat) {
-    initialFeedback.push({
-      id: initialFeedback.length + 1,
-      kind: "resource",
-      message: "Heart of Courage: +1 Faith and +1 Resolve.",
-    });
-  }
 
   if (enemy.traits.includes("Boss")) {
     initialFeedback.push({
@@ -108,6 +110,7 @@ export function createCombatState(
     });
   }
 
+  const initialStructures = createEncounterStructures(enemy.id);
   const initialState: CombatState = {
     hero,
     enemy,
@@ -117,19 +120,22 @@ export function createCombatState(
     memorials,
     startingFaithBonus,
     player: {
-      health: Math.max(1, Math.min(hero.maxHealth, runHealth)),
+      health: playerStartHealth,
       maxHealth: hero.maxHealth,
       guard: 0,
       might: 0,
     },
     enemyState: {
-      health: enemy.maxHealth,
-      maxHealth: enemy.maxHealth,
+      health: enemyMaxHealth,
+      maxHealth: enemyMaxHealth,
       guard: 0,
       might: oppressedMight,
     },
     resources: {
-      ...courageResources,
+      resolve: turnStartResources.resolve,
+      faith: Math.max(runResources.faith, turnStartResources.faith),
+      wisdom: runResources.wisdom,
+      authority: runResources.authority,
       corruption: runResources.corruption,
     },
     drawPile: deck,
@@ -144,20 +150,47 @@ export function createCombatState(
     hasFear: enemy.traits.includes("Boss"),
     playerStatuses: [],
     enemyStatuses: [],
-    heartOfCourageUsed: hasGiantThreat,
+    courage: hasCourageMechanic(hero) ? startingCourage : 0,
+    heartOfCourageUsed: false,
     bossPhase: enemy.traits.includes("Boss") ? 1 : 0,
-    destroyedAltarOrStructure: false,
+    destroyedAltarOrStructure: initialStructures.length === 0,
+    structures: initialStructures,
     status: "active",
+    phase: "BattleIntro",
+    actionQueue: [],
+    activeAction: undefined,
+    lastResolvedAction: undefined,
+    metrics: {
+      roundsTaken: 1,
+      startingHealth: playerStartHealth,
+      endingHealth: playerStartHealth,
+      damageDealt: 0,
+      damageReceived: 0,
+      guardGenerated: 0,
+      corruptionGained: 0,
+      cardsPlayed: 0,
+    },
     feedback: initialFeedback,
   };
 
-  return applyStartOfCombatCards(
+  const readyState = applyStartOfCombatCards(
     applyStartOfCombatMemorials(
-      applyStartOfTurnMemorials(drawCards(initialState, startingHandSize, random)),
+      applyStartOfTurnMemorials(
+        drawCards(
+          applyHeartOfCourageRevealBonus(initialState),
+          getOpeningHandSize(hero),
+          random,
+        ),
+      ),
       cardsById,
       random,
     ),
   );
+
+  return {
+    ...readyState,
+    startSnapshot: createCombatStartSnapshot(readyState),
+  };
 }
 
 export function combatReducer(
@@ -166,6 +199,10 @@ export function combatReducer(
   context: CombatContext,
 ): CombatState {
   if (action.type === "restart") {
+    if (state.startSnapshot) {
+      return restoreCombatStartSnapshot(state.startSnapshot);
+    }
+
     return createCombatState(
       state.hero,
       state.enemy,
@@ -179,22 +216,31 @@ export function combatReducer(
     );
   }
 
+  if (action.type === "advance-presentation") {
+    return advanceCombatPresentation(state, context);
+  }
+
   if (state.status !== "active") {
     return state;
   }
 
   if (action.type === "play-card") {
-    return playCard(state, action.instanceId, context);
+    return playCard(state, action.instanceId, context, action.targetId);
   }
 
-  return endTurn(state, context);
+  return endTurn(state);
 }
 
 function playCard(
   state: CombatState,
   instanceId: string,
   context: CombatContext,
+  targetId: CombatTargetId = "enemy",
 ): CombatState {
+  if (state.phase !== "PlayerMain") {
+    return state;
+  }
+
   const handIndex = state.hand.findIndex((card) => card.instanceId === instanceId);
   const instance = state.hand[handIndex];
 
@@ -236,6 +282,12 @@ function playCard(
     ...paidState,
     hand,
     discardPile: [...paidState.discardPile, instance],
+    metrics: {
+      ...paidState.metrics,
+      cardsPlayed: paidState.metrics.cardsPlayed + 1,
+      notableArchetype: card.archetypeTags?.[0] ?? card.type.split("/")[0],
+      notableCardName: card.name,
+    },
     feedback: [...paidState.feedback, ...paymentFeedback],
     nextPrayerCostReduction:
       card.type.includes("Prayer") && state.nextPrayerCostReduction > 0
@@ -249,7 +301,7 @@ function playCard(
   };
 
   const beforeEffectHadFear = movedState.hasFear;
-  const effectedState = applyCardEffect(movedState, card, context);
+  const effectedState = applyCardEffect(movedState, card, context, targetId);
   const memorialState = applyPostCardMemorialTriggers(
     movedState,
     effectedState,
@@ -257,134 +309,403 @@ function playCard(
   );
 
   if (state.covenantCardsTriggerTwice && card.type.includes("Covenant")) {
-    const secondEffect = applyCardEffect(memorialState, card, context);
-    return applyFearRemovalMemorial(
-      {
-        ...secondEffect,
-        oilOfGladnessUsed: memorialState.oilOfGladnessUsed,
-      },
-      beforeEffectHadFear || memorialState.hasFear,
+    const secondEffect = applyCardEffect(memorialState, card, context, targetId);
+    return syncTerminalPhase(
+      applyFearRemovalMemorial(
+        {
+          ...secondEffect,
+          oilOfGladnessUsed: memorialState.oilOfGladnessUsed,
+        },
+        beforeEffectHadFear || memorialState.hasFear,
+      ),
     );
   }
 
-  return applyFearRemovalMemorial(memorialState, beforeEffectHadFear);
+  return syncTerminalPhase(
+    applyFearRemovalMemorial(memorialState, beforeEffectHadFear),
+  );
 }
 
-function endTurn(state: CombatState, context: CombatContext): CombatState {
+function endTurn(state: CombatState): CombatState {
+  if (state.phase !== "PlayerMain") {
+    return state;
+  }
+
+  const actionQueue = createEnemyActionQueue(state);
+
+  return addFeedback(
+    {
+      ...state,
+      phase: "PlayerTurnEnd",
+      actionQueue,
+      activeAction: undefined,
+      lastResolvedAction: undefined,
+      hand: [],
+      discardPile: [...state.discardPile, ...state.hand],
+      lastPlayedInstanceId: undefined,
+    },
+    "system",
+    "Player ends turn.",
+  );
+}
+
+function advanceCombatPresentation(
+  state: CombatState,
+  context: CombatContext,
+): CombatState {
+  if (state.status !== "active") {
+    return syncTerminalPhase(state);
+  }
+
+  switch (state.phase) {
+    case "BattleIntro":
+      return {
+        ...state,
+        phase: "PlayerTurnStart",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "PlayerTurnStart":
+      return {
+        ...state,
+        phase: "PlayerMain",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "PlayerTurnEnd":
+      return {
+        ...state,
+        phase: "EnemyTurnStart",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "EnemyTurnStart":
+      return {
+        ...state,
+        phase: "EnemyActing",
+        activeAction: undefined,
+        lastResolvedAction: undefined,
+      };
+
+    case "EnemyActing": {
+      if (state.activeAction) {
+        const resolvedState = syncTerminalPhase(
+          resolveQueuedCombatAction(state, state.activeAction),
+        );
+
+        if (resolvedState.status !== "active") {
+          return resolvedState;
+        }
+
+        return {
+          ...resolvedState,
+          phase:
+            resolvedState.actionQueue.length > 0 ? "EnemyActing" : "RoundCleanup",
+          activeAction: undefined,
+        };
+      }
+
+      if (state.actionQueue.length > 0) {
+        const [activeAction, ...actionQueue] = state.actionQueue;
+
+        return {
+          ...state,
+          actionQueue,
+          activeAction,
+          lastResolvedAction: undefined,
+        };
+      }
+
+      return {
+        ...state,
+        phase: "RoundCleanup",
+        activeAction: undefined,
+      };
+    }
+
+    case "RoundCleanup":
+      return startNextPlayerTurn(state, context);
+
+    case "PlayerMain":
+    case "Victory":
+    case "Defeat":
+      return state;
+  }
+}
+
+function startNextPlayerTurn(
+  state: CombatState,
+  context: CombatContext,
+): CombatState {
   const turnStartResources = getTurnStartResources(
     state.memorials,
     state.startingFaithBonus,
   );
-  const selfBuff = state.enemy.intent.toLowerCase().includes("buff") ? 2 : 0;
-  const nextEnemyMight = state.enemyState.might + selfBuff;
-  const enemyAttackDamage = state.enemy.attackDamage + nextEnemyMight;
-  const markedShadowDamage =
-    state.enemy.traits.includes("Boss") &&
-    (state.bossPhase >= 3 || isCorruptionAtLeast(state.resources.corruption, "Marked"))
-      ? 3
-      : 0;
-  const blockedDamage = Math.min(state.player.guard, enemyAttackDamage);
-  const damageTaken =
-    Math.max(0, enemyAttackDamage - state.player.guard) + markedShadowDamage;
-  const nextHealth = Math.max(0, state.player.health - damageTaken);
-  const enemyFeedback: CombatFeedback[] = [
-    ...(selfBuff > 0
-      ? [
-          {
-            id: state.feedback.length + 1,
-            kind: "enemy" as const,
-            message: `${state.enemy.name} gains ${selfBuff} Might.`,
-          },
-        ]
-      : []),
+  const nextResources: ResourceState = {
+    resolve: turnStartResources.resolve,
+    faith: Math.max(state.resources.faith, turnStartResources.faith),
+    wisdom: state.resources.wisdom,
+    authority: state.resources.authority,
+    corruption: state.resources.corruption,
+  };
+  let nextState = addFeedback(
     {
-      id: state.feedback.length + (selfBuff > 0 ? 2 : 1),
-      kind: "enemy",
-      message: `${state.enemy.name} attacks for ${enemyAttackDamage}. ${blockedDamage} blocked, ${damageTaken} taken.`,
+      ...state,
+      phase: "PlayerTurnStart",
+      actionQueue: [],
+      activeAction: undefined,
+      lastResolvedAction: undefined,
+      player: {
+        ...state.player,
+        guard: 0,
+      },
+      runHealth: state.player.health,
+      runResources: {
+        ...state.runResources,
+        corruption: state.resources.corruption,
+      },
+      resources: nextResources,
+      turn: state.turn + 1,
+      nextAttackBonus: 0,
+      nextPrayerCostReduction: 0,
+      covenantCardsTriggerTwice: false,
+      firstPsalmDiscountUsed: false,
+      metrics: {
+        ...state.metrics,
+        roundsTaken: state.turn + 1,
+      },
+      lastPlayedInstanceId: undefined,
     },
-    ...(markedShadowDamage > 0
-      ? [
-          {
-            id: state.feedback.length + (selfBuff > 0 ? 3 : 2),
-            kind: "enemy" as const,
-            message: "Shadow of the Watchers: +3 corruption damage.",
-          },
-        ]
-      : []),
-  ];
+    "system",
+    `New turn: Guard reset. Resolve ${nextResources.resolve}, Faith ${nextResources.faith}. Wisdom ${nextResources.wisdom}, Authority ${nextResources.authority}. Corruption ${nextResources.corruption}.`,
+  );
+  const nextIntent = getEnemyIntentDetails(nextState);
 
-  const afterEnemy: CombatState = {
-    ...state,
-    player: {
-      ...state.player,
-      health: nextHealth,
-      guard: 0,
+  nextState = addFeedback(
+    nextState,
+    "enemy",
+    `Next intent: ${nextIntent.actionName} - ${nextIntent.summary}.`,
+  );
+  nextState = applyHeartOfCourageRevealBonus(nextState);
+
+  return drawCards(
+    applyStartOfTurnMemorials(nextState),
+    getOpeningHandSize(state.hero),
+    context.random,
+  );
+}
+
+function applyHeartOfCourageRevealBonus(state: CombatState): CombatState {
+  if (state.heartOfCourageUsed || !hasCourageMechanic(state.hero)) {
+    return state;
+  }
+
+  const intent = getEnemyIntentDetails(state);
+  const hasGiantThreat = state.enemy.traits.some(
+    (trait) => trait === "Giant" || trait === "Nephilim",
+  );
+  const revealsHeavyAttack = intent.intentType === "Heavy Attack";
+
+  if (!hasGiantThreat && !revealsHeavyAttack) {
+    return state;
+  }
+
+  return addFeedback(
+    {
+      ...state,
+      heartOfCourageUsed: true,
+      resources: {
+        ...state.resources,
+        faith: state.resources.faith + 1,
+        resolve: state.resources.resolve + 1,
+      },
     },
-    enemyState: {
-      ...state.enemyState,
-      might: nextEnemyMight,
-    },
-    hand: [],
-    discardPile: [...state.discardPile, ...state.hand],
-    runHealth: nextHealth,
-    runResources: {
-      ...state.runResources,
-      corruption: state.resources.corruption,
-    },
-    resources: {
-      ...turnStartResources,
-      corruption: state.resources.corruption,
-    },
-    turn: state.turn + 1,
-    nextAttackBonus: 0,
-    nextPrayerCostReduction: 0,
-    covenantCardsTriggerTwice: false,
-    firstPsalmDiscountUsed: false,
-    status: nextHealth === 0 ? "defeat" : state.status,
-    feedback: [
-      ...state.feedback,
-      ...enemyFeedback,
-      ...(nextHealth === 0
-        ? [
-            {
-              id: state.feedback.length + enemyFeedback.length + 1,
-              kind: "system" as const,
-              message: "The hero has fallen.",
-            },
-          ]
-        : [
-            {
-              id: state.feedback.length + enemyFeedback.length + 1,
-              kind: "system" as const,
-              message: `New turn: Guard reset. Resolve 3, Faith 1. Corruption ${state.resources.corruption}.`,
-            },
-          ]),
-    ],
+    "resource",
+    hasGiantThreat
+      ? "Heart of Courage: giant threat revealed. +1 Faith and +1 Resolve."
+      : "Heart of Courage: heavy attack revealed. +1 Faith and +1 Resolve.",
+  );
+}
+
+function getOpeningHandSize(hero: Hero) {
+  return hero.openingHandSize ?? defaultOpeningHandSize;
+}
+
+function syncTerminalPhase(state: CombatState): CombatState {
+  if (state.status === "victory") {
+    return {
+      ...state,
+      phase: "Victory",
+      actionQueue: [],
+      activeAction: undefined,
+      metrics: {
+        ...state.metrics,
+        endingHealth: state.player.health,
+        roundsTaken: state.turn,
+      },
+    };
+  }
+
+  if (state.status === "defeat") {
+    return {
+      ...state,
+      phase: "Defeat",
+      actionQueue: [],
+      activeAction: undefined,
+      metrics: {
+        ...state.metrics,
+        endingHealth: state.player.health,
+        roundsTaken: state.turn,
+      },
+    };
+  }
+
+  return state;
+}
+
+function createCombatStartSnapshot(state: CombatState): CombatStartSnapshot {
+  return {
+    hero: state.hero,
+    enemy: state.enemy,
+    runDeck: cloneStartingDeck(state.runDeck),
+    runHealth: state.runHealth,
+    runResources: cloneResources(state.runResources),
+    memorials: [...state.memorials],
+    startingFaithBonus: state.startingFaithBonus,
+    player: cloneCombatant(state.player),
+    enemyState: cloneCombatant(state.enemyState),
+    resources: cloneResources(state.resources),
+    drawPile: cloneCardInstances(state.drawPile),
+    hand: cloneCardInstances(state.hand),
+    discardPile: cloneCardInstances(state.discardPile),
+    turn: state.turn,
+    nextAttackBonus: state.nextAttackBonus,
+    nextPrayerCostReduction: state.nextPrayerCostReduction,
+    covenantCardsTriggerTwice: state.covenantCardsTriggerTwice,
+    firstPsalmDiscountUsed: state.firstPsalmDiscountUsed,
+    oilOfGladnessUsed: state.oilOfGladnessUsed,
+    hasFear: state.hasFear,
+    playerStatuses: [...state.playerStatuses],
+    enemyStatuses: [...state.enemyStatuses],
+    courage: state.courage,
+    heartOfCourageUsed: state.heartOfCourageUsed,
+    bossPhase: state.bossPhase,
+    destroyedAltarOrStructure: state.destroyedAltarOrStructure,
+    structures: cloneStructures(state.structures),
+    metrics: { ...state.metrics },
+    feedback: state.feedback.map((item) => ({ ...item })),
+  };
+}
+
+function restoreCombatStartSnapshot(snapshot: CombatStartSnapshot): CombatState {
+  const restoredState: CombatState = {
+    hero: snapshot.hero,
+    enemy: snapshot.enemy,
+    runDeck: cloneStartingDeck(snapshot.runDeck),
+    runHealth: snapshot.runHealth,
+    runResources: cloneResources(snapshot.runResources),
+    memorials: [...snapshot.memorials],
+    startingFaithBonus: snapshot.startingFaithBonus,
+    player: cloneCombatant(snapshot.player),
+    enemyState: cloneCombatant(snapshot.enemyState),
+    resources: cloneResources(snapshot.resources),
+    drawPile: cloneCardInstances(snapshot.drawPile),
+    hand: cloneCardInstances(snapshot.hand),
+    discardPile: cloneCardInstances(snapshot.discardPile),
+    turn: snapshot.turn,
+    nextAttackBonus: snapshot.nextAttackBonus,
+    nextPrayerCostReduction: snapshot.nextPrayerCostReduction,
+    covenantCardsTriggerTwice: snapshot.covenantCardsTriggerTwice,
+    firstPsalmDiscountUsed: snapshot.firstPsalmDiscountUsed,
+    oilOfGladnessUsed: snapshot.oilOfGladnessUsed,
+    hasFear: snapshot.hasFear,
+    playerStatuses: [...snapshot.playerStatuses],
+    enemyStatuses: [...snapshot.enemyStatuses],
+    courage: snapshot.courage,
+    heartOfCourageUsed: snapshot.heartOfCourageUsed,
+    bossPhase: snapshot.bossPhase,
+    destroyedAltarOrStructure: snapshot.destroyedAltarOrStructure,
+    structures: cloneStructures(snapshot.structures),
+    status: "active",
+    phase: "BattleIntro",
+    actionQueue: [],
+    activeAction: undefined,
+    lastResolvedAction: undefined,
+    metrics: { ...snapshot.metrics },
+    feedback: snapshot.feedback.map((item) => ({ ...item })),
     lastPlayedInstanceId: undefined,
   };
 
-  if (afterEnemy.status === "defeat") {
-    return afterEnemy;
-  }
+  return {
+    ...restoredState,
+    startSnapshot: createCombatStartSnapshot(restoredState),
+  };
+}
 
-  return drawCards(applyStartOfTurnMemorials(afterEnemy), startingHandSize, context.random);
+function cloneResources(resources: ResourceState): ResourceState {
+  return { ...resources };
+}
+
+function cloneStartingDeck(runDeck: StartingDeckCard[]) {
+  return runDeck.map((entry) => ({ ...entry }));
+}
+
+function cloneCardInstances(instances: CombatCardInstance[]) {
+  return instances.map((instance) => ({ ...instance }));
+}
+
+function cloneCombatant(combatant: CombatantState) {
+  return { ...combatant };
+}
+
+function cloneStructures(structures: CombatState["structures"]) {
+  return structures.map((structure) => ({ ...structure }));
 }
 
 export function canPayForCard(state: CombatState, card: Card) {
-  if (card.isPlayable === false) {
-    return false;
-  }
-
-  return getAdjustedCosts(state, card).every((cost) => {
-    if (!cost.resource) {
-      return true;
-    }
-
-    return getResourceValue(state.resources, cost.resource) >= cost.amount;
-  });
+  return getCardAffordability(state, card).canPay;
 }
 
-function getAdjustedCosts(state: CombatState, card: Card) {
+export function getCardAffordability(state: CombatState, card: Card) {
+  const costs = getAdjustedCardCosts(state, card);
+  const missingCosts = getMissingCardCosts(state, card);
+
+  return {
+    canPay: card.isPlayable !== false && missingCosts.length === 0,
+    costs,
+    missingCosts,
+    missingSummary:
+      card.isPlayable === false
+        ? "This card cannot be played."
+        : formatMissingResourceSummary(missingCosts),
+  };
+}
+
+export function getAdjustedCardCosts(state: CombatState, card: Card) {
+  return getAdjustedCosts(state, card);
+}
+
+export function getMissingCardCosts(state: CombatState, card: Card): ResourceCost[] {
+  if (card.isPlayable === false) {
+    return [];
+  }
+
+  return getAdjustedCosts(state, card)
+    .filter((cost) => cost.resource && cost.amount > 0)
+    .map((cost) => ({
+      ...cost,
+      amount: Math.max(
+        0,
+        cost.amount - getResourceValue(state.resources, cost.resource!),
+      ),
+    }))
+    .filter((cost) => cost.amount > 0);
+}
+
+function getAdjustedCosts(state: CombatState, card: Card): ResourceCost[] {
   let remainingReduction =
     (card.type.includes("Prayer") ? state.nextPrayerCostReduction : 0) +
     (isPsalmCard(card) ? getFirstPsalmCostReduction(state) : 0);
@@ -423,6 +744,16 @@ function getAdjustedCosts(state: CombatState, card: Card) {
   }
 
   return [...adjustedCosts, { amount: taintedPrayerPenalty, resource: "Faith" as const }];
+}
+
+function formatMissingResourceSummary(missingCosts: ResourceCost[]) {
+  if (missingCosts.length === 0) {
+    return undefined;
+  }
+
+  return missingCosts
+    .map((cost) => `Need ${cost.amount} more ${cost.resource}`)
+    .join(", ");
 }
 
 function isPsalmCard(card: Card) {

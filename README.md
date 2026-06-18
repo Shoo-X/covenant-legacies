@@ -12,7 +12,7 @@ This build is a coherent playable demo shell. It includes:
 - A dark stone, parchment, bronze, gold, ivory, sacred-blue, and corruption-crimson visual shell
 - A collectible-card presentation system and route-style campaign map foundation
 - State-based navigation between Home, Hero Select, Campaign Map, Combat, Reward, Mystery Encounter, Memorial Reward, Collection, Gallery, and Codex
-- The Shepherd King hero, starter deck, card rewards, mystery encounters, enemies, and memorials
+- David, Shepherd of Bethlehem as the starter hero, plus starter deck, card rewards, mystery encounters, enemies, and memorials
 - War of the Watchers as the first saga, with The Valley of the Giant as the first campaign map
 - Collection as the card archive and future deck-building home
 - Gallery as the showcase art and concept-art viewer

@@ -10,6 +10,7 @@ import type { Encounter, Memorial, ResourceState } from "@/types/game";
 
 interface MapScreenProps {
   completedEncounterIds: string[];
+  heroDisplayName: string;
   maxRunHealth: number;
   onStartEncounter: (encounter: Encounter) => void;
   revealedMapNodeCount: number;
@@ -21,6 +22,7 @@ interface MapScreenProps {
 
 export function MapScreen({
   completedEncounterIds,
+  heroDisplayName,
   maxRunHealth,
   onStartEncounter,
   revealedMapNodeCount,
@@ -67,6 +69,7 @@ export function MapScreen({
           </div>
 
           <div className="campaign-run-stats">
+            <RunStat label="Champion" value={heroDisplayName} />
             <RunStat label="Health" value={`${runHealth} / ${maxRunHealth}`} />
             <RunStat label="Faith" value={runResources.faith} />
             <RunStat label="Authority" value={runResources.authority} />

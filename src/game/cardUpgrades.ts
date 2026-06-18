@@ -29,9 +29,14 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   },
   "card-sling-stone": { damage: 8, antiGiantDamage: 5 },
   "card-shepherds-guard": { guard: 8 },
-  "card-psalm-of-courage": { guard: 6, draw: 1, removeFear: true },
+  "card-psalm-of-courage": {
+    guard: 6,
+    draw: 1,
+    removeFear: true,
+    gainFaith: 1,
+  },
   "card-smooth-stone": { nextAttackBonus: 5 },
-  "card-forbidden-watcher-diagram": { draw: 3, gainCorruption: 1 },
+  "card-forbidden-watcher-diagram": { draw: 4, gainCorruption: 2 },
   "card-blessing-of-the-most-high": {
     guard: 8,
     removeFear: true,
@@ -68,9 +73,9 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   "card-shield-bearer": { guard: 12 },
   "card-captains-formation": { guard: 5, nextAttackBonus: 3 },
   "card-banner-of-the-king": { guard: 7, gainAuthority: 1 },
-  "card-royal-decree": { draw: 2, gainFaith: 1 },
+  "card-royal-decree": { draw: 2, gainFaith: 1, gainWisdom: 1 },
   "card-vanguard-spearmen": { damage: 10, guard: 5 },
-  "card-clean-hands": { removeCorruption: 3, guard: 5 },
+  "card-clean-hands": { removeCorruption: 2, guard: 5, draw: 2 },
   "card-renewed-oath": {
     removeCorruption: 2,
     gainFaith: 1,
@@ -146,12 +151,24 @@ const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
   "card-psalm-of-courage": [
     { type: "GainGuard", amount: 6, source: "Psalm of Courage" },
     { type: "DrawCards", amount: 1 },
+    {
+      type: "TriggerIfStatusPresent",
+      target: "Player",
+      status: "Fear",
+      effects: [{ type: "GainResource", resource: "Faith", amount: 1 }],
+    },
     { type: "RemoveStatus", status: "Fear", target: "Player" },
+    { type: "GainCourage", amount: 1, source: "Psalm of Courage" },
   ],
   "card-smooth-stone": [{ type: "ModifyNextAttack", amount: 5 }],
+  "card-watchful-shepherd": [
+    { type: "RevealIntent" },
+    { type: "GainGuard", amount: 5, source: "Watchful Shepherd" },
+    { type: "GainCourage", amount: 1, source: "Watchful Shepherd" },
+  ],
   "card-forbidden-watcher-diagram": [
-    { type: "GainCorruption", amount: 1 },
-    { type: "DrawCards", amount: 3 },
+    { type: "DrawCards", amount: 4 },
+    { type: "GainCorruption", amount: 2 },
   ],
   "card-blessing-of-the-most-high": [
     { type: "GainGuard", amount: 8, source: "Blessing of the Most High" },
@@ -184,7 +201,24 @@ const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
       message: "Discernment reveals intent and removes Fear, Deception, and one hidden trap.",
     },
   ],
+  "card-clean-hands": [
+    { type: "GainGuard", amount: 5, source: "Clean Hands" },
+    {
+      type: "TriggerIfCorruptionAtMost",
+      amount: 0,
+      effects: [{ type: "DrawCards", amount: 2 }],
+    },
+    {
+      type: "TriggerIfCorruptionAtLeast",
+      amount: 1,
+      effects: [{ type: "RemoveCorruption", amount: 2 }],
+    },
+  ],
 };
+
+export function getCardUpgradeText(card: Card) {
+  return card.upgradeText ?? card.upgradedVersion ?? card.text;
+}
 
 export function getUpgradedCombatCard(card: Card, upgradedCardIds: string[]): Card {
   if (!upgradedCardIds.includes(card.id)) {
@@ -203,7 +237,7 @@ export function getUpgradedCombatCard(card: Card, upgradedCardIds: string[]): Ca
       (upgradedCombatEffect ? undefined : card.effects),
     isUpgraded: true,
     name: `${card.name} +`,
-    text: card.upgradeText ?? card.upgradedVersion ?? card.text,
+    text: getCardUpgradeText(card),
   };
 }
 
