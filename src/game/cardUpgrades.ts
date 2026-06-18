@@ -1,4 +1,4 @@
-import type { Card, CardCombatEffect, StartingDeckCard } from "@/types/game";
+import type { Card, CardCombatEffect, CardEffect, StartingDeckCard } from "@/types/game";
 
 const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   "card-david-vs-goliath": {
@@ -84,17 +84,126 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   },
 };
 
+const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
+  "card-david-vs-goliath": [
+    {
+      type: "DealDamage",
+      amount: 22,
+      message: "David stands in covenant courage.",
+      bonuses: [
+        {
+          type: "BonusAgainstTrait",
+          amount: 16,
+          traits: ["Giant", "Nephilim"],
+          message: "David stands against the giant-blooded foe.",
+        },
+      ],
+    },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+    { type: "AddFeedback", message: "The battle belongs to the Lord." },
+  ],
+  "card-moses-divider-of-seas": [
+    { type: "GainGuard", amount: 18, source: "Moses, Divider of Seas" },
+    { type: "DrawCards", amount: 2 },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+    { type: "GainResource", resource: "Faith", amount: 1 },
+    { type: "AddFeedback", message: "A way opens where no road stood before." },
+  ],
+  "card-mary-witness-to-glory": [
+    { type: "Heal", amount: 10 },
+    { type: "DrawCards", amount: 2 },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+    { type: "RemoveCorruption", amount: 1 },
+    { type: "AddFeedback", message: "Hope rises at the empty tomb." },
+  ],
+  "card-archangel-michael": [
+    { type: "DealDamage", amount: 18, message: "Heavenly judgment falls." },
+    { type: "GainGuard", amount: 15, source: "Archangel Michael" },
+    { type: "RemoveCorruption", amount: 3 },
+    {
+      type: "AddFeedback",
+      message: "Heavenly authority stands under the command of God.",
+    },
+  ],
+  "card-sling-stone": [
+    {
+      type: "DealDamage",
+      amount: 8,
+      message: "Sling Stone hits.",
+      bonuses: [
+        {
+          type: "BonusAgainstTrait",
+          amount: 5,
+          traits: ["Giant", "Nephilim"],
+          message: "Sling Stone strikes a giant-blooded foe.",
+        },
+      ],
+    },
+  ],
+  "card-shepherds-guard": [
+    { type: "GainGuard", amount: 8, source: "Shepherd's Guard" },
+  ],
+  "card-psalm-of-courage": [
+    { type: "GainGuard", amount: 6, source: "Psalm of Courage" },
+    { type: "DrawCards", amount: 1 },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+  ],
+  "card-smooth-stone": [{ type: "ModifyNextAttack", amount: 5 }],
+  "card-forbidden-watcher-diagram": [
+    { type: "GainCorruption", amount: 1 },
+    { type: "DrawCards", amount: 3 },
+  ],
+  "card-blessing-of-the-most-high": [
+    { type: "GainGuard", amount: 8, source: "Blessing of the Most High" },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+    {
+      type: "TriggerIfCorruptionAtMost",
+      amount: 0,
+      effects: [{ type: "GainResource", resource: "Authority", amount: 2 }],
+    },
+  ],
+  "card-bread-and-wine": [
+    { type: "Heal", amount: 7 },
+    { type: "DrawCards", amount: 1 },
+    { type: "ModifyNextPrayerCost", amount: 1 },
+  ],
+  "card-order-of-the-king-priest": [
+    { type: "GainResource", resource: "Authority", amount: 3 },
+    { type: "DoubleCovenantEffectsThisTurn" },
+  ],
+  "card-forbidden-consultation": [
+    { type: "GainCorruption", amount: 1 },
+    { type: "RevealIntent" },
+    { type: "DrawCards", amount: 2 },
+  ],
+  "card-discernment": [
+    { type: "RevealIntent" },
+    { type: "RemoveStatus", status: "Fear", target: "Player" },
+    {
+      type: "AddFeedback",
+      message: "Discernment reveals intent and removes Fear, Deception, and one hidden trap.",
+    },
+  ],
+};
+
 export function getUpgradedCombatCard(card: Card, upgradedCardIds: string[]): Card {
   if (!upgradedCardIds.includes(card.id)) {
     return card;
   }
 
+  const upgradedCombatEffect = upgradedEffectsByCardId[card.id] ?? card.combatEffect;
+  const upgradedStructuredEffect = upgradedStructuredEffectsByCardId[card.id];
+
   return {
     ...card,
-    combatEffect: upgradedEffectsByCardId[card.id] ?? card.combatEffect,
+    combatEffect: upgradedCombatEffect,
+    effects:
+      upgradedStructuredEffect ??
+      card.upgradedEffects ??
+      (upgradedCombatEffect ? undefined : card.effects),
     isUpgraded: true,
     name: `${card.name} +`,
-    text: card.upgradedVersion ?? card.text,
+    text: card.upgradeText ?? card.upgradedVersion ?? card.text,
   };
 }
 
@@ -113,7 +222,7 @@ export function getUpgradeTarget(
     .find(
       (card): card is Card =>
         card !== undefined &&
-        Boolean(card.upgradedVersion) &&
+        Boolean(card.upgradeText ?? card.upgradedVersion) &&
         !upgradedCardIds.includes(card.id),
     );
 }

@@ -142,8 +142,11 @@ export function createCombatState(
     firstPsalmDiscountUsed: false,
     oilOfGladnessUsed: false,
     hasFear: enemy.traits.includes("Boss"),
+    playerStatuses: [],
+    enemyStatuses: [],
     heartOfCourageUsed: hasGiantThreat,
     bossPhase: enemy.traits.includes("Boss") ? 1 : 0,
+    destroyedAltarOrStructure: false,
     status: "active",
     feedback: initialFeedback,
   };

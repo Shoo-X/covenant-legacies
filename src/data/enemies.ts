@@ -2,6 +2,7 @@ import type { Enemy } from "@/types/game";
 import { getArtAsset } from "@/data/artAssets";
 
 const davidGoliathArt = getArtAsset("art-david-goliath-portrait");
+const giantHighPlaceArt = getArtAsset("art-giant-of-high-place");
 
 export const enemies: Enemy[] = [
   {
@@ -74,9 +75,9 @@ export const enemies: Enemy[] = [
     attackDamage: 12,
     intent: "Crush through fear and accumulated Might",
     traits: ["Nephilim", "Giant", "Idol", "Boss"],
-    imagePath: davidGoliathArt?.path,
-    artworkTitle: davidGoliathArt?.title ?? "David vs Goliath",
-    imageObjectPosition: "75% 33%",
+    imagePath: giantHighPlaceArt?.path ?? davidGoliathArt?.path,
+    artworkTitle: giantHighPlaceArt?.title ?? davidGoliathArt?.title ?? "David vs Goliath",
+    imageObjectPosition: giantHighPlaceArt?.objectPosition ?? "75% 33%",
     mechanics: [
       "Starts combat with Fear pressure.",
       "Gains Might when the player gains Corruption.",

@@ -15,6 +15,7 @@ import {
   combatReducer,
   createCombatState,
 } from "@/game/combat/engine";
+import { hasCardEffectType } from "@/game/combat/effectResolver";
 import { getUpgradedCombatCard } from "@/game/cardUpgrades";
 import { getCorruptionThreshold } from "@/game/corruption";
 import type {
@@ -671,7 +672,7 @@ function getCardCueTone(card: Card): CombatCueTone {
     return "prayer";
   }
 
-  if (card.combatEffect?.guard || card.type.includes("Guard")) {
+  if (hasCardEffectType(card, ["GainGuard"]) || card.type.includes("Guard")) {
     return "guard";
   }
 
@@ -679,13 +680,17 @@ function getCardCueTone(card: Card): CombatCueTone {
 }
 
 function getCardCueTarget(card: Card): CombatCueTarget {
-  if (card.combatEffect?.damage || card.type.includes("Attack")) {
+  if (hasCardEffectType(card, ["DealDamage"]) || card.type.includes("Attack")) {
     return "enemy";
   }
 
   if (
-    card.combatEffect?.guard ||
-    card.combatEffect?.heal ||
+    hasCardEffectType(card, [
+      "GainGuard",
+      "Heal",
+      "RemoveStatus",
+      "RemoveCorruption",
+    ]) ||
     card.type.includes("Guard") ||
     card.type.includes("Prayer") ||
     card.type.includes("Psalm")

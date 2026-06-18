@@ -37,14 +37,31 @@ export type ResourceName =
   | "Corruption";
 
 export type EnemyTrait =
+  | "Beast"
+  | "Boss"
+  | "Demon"
+  | "Empire"
+  | "False Prophet"
+  | "Human"
+  | "Idol"
   | "Giant"
   | "Nephilim"
-  | "Watcher"
-  | "Demon"
-  | "Human"
+  | "Principality"
   | "Spirit"
-  | "Idol"
-  | "Boss";
+  | "Watcher";
+
+export type CombatStatusName =
+  | "Fear"
+  | "Weaken"
+  | "Courage"
+  | "Might"
+  | "Protected"
+  | "Burning"
+  | "Discerned";
+
+export type CardEffectTarget = "Player" | "Enemy";
+
+export type TemporaryCardDestination = "Hand" | "DrawPile" | "DiscardPile";
 
 export type MapNodeType =
   | "Battle"
@@ -70,7 +87,12 @@ export interface ResourceCost {
   resource?: ResourceName;
 }
 
-export type ArchetypeTag = "Courage" | "Psalm" | "Kingdom" | "Covenant";
+export type ArchetypeTag =
+  | "Courage"
+  | "Psalm"
+  | "Kingdom"
+  | "Covenant"
+  | "Forbidden";
 
 export type CardRarity =
   | "Common"
@@ -84,6 +106,7 @@ export type CardRarity =
 export type CardSet = "War of the Watchers" | "Core Covenant";
 
 export interface CardArtMetadata {
+  artAssetId?: string;
   imagePath?: string;
   artworkTitle?: string;
   imageObjectFit?: "contain" | "cover";
@@ -113,6 +136,56 @@ export interface CardCombatEffect {
   note?: string;
 }
 
+export interface BonusAgainstTraitEffect {
+  type: "BonusAgainstTrait";
+  amount: number;
+  traits: EnemyTrait[];
+  message?: string;
+}
+
+export type CardEffect =
+  | {
+      type: "DealDamage";
+      amount: number;
+      bonuses?: BonusAgainstTraitEffect[];
+      message?: string;
+    }
+  | { type: "GainGuard"; amount: number; source?: string }
+  | { type: "Heal"; amount: number }
+  | { type: "DrawCards"; amount: number }
+  | { type: "GainResource"; amount: number; resource: ResourceName }
+  | { type: "LoseResource"; amount: number; resource: ResourceName }
+  | {
+      type: "ApplyStatus";
+      amount?: number;
+      status: CombatStatusName;
+      target: CardEffectTarget;
+    }
+  | {
+      type: "RemoveStatus";
+      amount?: number;
+      status: CombatStatusName;
+      target: CardEffectTarget;
+    }
+  | { type: "GainCorruption"; amount: number }
+  | { type: "RemoveCorruption"; amount: number }
+  | {
+      type: "AddTemporaryCard";
+      cardId: string;
+      destination: TemporaryCardDestination;
+      quantity?: number;
+    }
+  | { type: "ModifyNextAttack"; amount: number }
+  | BonusAgainstTraitEffect
+  | { type: "TriggerIfEnemyTrait"; effects: CardEffect[]; traits: EnemyTrait[] }
+  | { type: "TriggerIfCorruptionAtMost"; amount: number; effects: CardEffect[] }
+  | { type: "TriggerIfCorruptionAtLeast"; amount: number; effects: CardEffect[] }
+  | { type: "RevealIntent" }
+  | { type: "DestroyAltarOrStructure"; label?: string }
+  | { type: "ModifyNextPrayerCost"; amount: number }
+  | { type: "DoubleCovenantEffectsThisTurn" }
+  | { type: "AddFeedback"; message: string };
+
 export interface Card extends SourceBackedContent, CardArtMetadata {
   id: string;
   name: string;
@@ -124,9 +197,14 @@ export interface Card extends SourceBackedContent, CardArtMetadata {
   rarity: CardRarity;
   archetypeTags?: ArchetypeTag[];
   synergyNotes?: string;
+  strategyNotes?: string;
+  scriptureAnchors?: string[];
   upgradeId?: string;
   upgradedVersion?: string;
+  upgradeText?: string;
   combatEffect?: CardCombatEffect;
+  effects?: CardEffect[];
+  upgradedEffects?: CardEffect[];
 }
 
 export type MemorialRarity = "Common" | "Uncommon" | "Rare" | "Mystery";

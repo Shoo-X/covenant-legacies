@@ -1,5 +1,6 @@
 import type {
   Card,
+  CombatStatusName,
   Enemy,
   Hero,
   Memorial,
@@ -56,8 +57,11 @@ export interface CombatState {
   firstPsalmDiscountUsed: boolean;
   oilOfGladnessUsed: boolean;
   hasFear: boolean;
+  playerStatuses: CombatStatusName[];
+  enemyStatuses: CombatStatusName[];
   heartOfCourageUsed: boolean;
   bossPhase: number;
+  destroyedAltarOrStructure: boolean;
   status: CombatStatus;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;
