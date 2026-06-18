@@ -5,10 +5,13 @@ import type {
   CombatIntentType,
   CombatPhase,
   CombatState,
+  CombatStructureState,
   EndTurnRiskAssessment,
   EnemyIntentDetails,
   QueuedCombatAction,
 } from "./types";
+import { hasCourageMechanic, maxCourage } from "./courage";
+import { getActiveStructures, hasActiveAltarPressure } from "./structures";
 
 export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
   const step = getEnemyPatternStep(state);
@@ -31,7 +34,7 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
     summaryParts.push(`gains ${step.mightChange} Might`);
   }
 
-  if (step.corruptionIfAltarActive && !state.destroyedAltarOrStructure) {
+  if (step.corruptionIfAltarActive && hasActiveAltarPressure(state)) {
     summaryParts.push(`+${step.corruptionIfAltarActive} Corruption if altar remains`);
   }
 
@@ -42,7 +45,7 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
     iconTone: getIntentTone(step.intentType),
     intentType: step.intentType,
     resourceChanges:
-      step.corruptionIfAltarActive && !state.destroyedAltarOrStructure
+      step.corruptionIfAltarActive && hasActiveAltarPressure(state)
         ? { corruption: step.corruptionIfAltarActive }
         : undefined,
     statusesApplied: step.statusesApplied,
@@ -59,8 +62,9 @@ export function getEndTurnRiskAssessment(
   const projectedHealth = Math.max(0, state.player.health - damagePreview.hpDamage);
   const reasons: string[] = [];
   const altarWillTrigger =
-    !state.destroyedAltarOrStructure &&
-    Boolean(step.corruptionIfAltarActive || step.requiresActiveAltar);
+    hasActiveAltarPressure(state) &&
+    (Boolean(step.corruptionIfAltarActive || step.requiresActiveAltar) ||
+      getActiveStructures(state).some(structureWillTrigger));
   const bossSpecial =
     state.enemy.traits.includes("Boss") &&
     (intent.intentType === "Special" || intent.intentType === "Ritual");
@@ -117,7 +121,7 @@ export function getEndTurnRiskAssessment(
 export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[] {
   const intent = getEnemyIntentDetails(state);
   const step = getEnemyPatternStep(state);
-  const altarIsActive = !state.destroyedAltarOrStructure;
+  const altarIsActive = hasActiveAltarPressure(state);
   const damage = getStepDamage(state, step.damage);
   const { guardBlocked, hpDamage, protectedBlocked } = getIncomingDamagePreview(
     state,
@@ -236,12 +240,19 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
       }),
     );
   } else if (damage > 0) {
+    const courageMessage = hasCourageMechanic(state.hero)
+      ? state.courage >= maxCourage
+        ? " Courage is already full."
+        : " David gains 1 Courage."
+      : "";
+
     queue.push(
       createQueuedAction(state, "guard-holds", {
         actionName: "Guard Holds",
+        courageChange: hasCourageMechanic(state.hero) ? 1 : undefined,
         intentType: intent.intentType,
         logKind: "guard",
-        logMessage: "Guard holds. No health lost.",
+        logMessage: `Guard holds. No health lost.${courageMessage}`,
         presentation: "block",
         target: "Player",
       }),
@@ -276,7 +287,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     );
   }
 
-  return queue;
+  return [...queue, ...createStructureActionQueue(state)];
 }
 
 export function resolveQueuedCombatAction(
@@ -346,6 +357,33 @@ export function resolveQueuedCombatAction(
     };
   }
 
+  if (action.courageChange) {
+    nextState = gainQueuedCourage(nextState, action.courageChange);
+  }
+
+  if (action.structureId && action.structureChargeReset) {
+    nextState = {
+      ...nextState,
+      structures: nextState.structures.map((structure) =>
+        structure.instanceId === action.structureId
+          ? { ...structure, charge: 0 }
+          : structure,
+      ),
+    };
+  } else if (action.structureId && action.structureChargeChange) {
+    nextState = {
+      ...nextState,
+      structures: nextState.structures.map((structure) =>
+        structure.instanceId === action.structureId
+          ? {
+              ...structure,
+              charge: Math.max(0, structure.charge + action.structureChargeChange!),
+            }
+          : structure,
+      ),
+    };
+  }
+
   if (action.statusesApplied?.length) {
     nextState = applyStatuses(nextState, action.target, action.statusesApplied);
   }
@@ -368,6 +406,13 @@ export function resolveQueuedCombatAction(
   }
 
   return loggedState;
+}
+
+function gainQueuedCourage(state: CombatState, amount: number): CombatState {
+  return {
+    ...state,
+    courage: Math.min(maxCourage, state.courage + amount),
+  };
 }
 
 export function shouldAutoAdvanceCombatPresentation(state: CombatState) {
@@ -462,6 +507,42 @@ function getStepDamage(state: CombatState, baseDamage = 0) {
   }
 
   return baseDamage + state.enemyState.might;
+}
+
+function createStructureActionQueue(state: CombatState): QueuedCombatAction[] {
+  return getActiveStructures(state).map((structure) => {
+    const triggerAt = structure.triggerAtCharge ?? 3;
+
+    if (structure.charge + 1 >= triggerAt) {
+      return createQueuedAction(state, `${structure.instanceId}-trigger`, {
+        actionName: `${structure.name} Triggers`,
+        intentType: "Ritual",
+        logKind: "resource",
+        logMessage: `${structure.name} erupts: ${state.enemy.name} gains 1 Might and you gain 1 Corruption.`,
+        mightChange: 1,
+        presentation: "resource",
+        resourceChanges: { corruption: 1 },
+        structureChargeReset: true,
+        structureId: structure.instanceId,
+        target: "All",
+      });
+    }
+
+    return createQueuedAction(state, `${structure.instanceId}-charge`, {
+      actionName: `${structure.name} Charges`,
+      intentType: "Ritual",
+      logKind: "enemy",
+      logMessage: `${structure.name} gains 1 charge (${structure.charge + 1}/${triggerAt}).`,
+      presentation: "status",
+      structureChargeChange: 1,
+      structureId: structure.instanceId,
+      target: "Self",
+    });
+  });
+}
+
+function structureWillTrigger(structure: CombatStructureState) {
+  return structure.charge + 1 >= (structure.triggerAtCharge ?? 3);
 }
 
 function getIncomingDamagePreview(state: CombatState, damage: number) {

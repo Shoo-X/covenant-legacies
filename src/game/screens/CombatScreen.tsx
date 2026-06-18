@@ -37,6 +37,8 @@ import type {
   CombatFeedback,
   CombatFeedbackKind,
   CombatPhase,
+  CombatStructureState,
+  CombatTargetId,
   QueuedCombatAction,
 } from "@/game/combat/types";
 import type {
@@ -76,7 +78,7 @@ const feedbackTone: Record<CombatFeedbackKind, string> = {
 };
 
 type CombatCueTone = "attack" | "guard" | "prayer" | "forbidden" | "mystery";
-type CombatCueTarget = "enemy" | "player" | "center";
+type CombatCueTarget = "enemy" | "player" | "center" | "structure";
 
 interface PlayedCue {
   cardName: string;
@@ -109,6 +111,8 @@ export function CombatScreen({
   );
   const cueIdRef = useRef(0);
   const [selectedCardId, setSelectedCardId] = useState<string>();
+  const [selectedCombatTargetId, setSelectedCombatTargetId] =
+    useState<CombatTargetId>("enemy");
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
   const [isEndTurnWarningOpen, setIsEndTurnWarningOpen] = useState(false);
   const [hasSeenEncounterIntro, setHasSeenEncounterIntro] = useState(() =>
@@ -129,6 +133,13 @@ export function CombatScreen({
   );
   const corruptionThreshold = getCorruptionThreshold(combat.resources.corruption);
   const intentDetails = getEnemyIntentDetails(combat);
+  const activeStructures = combat.structures.filter(
+    (structure) => structure.health > 0,
+  );
+  const activeCombatTargetId = getActiveCombatTargetId(
+    selectedCombatTargetId,
+    activeStructures,
+  );
   const encounterPresentation = getEnemyEncounterPresentation(enemy.id);
   const prefersReducedMotion = usePrefersReducedMotion();
   const isPlayerInputLocked =
@@ -223,12 +234,14 @@ export function CombatScreen({
 
     if (card) {
       const affordability = getCardAffordability(combat, card);
+      const targetId = getCardTargetId(card, activeCombatTargetId);
 
       if (!affordability.canPay) {
         setSelectedCardId(instanceId);
         dispatch({
           type: "play-card",
           instanceId,
+          targetId,
         });
         return;
       }
@@ -237,7 +250,7 @@ export function CombatScreen({
       setPlayedCue({
         cardName: card.name,
         id: `${instanceId}-${combat.feedback.length + 1}-${cueIdRef.current}`,
-        target: getCardCueTarget(card),
+        target: getCardCueTarget(card, targetId),
         tone: getCardCueTone(card),
       });
     }
@@ -247,6 +260,7 @@ export function CombatScreen({
     dispatch({
       type: "play-card",
       instanceId,
+      targetId: card ? getCardTargetId(card, activeCombatTargetId) : "enemy",
     });
   }
 
@@ -481,6 +495,20 @@ export function CombatScreen({
             )}
             <div className="combat-field-slot combat-field-slot-left">
               <p>Attack Effects</p>
+              <button
+                className={`combat-target-card combat-target-enemy ${
+                  activeCombatTargetId === "enemy" ? "is-selected" : ""
+                }`}
+                disabled={isPlayerInputLocked}
+                onClick={() => setSelectedCombatTargetId("enemy")}
+                type="button"
+              >
+                <span>Main Enemy</span>
+                <strong>{enemy.name}</strong>
+                <em>
+                  {combat.enemyState.health}/{combat.enemyState.maxHealth} health
+                </em>
+              </button>
               {(latestEnemyDamageFeedback ?? battlefieldFeedback[0]) && (
                 <span className="combat-float-number">
                   {(latestEnemyDamageFeedback ?? battlefieldFeedback[0])?.message}
@@ -498,6 +526,30 @@ export function CombatScreen({
             </div>
             <div className="combat-field-slot combat-field-slot-right">
               <p>Altar / Structure</p>
+              {activeStructures.length > 0 ? (
+                <div className="combat-structure-list">
+                  {activeStructures.map((structure) => (
+                    <StructureTargetCard
+                      isDisabled={isPlayerInputLocked}
+                      isSelected={
+                        activeCombatTargetId ===
+                        getStructureTargetId(structure.instanceId)
+                      }
+                      key={structure.instanceId}
+                      onSelect={() =>
+                        setSelectedCombatTargetId(
+                          getStructureTargetId(structure.instanceId),
+                        )
+                      }
+                      structure={structure}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <span className="combat-structure-empty">
+                  No active structure pressure.
+                </span>
+              )}
               {(latestGuardFeedback ?? battlefieldFeedback[1]) && (
                 <span className="combat-float-number">
                   {(latestGuardFeedback ?? battlefieldFeedback[1])?.message}
@@ -534,7 +586,7 @@ export function CombatScreen({
                   Champion
                 </p>
                 <h3 className="mt-1 truncate text-xl font-black text-[#fff3cf]">
-                  {hero.name}
+                  {hero.shortName ?? hero.name}
                 </h3>
                 <Meter
                   current={combat.player.health}
@@ -552,6 +604,18 @@ export function CombatScreen({
                 label="Guard"
                 value={combat.player.guard}
                 tone="blue"
+              />
+              <Stat
+                isChanged={Boolean(
+                  latestResourceFeedback?.message.toLowerCase().includes("courage"),
+                )}
+                key={`courage-${
+                  latestResourceFeedback?.message.toLowerCase().includes("courage")
+                    ? latestResourceFeedback.id
+                    : "stable"
+                }`}
+                label="Courage"
+                value={`${combat.courage}/3`}
               />
               <Stat label="Draw" value={combat.drawPile.length} />
               <Stat label="Discard" value={combat.discardPile.length} />
@@ -986,6 +1050,54 @@ function CombatPopup({
   );
 }
 
+function StructureTargetCard({
+  isDisabled,
+  isSelected,
+  onSelect,
+  structure,
+}: {
+  isDisabled: boolean;
+  isSelected: boolean;
+  onSelect: () => void;
+  structure: CombatStructureState;
+}) {
+  const triggerAt = structure.triggerAtCharge ?? 3;
+  const isAboutToTrigger = structure.charge + 1 >= triggerAt;
+  const healthWidth = `${Math.max(
+    0,
+    Math.min(100, (structure.health / structure.maxHealth) * 100),
+  )}%`;
+
+  return (
+    <button
+      className={`combat-structure-card ${isSelected ? "is-selected" : ""} ${
+        isAboutToTrigger ? "is-danger" : ""
+      }`}
+      disabled={isDisabled}
+      onClick={onSelect}
+      title={structure.effectText}
+      type="button"
+    >
+      <span className="combat-structure-kicker">Targetable Structure</span>
+      <strong>{structure.name}</strong>
+      <span className="combat-structure-health">
+        <i style={{ width: healthWidth }} />
+      </span>
+      <span className="combat-structure-meta">
+        {structure.health}/{structure.maxHealth} HP
+        <b>
+          Charge {structure.charge}/{triggerAt}
+        </b>
+      </span>
+      <em>
+        {isAboutToTrigger
+          ? "Trigger imminent"
+          : "At 3 charges: +1 Might, +1 Corruption"}
+      </em>
+    </button>
+  );
+}
+
 function ActionPopup({
   label,
   tone,
@@ -1192,6 +1304,37 @@ function formatCombatPhase(phase: CombatPhase) {
     .toUpperCase();
 }
 
+function getActiveCombatTargetId(
+  selectedTargetId: CombatTargetId,
+  activeStructures: CombatStructureState[],
+): CombatTargetId {
+  if (selectedTargetId === "enemy") {
+    return "enemy";
+  }
+
+  const structureId = selectedTargetId.slice("structure:".length);
+
+  return activeStructures.some((structure) => structure.instanceId === structureId)
+    ? selectedTargetId
+    : "enemy";
+}
+
+function getCardTargetId(card: Card, selectedTargetId: CombatTargetId) {
+  if (selectedTargetId === "enemy") {
+    return "enemy";
+  }
+
+  return canCardTargetStructures(card) ? selectedTargetId : "enemy";
+}
+
+function canCardTargetStructures(card: Card) {
+  return hasCardEffectType(card, ["DealDamage", "DestroyAltarOrStructure"]);
+}
+
+function getStructureTargetId(structureId: string): CombatTargetId {
+  return `structure:${structureId}`;
+}
+
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -1229,7 +1372,11 @@ function getCardCueTone(card: Card): CombatCueTone {
   return "attack";
 }
 
-function getCardCueTarget(card: Card): CombatCueTarget {
+function getCardCueTarget(card: Card, targetId: CombatTargetId): CombatCueTarget {
+  if (targetId !== "enemy") {
+    return "structure";
+  }
+
   if (hasCardEffectType(card, ["DealDamage"]) || card.type.includes("Attack")) {
     return "enemy";
   }

@@ -2,10 +2,12 @@ import type {
   Card,
   CombatStatusName,
   Enemy,
+  EnemyTrait,
   Hero,
   Memorial,
   ResourceState,
   StartingDeckCard,
+  SourceTier,
 } from "@/types/game";
 
 export interface CombatCardInstance {
@@ -18,6 +20,27 @@ export interface CombatantState {
   maxHealth: number;
   guard: number;
   might: number;
+}
+
+export type CombatTargetId = "enemy" | `structure:${string}`;
+
+export interface EnemyStructureDefinition {
+  id: string;
+  name: string;
+  maxHealth: number;
+  traits: EnemyTrait[];
+  effectText: string;
+  triggerAtCharge?: number;
+  sourceTier: SourceTier;
+  references: string[];
+  theologyNote: string;
+  gameplayRole: string;
+}
+
+export interface CombatStructureState extends EnemyStructureDefinition {
+  instanceId: string;
+  health: number;
+  charge: number;
 }
 
 export type CombatStatus = "active" | "victory" | "defeat";
@@ -84,7 +107,11 @@ export interface QueuedCombatAction {
   statusesApplied?: CombatStatusName[];
   statusesRemoved?: CombatStatusName[];
   resourceChanges?: Partial<ResourceState>;
+  courageChange?: number;
   mightChange?: number;
+  structureChargeChange?: number;
+  structureChargeReset?: boolean;
+  structureId?: string;
   logKind: CombatFeedbackKind;
   logMessage: string;
 }
@@ -147,9 +174,11 @@ export interface CombatStartSnapshot {
   hasFear: boolean;
   playerStatuses: CombatStatusName[];
   enemyStatuses: CombatStatusName[];
+  courage: number;
   heartOfCourageUsed: boolean;
   bossPhase: number;
   destroyedAltarOrStructure: boolean;
+  structures: CombatStructureState[];
   metrics: CombatMetrics;
   feedback: CombatFeedback[];
 }
@@ -177,9 +206,11 @@ export interface CombatState {
   hasFear: boolean;
   playerStatuses: CombatStatusName[];
   enemyStatuses: CombatStatusName[];
+  courage: number;
   heartOfCourageUsed: boolean;
   bossPhase: number;
   destroyedAltarOrStructure: boolean;
+  structures: CombatStructureState[];
   status: CombatStatus;
   phase: CombatPhase;
   actionQueue: QueuedCombatAction[];
@@ -199,7 +230,7 @@ export interface CombatContext {
 }
 
 export type CombatAction =
-  | { type: "play-card"; instanceId: string }
+  | { type: "play-card"; instanceId: string; targetId?: CombatTargetId }
   | { type: "end-turn" }
   | { type: "advance-presentation" }
   | { type: "restart" };

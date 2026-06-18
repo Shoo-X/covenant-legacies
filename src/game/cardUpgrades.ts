@@ -158,8 +158,14 @@ const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
       effects: [{ type: "GainResource", resource: "Faith", amount: 1 }],
     },
     { type: "RemoveStatus", status: "Fear", target: "Player" },
+    { type: "GainCourage", amount: 1, source: "Psalm of Courage" },
   ],
   "card-smooth-stone": [{ type: "ModifyNextAttack", amount: 5 }],
+  "card-watchful-shepherd": [
+    { type: "RevealIntent" },
+    { type: "GainGuard", amount: 5, source: "Watchful Shepherd" },
+    { type: "GainCourage", amount: 1, source: "Watchful Shepherd" },
+  ],
   "card-forbidden-watcher-diagram": [
     { type: "DrawCards", amount: 4 },
     { type: "GainCorruption", amount: 2 },

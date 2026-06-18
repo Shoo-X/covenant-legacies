@@ -1305,7 +1305,10 @@ export const cards: Card[] = [
     type: "Attack",
     rarity: "Common",
     archetypeTags: ["Courage"],
-    synergyNotes: "Core Courage attack that scales against Giant and Nephilim enemies.",
+    synergyNotes:
+      "Core Courage attack that spends built Courage and scales against Giant and Nephilim enemies.",
+    strategyNotes:
+      "Watch enemy intent first, build Courage through Guard or Psalm setup, then use Sling Stone as the clean beginner payoff.",
     upgradedVersion: "Deal 8 damage. If target has Giant or Nephilim, deal +5 damage.",
     effects: [
       {
@@ -1344,7 +1347,10 @@ export const cards: Card[] = [
     type: "Guard",
     rarity: "Common",
     archetypeTags: ["Courage", "Psalm"],
-    synergyNotes: "Bridges Courage defense and Psalm guard plans.",
+    synergyNotes:
+      "Basic defense that helps David fully block attacks and earn Courage from Heart of Courage.",
+    strategyNotes:
+      "Use this when the enemy is preparing a heavy attack. A full block protects health and builds Courage for the next strike.",
     upgradedVersion: "Gain 8 Guard.",
     effects: [{ type: "GainGuard", amount: 5, source: "Shepherd's Guard" }],
     imagePath: artAssetPath("art-shepherds-guard", "/art/cards/shepherds-guard.png"),
@@ -1365,17 +1371,21 @@ export const cards: Card[] = [
     id: "card-psalm-of-courage",
     name: "Psalm of Courage",
     cost: [{ amount: 1, resource: "Faith" }],
-    text: "Gain 4 Guard. Draw 1 card. Remove Fear.",
+    text: "Gain 4 Guard. Draw 1 card. Remove Fear. Gain 1 Courage.",
     type: "Prayer/Song",
     rarity: "Common",
     archetypeTags: ["Psalm", "Courage"],
-    synergyNotes: "Keeps Psalm decks moving while protecting Courage decks from Fear.",
+    synergyNotes:
+      "Keeps Psalm decks moving while removing Fear and setting up Courage burst turns.",
+    strategyNotes:
+      "Use Psalm of Courage to clear Fear before an attack turn, replace itself, and raise Courage for Sling Stone.",
     upgradedVersion:
       "Gain 6 Guard. Draw 1 card. Remove Fear. If Fear was removed, gain 1 Faith.",
     effects: [
       { type: "GainGuard", amount: 4, source: "Psalm of Courage" },
       { type: "DrawCards", amount: 1 },
       { type: "RemoveStatus", status: "Fear", target: "Player" },
+      { type: "GainCourage", amount: 1, source: "Psalm of Courage" },
     ],
     imagePath: artAssetPath("art-psalm-of-courage", "/art/cards/psalm-of-courage.png"),
     imageObjectPosition: "48% 48%",
@@ -1400,6 +1410,8 @@ export const cards: Card[] = [
     rarity: "Common",
     archetypeTags: ["Courage"],
     synergyNotes: "Sets up anti-Giant attacks and Courage burst turns.",
+    strategyNotes:
+      "Play before Sling Stone or another Attack when Courage is ready, especially into Giant or Nephilim targets.",
     upgradedVersion: "Your next attack deals +5 damage.",
     effects: [{ type: "ModifyNextAttack", amount: 3 }],
     imagePath: artAssetPath("art-smooth-stone", "/art/cards/smooth-stone.png"),
@@ -1415,6 +1427,38 @@ export const cards: Card[] = [
     theologyNote:
       "The stone functions as a tactical symbol of prepared faithfulness before battle.",
     gameplayRole: "Tactic",
+  },
+  {
+    id: "card-watchful-shepherd",
+    name: "Watchful Shepherd",
+    cost: [],
+    text: "Reveal enemy intent. Gain 3 Guard.",
+    type: "Tactic/Courage",
+    rarity: "Common",
+    archetypeTags: ["Courage", "Psalm"],
+    synergyNotes:
+      "Beginner planning tool that makes enemy intent readable before David commits resources.",
+    strategyNotes:
+      "Start here when unsure. Read the enemy intent, then decide whether to Guard, remove Fear, or prepare a Courage attack.",
+    upgradedVersion: "Reveal enemy intent. Gain 5 Guard. Gain 1 Courage.",
+    effects: [
+      { type: "RevealIntent" },
+      { type: "GainGuard", amount: 3, source: "Watchful Shepherd" },
+    ],
+    imagePath: artAssetPath("art-shepherds-guard", "/art/cards/shepherds-guard.png"),
+    imageObjectPosition: "50% 43%",
+    artworkTitle: "Shepherd's Guard",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "War of the Watchers",
+    flavorText: "The shepherd watched before the valley moved.",
+    visualTags: ["shepherd", "watch", "staff", "guard", "courage"],
+    sourceTier: "Scripture",
+    references: ["Psalm 23", "1 Samuel 17:34-37"],
+    scriptureAnchors: ["Psalm 23", "1 Samuel 17"],
+    theologyNote:
+      "Watchfulness is framed as faithful care and discernment, not supernatural surveillance.",
+    gameplayRole: "Tactic",
+    representationMode: "Legacy",
   },
   {
     id: "card-forbidden-watcher-diagram",
@@ -1654,6 +1698,8 @@ export const cards: Card[] = [
     rarity: "Uncommon",
     archetypeTags: ["Courage"],
     synergyNotes: "Sets up Sling Stone and other Courage attacks.",
+    strategyNotes:
+      "Use this after Fear appears, then strike while Courage and the attack bonus are still ready.",
     upgradedVersion: "Remove Fear. Your next attack deals +6 damage.",
     combatEffect: { removeFear: true, nextAttackBonus: 4 },
     imagePath: artAssetPath("art-smooth-stone", "/art/cards/smooth-stone.png"),

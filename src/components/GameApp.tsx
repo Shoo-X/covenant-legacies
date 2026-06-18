@@ -356,6 +356,7 @@ export function GameApp() {
         (runStarted ? (
           <MapScreen
             completedEncounterIds={completedEncounterIds}
+            heroDisplayName={heroes[0].shortName ?? heroes[0].name}
             maxRunHealth={heroes[0].maxHealth}
             onStartEncounter={startEncounter}
             revealedMapNodeCount={revealedMapNodeCount}

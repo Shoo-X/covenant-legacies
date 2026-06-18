@@ -55,7 +55,7 @@ export const enemies: Enemy[] = [
     sourceTier: "Speculative Fiction",
     references: ["Original adversary", "1 Samuel 17 as thematic inspiration"],
     theologyNote:
-      "A fictional giant-class enemy used to support the Shepherd King's anti-giant combat identity.",
+      "A fictional giant-class enemy used to support David's early anti-giant combat identity before kingship.",
     gameplayRole: "Attack",
   },
   {

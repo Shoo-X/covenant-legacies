@@ -15,8 +15,20 @@ export type GameplayRole =
   | "Trial"
   | "Support"
   | "Memorial"
+  | "Beginner Hero"
+  | "Hero Preview"
   | "Boss"
   | "Map Node";
+
+export type HeroDifficulty =
+  | "Beginner"
+  | "Intermediate"
+  | "Tactical"
+  | "Advanced"
+  | "High Risk"
+  | "Support";
+
+export type HeroUnlockState = "unlocked" | "locked" | "coming-soon";
 
 export type RepresentationMode =
   | "Legacy"
@@ -48,6 +60,7 @@ export type EnemyTrait =
   | "Nephilim"
   | "Principality"
   | "Spirit"
+  | "Structure"
   | "Watcher";
 
 export type CombatStatusName =
@@ -155,6 +168,7 @@ export type CardEffect =
   | { type: "DrawCards"; amount: number }
   | { type: "GainResource"; amount: number; resource: ResourceName }
   | { type: "LoseResource"; amount: number; resource: ResourceName }
+  | { type: "GainCourage"; amount: number; source?: string }
   | {
       type: "ApplyStatus";
       amount?: number;
@@ -251,6 +265,19 @@ export interface HeroPassive {
 export interface Hero extends SourceBackedContent {
   id: string;
   name: string;
+  canonicalName?: string;
+  shortName?: string;
+  roleSubtitle?: string;
+  legacyTitle?: string;
+  difficulty?: HeroDifficulty;
+  playstyleTags?: string[];
+  strengths?: string[];
+  weaknesses?: string[];
+  signatureMechanic?: string;
+  passiveName?: string;
+  passiveText?: string;
+  unlockState?: HeroUnlockState;
+  artAssetId?: string;
   epithet: string;
   calling: string;
   imagePath?: string;
@@ -260,6 +287,10 @@ export interface Hero extends SourceBackedContent {
   passive: HeroPassive;
   startingDeck: StartingDeckCard[];
   resourceState: ResourceState;
+  startingStats?: ResourceState & {
+    maxHealth: number;
+  };
+  openingHandSize?: number;
 }
 
 export interface Enemy extends SourceBackedContent {

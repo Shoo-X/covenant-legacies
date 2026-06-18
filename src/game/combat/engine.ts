@@ -14,6 +14,7 @@ import {
   resolveQueuedCombatAction,
 } from "./actionQueue";
 import { applyCardEffect } from "./cardEffects";
+import { hasCourageMechanic, startingCourage } from "./courage";
 import { buildStartingDeck, drawCards, shuffleDeck } from "./deck";
 import { getEnemyMaxHealth } from "./enemyPatterns";
 import {
@@ -33,9 +34,11 @@ import type {
   CombatStartSnapshot,
   CombatState,
   CombatantState,
+  CombatTargetId,
 } from "./types";
+import { createEncounterStructures } from "./structures";
 
-const startingHandSize = 5;
+const defaultOpeningHandSize = 5;
 
 export function createCombatState(
   hero: Hero,
@@ -52,16 +55,6 @@ export function createCombatState(
   const enemyMaxHealth = getEnemyMaxHealth(enemy.id, enemy.maxHealth);
   const playerStartHealth = Math.max(1, Math.min(hero.maxHealth, runHealth));
   const turnStartResources = getTurnStartResources(memorials, startingFaithBonus);
-  const hasGiantThreat = enemy.traits.some(
-    (trait) => trait === "Giant" || trait === "Nephilim",
-  );
-  const courageResources = hasGiantThreat
-    ? {
-        ...turnStartResources,
-        resolve: turnStartResources.resolve + 1,
-        faith: turnStartResources.faith + 1,
-      }
-    : turnStartResources;
   const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
   const oppressedMight =
     isCorruptionAtLeast(runResources.corruption, "Oppressed") &&
@@ -75,14 +68,6 @@ export function createCombatState(
       ? 1
       : 0;
   const initialFeedback: CombatFeedback[] = [];
-
-  if (hasGiantThreat) {
-    initialFeedback.push({
-      id: initialFeedback.length + 1,
-      kind: "resource",
-      message: "Heart of Courage: +1 Faith and +1 Resolve.",
-    });
-  }
 
   if (enemy.traits.includes("Boss")) {
     initialFeedback.push({
@@ -125,6 +110,7 @@ export function createCombatState(
     });
   }
 
+  const initialStructures = createEncounterStructures(enemy.id);
   const initialState: CombatState = {
     hero,
     enemy,
@@ -146,8 +132,8 @@ export function createCombatState(
       might: oppressedMight,
     },
     resources: {
-      resolve: courageResources.resolve,
-      faith: Math.max(runResources.faith, courageResources.faith),
+      resolve: turnStartResources.resolve,
+      faith: Math.max(runResources.faith, turnStartResources.faith),
       wisdom: runResources.wisdom,
       authority: runResources.authority,
       corruption: runResources.corruption,
@@ -164,9 +150,11 @@ export function createCombatState(
     hasFear: enemy.traits.includes("Boss"),
     playerStatuses: [],
     enemyStatuses: [],
-    heartOfCourageUsed: hasGiantThreat,
+    courage: hasCourageMechanic(hero) ? startingCourage : 0,
+    heartOfCourageUsed: false,
     bossPhase: enemy.traits.includes("Boss") ? 1 : 0,
-    destroyedAltarOrStructure: false,
+    destroyedAltarOrStructure: initialStructures.length === 0,
+    structures: initialStructures,
     status: "active",
     phase: "BattleIntro",
     actionQueue: [],
@@ -187,7 +175,13 @@ export function createCombatState(
 
   const readyState = applyStartOfCombatCards(
     applyStartOfCombatMemorials(
-      applyStartOfTurnMemorials(drawCards(initialState, startingHandSize, random)),
+      applyStartOfTurnMemorials(
+        drawCards(
+          applyHeartOfCourageRevealBonus(initialState),
+          getOpeningHandSize(hero),
+          random,
+        ),
+      ),
       cardsById,
       random,
     ),
@@ -231,7 +225,7 @@ export function combatReducer(
   }
 
   if (action.type === "play-card") {
-    return playCard(state, action.instanceId, context);
+    return playCard(state, action.instanceId, context, action.targetId);
   }
 
   return endTurn(state);
@@ -241,6 +235,7 @@ function playCard(
   state: CombatState,
   instanceId: string,
   context: CombatContext,
+  targetId: CombatTargetId = "enemy",
 ): CombatState {
   if (state.phase !== "PlayerMain") {
     return state;
@@ -306,7 +301,7 @@ function playCard(
   };
 
   const beforeEffectHadFear = movedState.hasFear;
-  const effectedState = applyCardEffect(movedState, card, context);
+  const effectedState = applyCardEffect(movedState, card, context, targetId);
   const memorialState = applyPostCardMemorialTriggers(
     movedState,
     effectedState,
@@ -314,7 +309,7 @@ function playCard(
   );
 
   if (state.covenantCardsTriggerTwice && card.type.includes("Covenant")) {
-    const secondEffect = applyCardEffect(memorialState, card, context);
+    const secondEffect = applyCardEffect(memorialState, card, context, targetId);
     return syncTerminalPhase(
       applyFearRemovalMemorial(
         {
@@ -494,12 +489,49 @@ function startNextPlayerTurn(
     "enemy",
     `Next intent: ${nextIntent.actionName} - ${nextIntent.summary}.`,
   );
+  nextState = applyHeartOfCourageRevealBonus(nextState);
 
   return drawCards(
     applyStartOfTurnMemorials(nextState),
-    startingHandSize,
+    getOpeningHandSize(state.hero),
     context.random,
   );
+}
+
+function applyHeartOfCourageRevealBonus(state: CombatState): CombatState {
+  if (state.heartOfCourageUsed || !hasCourageMechanic(state.hero)) {
+    return state;
+  }
+
+  const intent = getEnemyIntentDetails(state);
+  const hasGiantThreat = state.enemy.traits.some(
+    (trait) => trait === "Giant" || trait === "Nephilim",
+  );
+  const revealsHeavyAttack = intent.intentType === "Heavy Attack";
+
+  if (!hasGiantThreat && !revealsHeavyAttack) {
+    return state;
+  }
+
+  return addFeedback(
+    {
+      ...state,
+      heartOfCourageUsed: true,
+      resources: {
+        ...state.resources,
+        faith: state.resources.faith + 1,
+        resolve: state.resources.resolve + 1,
+      },
+    },
+    "resource",
+    hasGiantThreat
+      ? "Heart of Courage: giant threat revealed. +1 Faith and +1 Resolve."
+      : "Heart of Courage: heavy attack revealed. +1 Faith and +1 Resolve.",
+  );
+}
+
+function getOpeningHandSize(hero: Hero) {
+  return hero.openingHandSize ?? defaultOpeningHandSize;
 }
 
 function syncTerminalPhase(state: CombatState): CombatState {
@@ -558,9 +590,11 @@ function createCombatStartSnapshot(state: CombatState): CombatStartSnapshot {
     hasFear: state.hasFear,
     playerStatuses: [...state.playerStatuses],
     enemyStatuses: [...state.enemyStatuses],
+    courage: state.courage,
     heartOfCourageUsed: state.heartOfCourageUsed,
     bossPhase: state.bossPhase,
     destroyedAltarOrStructure: state.destroyedAltarOrStructure,
+    structures: cloneStructures(state.structures),
     metrics: { ...state.metrics },
     feedback: state.feedback.map((item) => ({ ...item })),
   };
@@ -590,9 +624,11 @@ function restoreCombatStartSnapshot(snapshot: CombatStartSnapshot): CombatState 
     hasFear: snapshot.hasFear,
     playerStatuses: [...snapshot.playerStatuses],
     enemyStatuses: [...snapshot.enemyStatuses],
+    courage: snapshot.courage,
     heartOfCourageUsed: snapshot.heartOfCourageUsed,
     bossPhase: snapshot.bossPhase,
     destroyedAltarOrStructure: snapshot.destroyedAltarOrStructure,
+    structures: cloneStructures(snapshot.structures),
     status: "active",
     phase: "BattleIntro",
     actionQueue: [],
@@ -623,6 +659,10 @@ function cloneCardInstances(instances: CombatCardInstance[]) {
 
 function cloneCombatant(combatant: CombatantState) {
   return { ...combatant };
+}
+
+function cloneStructures(structures: CombatState["structures"]) {
+  return structures.map((structure) => ({ ...structure }));
 }
 
 export function canPayForCard(state: CombatState, card: Card) {
