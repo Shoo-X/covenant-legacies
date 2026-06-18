@@ -12,6 +12,7 @@ export interface ArtAsset {
   id: string;
   title: string;
   path: string;
+  additionalPaths?: string[];
   objectFit?: "contain" | "cover";
   objectPosition?: string;
   sourceType: ArtAssetSourceType;
@@ -47,6 +48,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-throne-room-vision",
     title: "Throne Room Vision",
     path: "/art/showcase/throne-room-vision.png",
+    additionalPaths: ["/art/incoming/throne-room-vision.png"],
     objectPosition: "50% 42%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -67,6 +69,10 @@ export const artAssets: ArtAsset[] = [
     id: "art-moses-divider-of-seas",
     title: "Moses, Divider of Seas",
     path: "/art/showcase/moses-divider-of-seas.png",
+    additionalPaths: [
+      "/art/cards/moses-divider-of-seas.png",
+      "/art/incoming/moses-divider-of-seas.png",
+    ],
     objectPosition: "46% 36%",
     relatedCards: ["card-moses-divider-of-seas", "card-psalm-of-deliverance"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
@@ -80,6 +86,10 @@ export const artAssets: ArtAsset[] = [
     id: "art-archangel-michael",
     title: "Archangel Michael",
     path: "/art/showcase/archangel-michael.png",
+    additionalPaths: [
+      "/art/cards/archangel-michael.png",
+      "/art/incoming/archangel-michael.png",
+    ],
     objectPosition: "52% 36%",
     relatedCards: ["card-archangel-michael"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
@@ -93,6 +103,10 @@ export const artAssets: ArtAsset[] = [
     id: "art-david-goliath-portrait",
     title: "David vs Goliath",
     path: "/art/showcase/david-goliath-portrait.png",
+    additionalPaths: [
+      "/art/cards/david-vs-goliath.png",
+      "/art/incoming/david-goliath-portrait.png",
+    ],
     objectPosition: "44% 32%",
     relatedCards: ["card-david-vs-goliath", "card-giant-toppler"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
@@ -106,6 +120,10 @@ export const artAssets: ArtAsset[] = [
     id: "art-mary-empty-tomb",
     title: "Mary Magdalene at the Empty Tomb",
     path: "/art/showcase/mary-empty-tomb.png",
+    additionalPaths: [
+      "/art/cards/mary-magdalene-empty-tomb.png",
+      "/art/incoming/mary-empty-tomb.png",
+    ],
     objectPosition: "42% 30%",
     relatedCards: ["card-mary-witness-to-glory"],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Codex", "Combat"],
@@ -119,6 +137,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-resurrection-empty-tomb",
     title: "The Resurrection Witness",
     path: "/art/showcase/resurrection-empty-tomb.png",
+    additionalPaths: ["/art/incoming/resurrection-empty-tomb.png"],
     objectPosition: "50% 42%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -132,6 +151,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-abraham-stars",
     title: "Abraham",
     path: "/art/gallery/abraham-stars.png",
+    additionalPaths: ["/art/incoming/abraham-stars.png"],
     objectPosition: "50% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -145,6 +165,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-elijah-fire-from-heaven",
     title: "Elijah",
     path: "/art/gallery/elijah-fire-from-heaven.png",
+    additionalPaths: ["/art/incoming/elijah-fire-from-heaven.png"],
     objectPosition: "50% 38%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -158,6 +179,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-noah-ark-covenant",
     title: "Noah",
     path: "/art/gallery/noah-ark-covenant.png",
+    additionalPaths: ["/art/incoming/noah-ark-covenant.png"],
     objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -171,6 +193,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-samuel-temple",
     title: "Samuel",
     path: "/art/gallery/samuel-temple.png",
+    additionalPaths: ["/art/incoming/samuel-temple.png"],
     objectPosition: "50% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -184,6 +207,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-peter-witness",
     title: "Peter",
     path: "/art/gallery/peter-witness.png",
+    additionalPaths: ["/art/incoming/peter-witness.png"],
     objectPosition: "48% 34%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -197,6 +221,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-samson-pillars",
     title: "Samson",
     path: "/art/heroes/samson-pillars.png",
+    additionalPaths: ["/art/incoming/samson-pillars.png"],
     objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery"],
@@ -210,6 +235,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-ruth-fields",
     title: "Ruth",
     path: "/art/heroes/ruth-fields.png",
+    additionalPaths: ["/art/incoming/ruth-fields.png"],
     objectPosition: "48% 35%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -223,6 +249,7 @@ export const artAssets: ArtAsset[] = [
     id: "art-shepherd-david",
     title: "Shepherd David",
     path: "/art/heroes/shepherd-david.png",
+    additionalPaths: ["/art/incoming/shepard-david.png"],
     objectPosition: "48% 26%",
     relatedCards: ["card-sling-stone", "card-shepherds-guard"],
     relatedScreens: ["Gallery", "Hero Select"],
@@ -233,9 +260,80 @@ export const artAssets: ArtAsset[] = [
   },
   {
     ...openAiConceptDefaults,
+    id: "art-sling-stone",
+    title: "Sling Stone",
+    path: "/art/cards/sling-stone.png",
+    additionalPaths: ["/art/incoming/sling-stone.png"],
+    objectPosition: "52% 42%",
+    relatedCards: ["card-sling-stone"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["david", "sling", "stone", "courage", "valley"],
+    notes:
+      "Action-focused concept for the shepherd's stone; use as covenant courage imagery rather than spectacle.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-smooth-stone",
+    title: "Smooth Stone",
+    path: "/art/cards/smooth-stone.png",
+    additionalPaths: ["/art/incoming/smooth-stone.png"],
+    objectPosition: "54% 48%",
+    relatedCards: ["card-smooth-stone", "card-stone-of-defiance"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["david", "stones", "preparedness", "courage", "valley"],
+    notes:
+      "Prepared-stone concept for tactical courage cards tied to the David and Goliath theme.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-shepherds-guard",
+    title: "Shepherd's Guard",
+    path: "/art/cards/shepherds-guard.png",
+    additionalPaths: ["/art/incoming/shepherds-guard.png"],
+    objectPosition: "50% 43%",
+    relatedCards: ["card-shepherds-guard"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["shepherd", "staff", "flock", "guard", "psalm"],
+    notes:
+      "Protective shepherd motif for guard effects; keeps the tone pastoral and reverent.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-psalm-of-courage",
+    title: "Psalm of Courage",
+    path: "/art/cards/psalm-of-courage.png",
+    additionalPaths: ["/art/incoming/pslam-of-courage.png"],
+    objectPosition: "48% 48%",
+    relatedCards: ["card-psalm-of-courage"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["psalm", "harp", "scroll", "worship", "courage"],
+    notes:
+      "Worship-and-scroll concept for courage formed through prayerful remembrance.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-harp-of-watchfulness",
+    title: "Harp of Watchfulness",
+    path: "/art/cards/harp-of-watchfulness.png",
+    additionalPaths: ["/art/incoming/harp-of-watchfulness.png"],
+    objectPosition: "45% 48%",
+    relatedCards: ["card-harp-of-watchfulness"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["harp", "watchfulness", "psalm", "night", "prayer"],
+    notes:
+      "Quiet night-watch psalm concept for prayer, vigilance, and faithful endurance.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
     id: "art-daniel-lions-den",
     title: "Daniel in the Lions' Den",
     path: "/art/heroes/daniel-lions-den.png",
+    additionalPaths: ["/art/incoming/daniel-lions-den.png"],
     objectPosition: "50% 36%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Codex"],
@@ -243,6 +341,48 @@ export const artAssets: ArtAsset[] = [
     notes:
       "Faithfulness under pressure concept for gallery and codex review.",
     theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-giant-of-high-place",
+    title: "Giant of the High Place",
+    path: "/art/enemies/giant-of-high-place.png",
+    additionalPaths: ["/art/incoming/giant-of-high-place.png"],
+    objectPosition: "52% 28%",
+    relatedCards: ["card-giant-toppler"],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["giant", "high place", "boss", "judgment", "valley"],
+    notes:
+      "Boss-scale enemy concept for original speculative high-place opposition; keep framed as idolatrous tyranny rather than glamour.",
+    theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-high-place-giant",
+    title: "High Place Giant",
+    path: "/art/gallery/high-place-giant.png",
+    additionalPaths: ["/art/incoming/high-place-giant.png"],
+    objectPosition: "50% 42%",
+    relatedCards: [],
+    relatedScreens: ["Gallery", "Campaign Map", "Codex"],
+    tags: ["high place", "giant", "valley", "boss", "mystery"],
+    notes:
+      "Atmospheric high-place concept for the campaign's final ascent and gallery context.",
+    theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-valley-of-the-giant",
+    title: "The Valley of the Giant",
+    path: "/art/showcase/valley-of-the-giant.png",
+    additionalPaths: ["/art/incoming/valley-of-the-giant.png"],
+    objectPosition: "50% 44%",
+    relatedCards: [],
+    relatedScreens: ["Gallery", "Campaign Map", "Home"],
+    tags: ["valley", "campaign map", "giant", "wilderness", "war of the watchers"],
+    notes:
+      "Campaign vista concept for The Valley of the Giant, the first War of the Watchers map.",
+    theologicalSensitivity: "low",
   },
 ];
 
@@ -252,4 +392,21 @@ export function getArtAsset(assetId: string) {
 
 export function getArtAssetPath(assetId: string) {
   return getArtAsset(assetId)?.path;
+}
+
+export function getArtAssetByPath(path?: string) {
+  if (!path) {
+    return undefined;
+  }
+
+  return artAssets.find(
+    (asset) => asset.path === path || asset.additionalPaths?.includes(path),
+  );
+}
+
+export function getAllTrackedArtPaths() {
+  return artAssets.flatMap((asset) => [
+    asset.path,
+    ...(asset.additionalPaths ?? []),
+  ]);
 }

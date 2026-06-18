@@ -6,7 +6,7 @@ import { CardArtwork } from "@/components/CardArtwork";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
-import { artAssets, type ArtAsset } from "@/data/artAssets";
+import { artAssets, getArtAssetByPath, type ArtAsset } from "@/data/artAssets";
 import { cards } from "@/data/cards";
 import {
   cardRarityFilters,
@@ -251,17 +251,27 @@ function GalleryAssetArtwork({
 }
 
 function CardGalleryDetails({ card }: { card: Card }) {
+  const artAsset = getArtAssetByPath(card.imagePath);
+
   return (
     <>
       <p className="gallery-flavor">{card.flavorText}</p>
       <p>{card.theologyNote}</p>
+      {artAsset && (
+        <p className="gallery-meta-note">
+          {artAsset.saga} / {formatSourceType(artAsset.sourceType)} /{" "}
+          {formatUsageStatus(artAsset.usageStatus)}
+        </p>
+      )}
+      {artAsset && <p>{artAsset.notes}</p>}
       <div className="card-tag-row">
         {(card.visualTags ?? []).map((tag) => (
           <span key={tag}>{tag}</span>
         ))}
       </div>
       <p className="card-detail-credit">
-        {getCardSet(card)} / {card.artistCredit ?? "Art pending"}
+        {getCardSet(card)} /{" "}
+        {artAsset?.generationTool ?? card.artistCredit ?? "Art pending"}
       </p>
     </>
   );

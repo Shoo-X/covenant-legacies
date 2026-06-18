@@ -5,12 +5,15 @@ import { encounters } from "@/data/encounters";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { getCorruptionThreshold } from "@/game/corruption";
 import type { Encounter, Memorial, ResourceState } from "@/types/game";
 
 interface MapScreenProps {
   completedEncounterIds: string[];
+  maxRunHealth: number;
   onStartEncounter: (encounter: Encounter) => void;
   revealedMapNodeCount: number;
+  runHealth: number;
   runMemorials: Memorial[];
   runResources: ResourceState;
   upgradedCardIds: string[];
@@ -18,20 +21,32 @@ interface MapScreenProps {
 
 export function MapScreen({
   completedEncounterIds,
+  maxRunHealth,
   onStartEncounter,
   revealedMapNodeCount,
+  runHealth,
   runMemorials,
   runResources,
   upgradedCardIds,
 }: MapScreenProps) {
-  const [selectedEncounterId, setSelectedEncounterId] = useState(encounters[0].id);
+  const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
+  const nextEnterableEncounter = useMemo(
+    () => getNextEnterableEncounter(completedEncounterIds) ?? encounters[0],
+    [completedEncounterIds],
+  );
+  const [selectedEncounterId, setSelectedEncounterId] = useState(
+    nextEnterableEncounter.id,
+  );
   const selectedEncounter = useMemo(
     () =>
       encounters.find((encounter) => encounter.id === selectedEncounterId) ??
       encounters[0],
     [selectedEncounterId],
   );
-  const selectedCanEnter = canEnterEncounter(selectedEncounter);
+  const selectedCanEnter = canEnterEncounter(
+    selectedEncounter,
+    completedEncounterIds,
+  );
   const selectedCompleted = completedEncounterIds.includes(selectedEncounter.id);
 
   return (
@@ -52,11 +67,19 @@ export function MapScreen({
           </div>
 
           <div className="campaign-run-stats">
+            <RunStat label="Health" value={`${runHealth} / ${maxRunHealth}`} />
             <RunStat label="Faith" value={runResources.faith} />
             <RunStat label="Authority" value={runResources.authority} />
-            <RunStat label="Corruption" value={runResources.corruption} />
+            <RunStat
+              label="Corruption"
+              value={`${runResources.corruption} - ${corruptionThreshold.name}`}
+            />
             <RunStat label="Upgrades" value={upgradedCardIds.length} />
           </div>
+
+          <p className={`campaign-corruption-note corruption-note-${corruptionThreshold.tone}`}>
+            {corruptionThreshold.name}: {corruptionThreshold.summary}
+          </p>
 
           {revealedMapNodeCount > 0 && (
             <p className="campaign-warning">
@@ -83,7 +106,7 @@ export function MapScreen({
             {encounters.map((encounter, index) => {
               const isCompleted = completedEncounterIds.includes(encounter.id);
               const isSelected = selectedEncounter.id === encounter.id;
-              const canEnter = canEnterEncounter(encounter);
+              const canEnter = canEnterEncounter(encounter, completedEncounterIds);
               const state = isCompleted ? "completed" : canEnter ? "available" : "locked";
 
               return (
@@ -139,12 +162,16 @@ export function MapScreen({
             tone={selectedEncounter.nodeType === "Boss" ? "danger" : "primary"}
           >
             {selectedCompleted
-              ? "Replay"
+              ? "Completed"
               : selectedCanEnter
                 ? selectedEncounter.mysteryEncounterIds?.length
                   ? "Enter Mystery"
-                  : "Enter Trial"
-                : "Coming Soon"}
+                  : selectedEncounter.nodeType === "Rest / Upgrade"
+                    ? "Rest / Upgrade"
+                    : "Enter Trial"
+                : hasEncounterAction(selectedEncounter)
+                  ? "Locked"
+                  : "Coming Soon"}
           </PrimaryButton>
         </GamePanel>
       </div>
@@ -152,8 +179,35 @@ export function MapScreen({
   );
 }
 
-function canEnterEncounter(encounter: Encounter) {
+function getNextEnterableEncounter(completedEncounterIds: string[]) {
+  return encounters.find((encounter) =>
+    canEnterEncounter(encounter, completedEncounterIds),
+  );
+}
+
+function canEnterEncounter(
+  encounter: Encounter,
+  completedEncounterIds: string[],
+) {
+  if (completedEncounterIds.includes(encounter.id) || !hasEncounterAction(encounter)) {
+    return false;
+  }
+
+  const encounterIndex = encounters.findIndex(
+    (candidate) => candidate.id === encounter.id,
+  );
+  const previousPlayableEncounters = encounters
+    .slice(0, Math.max(0, encounterIndex))
+    .filter(hasEncounterAction);
+
+  return previousPlayableEncounters.every((previousEncounter) =>
+    completedEncounterIds.includes(previousEncounter.id),
+  );
+}
+
+function hasEncounterAction(encounter: Encounter) {
   return (
+    encounter.nodeType === "Rest / Upgrade" ||
     encounter.enemyIds.length > 0 ||
     Boolean(encounter.mysteryEncounterIds?.length)
   );
@@ -161,7 +215,7 @@ function canEnterEncounter(encounter: Encounter) {
 
 interface RunStatProps {
   label: string;
-  value: number;
+  value: number | string;
 }
 
 function RunStat({ label, value }: RunStatProps) {

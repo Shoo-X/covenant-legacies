@@ -1,4 +1,12 @@
-import type { Card, Enemy, Hero, Memorial, StartingDeckCard } from "@/types/game";
+import type {
+  Card,
+  Enemy,
+  Hero,
+  Memorial,
+  ResourceState,
+  StartingDeckCard,
+} from "@/types/game";
+import { getCorruptionThreshold, isCorruptionAtLeast } from "@/game/corruption";
 import { applyCardEffect } from "./cardEffects";
 import { buildStartingDeck, drawCards, shuffleDeck } from "./deck";
 import {
@@ -22,6 +30,8 @@ export function createCombatState(
   runDeck: StartingDeckCard[] = hero.startingDeck,
   memorials: Memorial[] = [],
   startingFaithBonus = 0,
+  runResources: ResourceState = hero.resourceState,
+  runHealth = hero.maxHealth,
 ): CombatState {
   const deck = shuffleDeck(buildStartingDeck(runDeck, cardsById), random);
   const turnStartResources = getTurnStartResources(memorials, startingFaithBonus);
@@ -35,15 +45,79 @@ export function createCombatState(
         faith: turnStartResources.faith + 1,
       }
     : turnStartResources;
+  const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
+  const oppressedMight =
+    isCorruptionAtLeast(runResources.corruption, "Oppressed") &&
+    enemy.traits.some(
+      (trait) =>
+        trait === "Watcher" ||
+        trait === "Giant" ||
+        trait === "Nephilim" ||
+        trait === "Demon",
+    )
+      ? 1
+      : 0;
+  const initialFeedback: CombatFeedback[] = [];
+
+  if (hasGiantThreat) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "resource",
+      message: "Heart of Courage: +1 Faith and +1 Resolve.",
+    });
+  }
+
+  if (enemy.traits.includes("Boss")) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "enemy",
+      message: "Fear pressure fills the high place.",
+    });
+  }
+
+  if (runResources.corruption === 0) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "resource",
+      message: "Clean Hands: Covenant guard and healing effects gain +1.",
+    });
+  } else if (isCorruptionAtLeast(runResources.corruption, "Tainted")) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "resource",
+      message: `${corruptionThreshold.name}: Prayer and Psalm cards cost +1 Faith.`,
+    });
+  }
+
+  if (oppressedMight > 0) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "enemy",
+      message: `${corruptionThreshold.name}: ${enemy.name} begins with +1 Might.`,
+    });
+  }
+
+  if (
+    enemy.traits.includes("Boss") &&
+    isCorruptionAtLeast(runResources.corruption, "Marked")
+  ) {
+    initialFeedback.push({
+      id: initialFeedback.length + 1,
+      kind: "enemy",
+      message: "Marked: Shadow of the Watchers is already near.",
+    });
+  }
 
   const initialState: CombatState = {
     hero,
     enemy,
     runDeck,
+    runHealth,
+    runResources,
     memorials,
     startingFaithBonus,
     player: {
-      health: hero.maxHealth,
+      health: Math.max(1, Math.min(hero.maxHealth, runHealth)),
       maxHealth: hero.maxHealth,
       guard: 0,
       might: 0,
@@ -52,9 +126,12 @@ export function createCombatState(
       health: enemy.maxHealth,
       maxHealth: enemy.maxHealth,
       guard: 0,
-      might: 0,
+      might: oppressedMight,
     },
-    resources: courageResources,
+    resources: {
+      ...courageResources,
+      corruption: runResources.corruption,
+    },
     drawPile: deck,
     hand: [],
     discardPile: [],
@@ -65,28 +142,13 @@ export function createCombatState(
     firstPsalmDiscountUsed: false,
     oilOfGladnessUsed: false,
     hasFear: enemy.traits.includes("Boss"),
+    playerStatuses: [],
+    enemyStatuses: [],
     heartOfCourageUsed: hasGiantThreat,
+    bossPhase: enemy.traits.includes("Boss") ? 1 : 0,
+    destroyedAltarOrStructure: false,
     status: "active",
-    feedback: [
-      ...(hasGiantThreat
-        ? [
-            {
-              id: 1,
-              kind: "resource" as const,
-              message: "Heart of Courage: +1 Faith and +1 Resolve.",
-            },
-          ]
-        : []),
-      ...(enemy.traits.includes("Boss")
-        ? [
-            {
-              id: hasGiantThreat ? 2 : 1,
-              kind: "enemy" as const,
-              message: "Fear pressure fills the high place.",
-            },
-          ]
-        : []),
-    ],
+    feedback: initialFeedback,
   };
 
   return applyStartOfCombatCards(
@@ -112,6 +174,8 @@ export function combatReducer(
       state.runDeck,
       state.memorials,
       state.startingFaithBonus,
+      state.runResources,
+      state.runHealth,
     );
   }
 
@@ -214,8 +278,14 @@ function endTurn(state: CombatState, context: CombatContext): CombatState {
   const selfBuff = state.enemy.intent.toLowerCase().includes("buff") ? 2 : 0;
   const nextEnemyMight = state.enemyState.might + selfBuff;
   const enemyAttackDamage = state.enemy.attackDamage + nextEnemyMight;
+  const markedShadowDamage =
+    state.enemy.traits.includes("Boss") &&
+    (state.bossPhase >= 3 || isCorruptionAtLeast(state.resources.corruption, "Marked"))
+      ? 3
+      : 0;
   const blockedDamage = Math.min(state.player.guard, enemyAttackDamage);
-  const damageTaken = Math.max(0, enemyAttackDamage - state.player.guard);
+  const damageTaken =
+    Math.max(0, enemyAttackDamage - state.player.guard) + markedShadowDamage;
   const nextHealth = Math.max(0, state.player.health - damageTaken);
   const enemyFeedback: CombatFeedback[] = [
     ...(selfBuff > 0
@@ -232,6 +302,15 @@ function endTurn(state: CombatState, context: CombatContext): CombatState {
       kind: "enemy",
       message: `${state.enemy.name} attacks for ${enemyAttackDamage}. ${blockedDamage} blocked, ${damageTaken} taken.`,
     },
+    ...(markedShadowDamage > 0
+      ? [
+          {
+            id: state.feedback.length + (selfBuff > 0 ? 3 : 2),
+            kind: "enemy" as const,
+            message: "Shadow of the Watchers: +3 corruption damage.",
+          },
+        ]
+      : []),
   ];
 
   const afterEnemy: CombatState = {
@@ -247,7 +326,15 @@ function endTurn(state: CombatState, context: CombatContext): CombatState {
     },
     hand: [],
     discardPile: [...state.discardPile, ...state.hand],
-    resources: turnStartResources,
+    runHealth: nextHealth,
+    runResources: {
+      ...state.runResources,
+      corruption: state.resources.corruption,
+    },
+    resources: {
+      ...turnStartResources,
+      corruption: state.resources.corruption,
+    },
     turn: state.turn + 1,
     nextAttackBonus: 0,
     nextPrayerCostReduction: 0,
@@ -269,7 +356,7 @@ function endTurn(state: CombatState, context: CombatContext): CombatState {
             {
               id: state.feedback.length + enemyFeedback.length + 1,
               kind: "system" as const,
-              message: "New turn: Guard reset. Resolve 3, Faith 1.",
+              message: `New turn: Guard reset. Resolve 3, Faith 1. Corruption ${state.resources.corruption}.`,
             },
           ]),
     ],
@@ -301,8 +388,13 @@ function getAdjustedCosts(state: CombatState, card: Card) {
   let remainingReduction =
     (card.type.includes("Prayer") ? state.nextPrayerCostReduction : 0) +
     (isPsalmCard(card) ? getFirstPsalmCostReduction(state) : 0);
+  const taintedPrayerPenalty =
+    isCorruptionAtLeast(state.resources.corruption, "Tainted") &&
+    (card.type.includes("Prayer") || card.type.includes("Psalm"))
+      ? 1
+      : 0;
 
-  return card.cost.map((cost) => {
+  const adjustedCosts = card.cost.map((cost) => {
     if (cost.resource !== "Faith" || remainingReduction <= 0) {
       return cost;
     }
@@ -315,6 +407,22 @@ function getAdjustedCosts(state: CombatState, card: Card) {
       amount: cost.amount - reduction,
     };
   });
+
+  if (taintedPrayerPenalty <= 0) {
+    return adjustedCosts;
+  }
+
+  const faithCost = adjustedCosts.find((cost) => cost.resource === "Faith");
+
+  if (faithCost) {
+    return adjustedCosts.map((cost) =>
+      cost.resource === "Faith"
+        ? { ...cost, amount: cost.amount + taintedPrayerPenalty }
+        : cost,
+    );
+  }
+
+  return [...adjustedCosts, { amount: taintedPrayerPenalty, resource: "Faith" as const }];
 }
 
 function isPsalmCard(card: Card) {

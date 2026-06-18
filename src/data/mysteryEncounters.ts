@@ -13,6 +13,7 @@ export const mysteryEncounters: MysteryEncounter[] = [
     theologyNote:
       "This encounter invites reflection on a mysterious biblical figure without overexplaining the text.",
     gameplayRole: "Support",
+    representationMode: "MysteryEncounter",
     choices: [
       {
         id: "receive-the-blessing",
@@ -65,6 +66,7 @@ export const mysteryEncounters: MysteryEncounter[] = [
     theologyNote:
       "The scene is treated as tragic and cautionary, emphasizing refusal, repentance, and the danger of seeking forbidden counsel.",
     gameplayRole: "Trial",
+    representationMode: "ForbiddenWarning",
     choices: [
       {
         id: "refuse-forbidden-counsel",
