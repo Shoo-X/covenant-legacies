@@ -318,6 +318,9 @@ export function CombatScreen({
                 <Chip key={trait} label={trait} tone="gold" />
               ))}
               <Chip label={`Might ${combat.enemyState.might}`} tone="crimson" />
+              {combat.enemyState.guard > 0 && (
+                <Chip label={`Guard ${combat.enemyState.guard}`} tone="blue" />
+              )}
               {combat.hasFear && <Chip label="Fear" tone="violet" />}
               {combat.bossPhase > 0 && (
                 <Chip label={`Phase ${combat.bossPhase}`} tone="crimson" />
@@ -501,7 +504,11 @@ export function CombatScreen({
             </div>
 
             <div className="combat-memorial-bank">
-              {combat.memorials.length === 0 ? (
+              {combat.hasFear && <Chip label="Fear" tone="violet" />}
+              {combat.playerStatuses.map((status) => (
+                <Chip key={status} label={status} tone="blue" />
+              ))}
+              {combat.memorials.length === 0 && !combat.hasFear && combat.playerStatuses.length === 0 ? (
                 <Chip label="No Memorials" tone="muted" />
               ) : (
                 combat.memorials.map((memorial) => (
@@ -623,6 +630,14 @@ export function CombatScreen({
                   ? `${enemy.name} has fallen.`
                   : "The champion has fallen."}
               </h2>
+              <div className="combat-result-metrics" aria-label="Combat summary">
+                <Stat label="Rounds" value={combat.metrics.roundsTaken} />
+                <Stat label="Damage Dealt" value={combat.metrics.damageDealt} />
+                <Stat label="Damage Taken" value={combat.metrics.damageReceived} />
+                <Stat label="Guard Raised" value={combat.metrics.guardGenerated} />
+                <Stat label="Corruption" value={combat.metrics.corruptionGained} />
+                <Stat label="Cards Played" value={combat.metrics.cardsPlayed} />
+              </div>
               <div className="mt-5">
                 <PrimaryButton
                   onClick={() =>
@@ -942,12 +957,13 @@ function Chip({
   tone,
 }: {
   label: string;
-  tone: "gold" | "crimson" | "violet" | "muted";
+  tone: "gold" | "crimson" | "violet" | "blue" | "muted";
 }) {
   const toneClass = {
     gold: "border-[rgba(215,180,93,0.3)] text-[#fff3cf]",
     crimson: "border-[rgba(159,61,40,0.42)] text-[#ffd7c9]",
     violet: "border-[rgba(127,35,95,0.48)] text-[#f0d4ff]",
+    blue: "border-[rgba(93,183,232,0.34)] text-[#d8f2ff]",
     muted: "border-[rgba(203,185,143,0.16)] text-[rgba(241,228,194,0.58)]",
   }[tone];
 

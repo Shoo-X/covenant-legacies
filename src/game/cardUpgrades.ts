@@ -73,7 +73,7 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   "card-shield-bearer": { guard: 12 },
   "card-captains-formation": { guard: 5, nextAttackBonus: 3 },
   "card-banner-of-the-king": { guard: 7, gainAuthority: 1 },
-  "card-royal-decree": { draw: 2, gainFaith: 1 },
+  "card-royal-decree": { draw: 2, gainFaith: 1, gainWisdom: 1 },
   "card-vanguard-spearmen": { damage: 10, guard: 5 },
   "card-clean-hands": { removeCorruption: 2, guard: 5, draw: 2 },
   "card-renewed-oath": {

@@ -9,6 +9,7 @@ import type {
   TemporaryCardDestination,
 } from "@/types/game";
 import { drawCards } from "./deck";
+import { getEnemyCombatConfig } from "./enemyPatterns";
 import { getGiantDamageBonus, getLowHealthAttackBonus } from "./memorials";
 import { gainResource, getResourceValue, spendResource } from "./resources";
 import type {
@@ -407,8 +408,11 @@ export function dealEnemyDamage(
   message: string,
 ): CombatState {
   const memorialBonus = getLowHealthAttackBonus(state) + getGiantDamageBonus(state);
-  const totalDamage = damage + memorialBonus;
-  const nextHealth = Math.max(0, state.enemyState.health - totalDamage);
+  const fearPenalty = state.hasFear ? Math.min(3, damage + memorialBonus) : 0;
+  const totalDamage = Math.max(0, damage + memorialBonus - fearPenalty);
+  const guardBlocked = Math.min(state.enemyState.guard, totalDamage);
+  const healthDamage = Math.max(0, totalDamage - guardBlocked);
+  const nextHealth = Math.max(0, state.enemyState.health - healthDamage);
   const status = nextHealth === 0 ? "victory" : state.status;
   const nextBossPhase = getNextBossPhase(state, nextHealth);
   const phaseChanged = nextBossPhase > state.bossPhase;
@@ -417,6 +421,7 @@ export function dealEnemyDamage(
     ...state,
     enemyState: {
       ...state.enemyState,
+      guard: Math.max(0, state.enemyState.guard - guardBlocked),
       health: nextHealth,
       might:
         phaseChanged && nextBossPhase >= 3
@@ -425,13 +430,20 @@ export function dealEnemyDamage(
     },
     bossPhase: nextBossPhase,
     hasFear: phaseChanged && nextBossPhase >= 2 ? true : state.hasFear,
+    metrics: {
+      ...state.metrics,
+      damageDealt: state.metrics.damageDealt + healthDamage,
+      roundsTaken: status === "victory" ? state.turn : state.metrics.roundsTaken,
+    },
     status,
   };
 
   nextState = appendFeedback(
     nextState,
     "damage",
-    `${message} -${totalDamage} enemy health${
+    `${message} -${healthDamage} enemy health${
+      guardBlocked > 0 ? ` (${guardBlocked} blocked by Guard)` : ""
+    }${fearPenalty > 0 ? ` (${fearPenalty} lost to Fear)` : ""}${
       memorialBonus > 0 ? ` (${memorialBonus} from Memorials)` : ""
     }.`,
   );
@@ -453,12 +465,15 @@ function getNextBossPhase(state: CombatState, nextHealth: number) {
   }
 
   const healthRatio = nextHealth / state.enemyState.maxHealth;
+  const thresholds = getEnemyCombatConfig(state.enemy.id)?.phaseThresholds;
+  const phase2Threshold = thresholds?.phase2 ?? 0.6;
+  const phase3Threshold = thresholds?.phase3 ?? 0.3;
 
-  if (healthRatio <= 0.3) {
+  if (healthRatio <= phase3Threshold) {
     return 3;
   }
 
-  if (healthRatio <= 0.6) {
+  if (healthRatio <= phase2Threshold) {
     return 2;
   }
 
@@ -490,16 +505,32 @@ export function gainPlayerGuard(
   amount: number,
   source: string,
 ): CombatState {
+  const weakenPenalty = state.playerStatuses.includes("Weaken")
+    ? Math.min(2, amount)
+    : 0;
+  const guardGained = Math.max(0, amount - weakenPenalty);
+  const playerStatuses =
+    weakenPenalty > 0
+      ? state.playerStatuses.filter((status) => status !== "Weaken")
+      : state.playerStatuses;
+
   return appendFeedback(
     {
       ...state,
       player: {
         ...state.player,
-        guard: state.player.guard + amount,
+        guard: state.player.guard + guardGained,
+      },
+      playerStatuses,
+      metrics: {
+        ...state.metrics,
+        guardGenerated: state.metrics.guardGenerated + guardGained,
       },
     },
     "guard",
-    `${source}: +${amount} Guard.`,
+    `${source}: +${guardGained} Guard${
+      weakenPenalty > 0 ? ` (${weakenPenalty} reduced by Weaken)` : ""
+    }.`,
   );
 }
 
@@ -571,6 +602,10 @@ function gainCorruption(state: CombatState, amount: number): CombatState {
       enemyState: {
         ...state.enemyState,
         might: state.enemyState.might + bossMightGain,
+      },
+      metrics: {
+        ...state.metrics,
+        corruptionGained: state.metrics.corruptionGained + amount,
       },
     },
     "resource",

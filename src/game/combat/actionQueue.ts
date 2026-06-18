@@ -1,5 +1,5 @@
-import { isCorruptionAtLeast } from "@/game/corruption";
 import type { CombatStatusName, ResourceState } from "@/types/game";
+import { getEnemyPatternStep } from "./enemyPatterns";
 import type {
   CombatFeedbackKind,
   CombatIntentType,
@@ -10,57 +10,57 @@ import type {
 } from "./types";
 
 export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
-  const intentText = state.enemy.intent.toLowerCase();
-  const selfBuff = getEnemySelfBuff(state);
-  const expectedDamage = getEnemyAttackDamage(state);
-  const shadowDamage = getMarkedShadowDamage(state);
-  const hasDebuffPressure = intentText.includes("weaken");
-  const isHeavy =
-    intentText.includes("heavy") ||
-    intentText.includes("crush") ||
-    state.enemy.traits.includes("Boss");
-  const intentType: CombatIntentType = selfBuff
-    ? "Buff"
-    : hasDebuffPressure
-      ? "Debuff"
-      : isHeavy
-        ? "Heavy Attack"
-        : "Attack";
-  const actionName = getEnemyActionName(state, intentType);
-  const summaryParts = [`${expectedDamage} damage`];
+  const step = getEnemyPatternStep(state);
+  const expectedDamage = getStepDamage(state, step.damage);
+  const summaryParts = [step.summary];
 
-  if (selfBuff > 0) {
-    summaryParts.unshift(`+${selfBuff} Might first`);
+  if (step.damage) {
+    summaryParts[0] = `${expectedDamage} damage`;
   }
 
-  if (hasDebuffPressure) {
-    summaryParts.push("fear pressure");
+  if (step.statusesApplied?.length) {
+    summaryParts.push(`applies ${step.statusesApplied.join(", ")}`);
   }
 
-  if (shadowDamage > 0) {
-    summaryParts.push(`+${shadowDamage} Shadow damage`);
+  if (step.guard) {
+    summaryParts.push(`gains ${step.guard} Guard`);
+  }
+
+  if (step.mightChange && step.mightChange > 0) {
+    summaryParts.push(`gains ${step.mightChange} Might`);
+  }
+
+  if (step.corruptionIfAltarActive && !state.destroyedAltarOrStructure) {
+    summaryParts.push(`+${step.corruptionIfAltarActive} Corruption if altar remains`);
   }
 
   return {
-    actionName,
+    actionName: step.actionName,
     expectedDamage,
-    iconTone: getIntentTone(intentType, shadowDamage),
-    intentType,
+    guardGain: step.guard,
+    iconTone: getIntentTone(step.intentType),
+    intentType: step.intentType,
+    statusesApplied: step.statusesApplied,
     summary: summaryParts.join(" - "),
   };
 }
 
 export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[] {
   const intent = getEnemyIntentDetails(state);
-  const selfBuff = getEnemySelfBuff(state);
-  const attackDamage = getEnemyAttackDamage(state);
-  const blockedValue = Math.min(state.player.guard, attackDamage);
-  const hpDamage = Math.max(0, attackDamage - state.player.guard);
-  const shadowDamage = getMarkedShadowDamage(state);
+  const step = getEnemyPatternStep(state);
+  const altarIsActive = !state.destroyedAltarOrStructure;
+  const damage = getStepDamage(state, step.damage);
+  const guardBlocked = Math.min(state.player.guard, damage);
+  const afterGuardDamage = Math.max(0, damage - guardBlocked);
+  const protectedBlocked =
+    afterGuardDamage > 0 && state.playerStatuses.includes("Protected")
+      ? Math.min(4, afterGuardDamage)
+      : 0;
+  const hpDamage = Math.max(0, afterGuardDamage - protectedBlocked);
   const queue: QueuedCombatAction[] = [
     createQueuedAction(state, "windup", {
       actionName: intent.actionName,
-      damage: attackDamage,
+      damage,
       intentType: intent.intentType,
       logKind: "enemy",
       logMessage: `${state.enemy.name} begins ${intent.actionName}.`,
@@ -69,29 +69,89 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     }),
   ];
 
-  if (selfBuff > 0) {
+  if (step.requiresActiveAltar && !altarIsActive) {
+    queue.push(
+      createQueuedAction(state, "altar-broken", {
+        actionName: "Altar Broken",
+        intentType: "Special",
+        logKind: "system",
+        logMessage: "The broken altar cannot empower the enemy.",
+        presentation: "status",
+        target: "Self",
+      }),
+    );
+  }
+
+  if (step.mightChange && (!step.requiresActiveAltar || altarIsActive)) {
     queue.push(
       createQueuedAction(state, "buff", {
-        actionName: "Forbidden Tempering",
-        intentType: "Buff",
+        actionName: step.mightChange > 0 ? step.actionName : "Recovery Falters",
+        intentType: step.intentType,
         logKind: "enemy",
-        logMessage: `${state.enemy.name} gains ${selfBuff} Might.`,
-        mightChange: selfBuff,
+        logMessage:
+          step.mightChange > 0
+            ? `${state.enemy.name} gains ${step.mightChange} Might.`
+            : `${state.enemy.name} loses ${Math.abs(step.mightChange)} Might.`,
+        mightChange: step.mightChange,
         presentation: "buff",
         target: "Self",
       }),
     );
   }
 
-  if (blockedValue > 0) {
+  if (step.guard && (!step.requiresActiveAltar || altarIsActive)) {
+    queue.push(
+      createQueuedAction(state, "enemy-guard", {
+        actionName: step.actionName,
+        guardValue: step.guard,
+        intentType: step.intentType,
+        logKind: "guard",
+        logMessage: `${state.enemy.name} gains ${step.guard} Guard.`,
+        presentation: "buff",
+        target: "Self",
+      }),
+    );
+  }
+
+  if (step.statusesApplied?.length) {
+    queue.push(
+      createQueuedAction(state, "status", {
+        actionName: step.actionName,
+        intentType: step.intentType,
+        logKind: "enemy",
+        logMessage: `Player gains ${step.statusesApplied.join(", ")}.`,
+        presentation: "status",
+        statusesApplied: step.statusesApplied,
+        target: "Player",
+      }),
+    );
+  }
+
+  if (guardBlocked > 0) {
     queue.push(
       createQueuedAction(state, "block", {
         actionName: "Guard Absorbs",
-        blockedValue,
+        blockedValue: guardBlocked,
+        guardLoss: guardBlocked,
         intentType: intent.intentType,
         logKind: "guard",
-        logMessage: `${blockedValue} damage blocked by Guard.`,
+        logMessage: `${guardBlocked} damage blocked by Guard.`,
         presentation: "block",
+        target: "Player",
+      }),
+    );
+  }
+
+  if (protectedBlocked > 0) {
+    queue.push(
+      createQueuedAction(state, "protected", {
+        actionName: "Protected",
+        blockedValue: protectedBlocked,
+        intentType: intent.intentType,
+        logKind: "guard",
+        logMessage: `Protected absorbs ${protectedBlocked} damage.`,
+        presentation: "block",
+        statusesRemoved: ["Protected"],
         target: "Player",
       }),
     );
@@ -109,7 +169,7 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
         target: "Player",
       }),
     );
-  } else {
+  } else if (damage > 0) {
     queue.push(
       createQueuedAction(state, "guard-holds", {
         actionName: "Guard Holds",
@@ -122,14 +182,28 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     );
   }
 
-  if (shadowDamage > 0) {
+  if (step.corruptionIfAltarActive && altarIsActive) {
+    queue.push(
+      createQueuedAction(state, "corruption", {
+        actionName: "Altar Corruption",
+        intentType: "Special",
+        logKind: "resource",
+        logMessage: `The active altar adds ${step.corruptionIfAltarActive} Corruption.`,
+        presentation: "resource",
+        resourceChanges: { corruption: step.corruptionIfAltarActive },
+        target: "Player",
+      }),
+    );
+  }
+
+  if (state.enemy.traits.includes("Boss") && state.bossPhase >= 3) {
     queue.push(
       createQueuedAction(state, "shadow", {
         actionName: "Shadow of the Watchers",
-        hpDamage: shadowDamage,
+        hpDamage: 3,
         intentType: "Special",
         logKind: "enemy",
-        logMessage: `Shadow of the Watchers deals ${shadowDamage} damage.`,
+        logMessage: "Shadow of the Watchers deals 3 damage.",
         presentation: "damage",
         target: "Player",
       }),
@@ -155,12 +229,22 @@ export function resolveQueuedCombatAction(
     };
   }
 
-  if (action.blockedValue) {
+  if (action.guardValue) {
+    nextState = {
+      ...nextState,
+      enemyState: {
+        ...nextState.enemyState,
+        guard: nextState.enemyState.guard + action.guardValue,
+      },
+    };
+  }
+
+  if (action.guardLoss) {
     nextState = {
       ...nextState,
       player: {
         ...nextState.player,
-        guard: Math.max(0, nextState.player.guard - action.blockedValue),
+        guard: Math.max(0, nextState.player.guard - action.guardLoss),
       },
     };
   }
@@ -175,19 +259,33 @@ export function resolveQueuedCombatAction(
         health: nextHealth,
       },
       runHealth: nextHealth,
+      metrics: {
+        ...nextState.metrics,
+        damageReceived: nextState.metrics.damageReceived + action.hpDamage,
+      },
       status: nextHealth === 0 ? "defeat" : nextState.status,
     };
   }
 
   if (action.resourceChanges) {
+    const corruptionGained = Math.max(0, action.resourceChanges.corruption ?? 0);
+
     nextState = {
       ...nextState,
       resources: applyResourceChanges(nextState.resources, action.resourceChanges),
+      metrics: {
+        ...nextState.metrics,
+        corruptionGained: nextState.metrics.corruptionGained + corruptionGained,
+      },
     };
   }
 
   if (action.statusesApplied?.length) {
     nextState = applyStatuses(nextState, action.target, action.statusesApplied);
+  }
+
+  if (action.statusesRemoved?.length) {
+    nextState = removeStatuses(nextState, action.target, action.statusesRemoved);
   }
 
   const loggedState = appendFeedback(
@@ -272,33 +370,8 @@ function createQueuedAction(
   };
 }
 
-function getEnemyActionName(state: CombatState, intentType: CombatIntentType) {
-  const intentText = state.enemy.intent.toLowerCase();
-
-  if (state.enemy.traits.includes("Boss")) {
-    return state.bossPhase >= 3 ? "Shadowed Crush" : "Crushing Blow";
-  }
-
-  if (intentText.includes("buff")) {
-    return "Forbidden Tempering";
-  }
-
-  if (intentText.includes("weaken")) {
-    return "Intimidating Cut";
-  }
-
-  if (intentType === "Heavy Attack") {
-    return "Crushing Blow";
-  }
-
-  return "Strike";
-}
-
-function getIntentTone(
-  intentType: CombatIntentType,
-  shadowDamage: number,
-): EnemyIntentDetails["iconTone"] {
-  if (shadowDamage > 0 || intentType === "Special") {
+function getIntentTone(intentType: CombatIntentType): EnemyIntentDetails["iconTone"] {
+  if (intentType === "Special") {
     return "special";
   }
 
@@ -317,19 +390,12 @@ function getIntentTone(
   return "attack";
 }
 
-function getEnemySelfBuff(state: CombatState) {
-  return state.enemy.intent.toLowerCase().includes("buff") ? 2 : 0;
-}
+function getStepDamage(state: CombatState, baseDamage = 0) {
+  if (baseDamage <= 0) {
+    return 0;
+  }
 
-function getEnemyAttackDamage(state: CombatState) {
-  return state.enemy.attackDamage + state.enemyState.might + getEnemySelfBuff(state);
-}
-
-function getMarkedShadowDamage(state: CombatState) {
-  return state.enemy.traits.includes("Boss") &&
-    (state.bossPhase >= 3 || isCorruptionAtLeast(state.resources.corruption, "Marked"))
-    ? 3
-    : 0;
+  return baseDamage + state.enemyState.might;
 }
 
 function applyResourceChanges(
@@ -379,6 +445,35 @@ function applyStatuses(
           ...currentState,
           [statusKey]: [...currentState[statusKey], status],
         };
+  }, state);
+}
+
+function removeStatuses(
+  state: CombatState,
+  target: QueuedCombatAction["target"],
+  statuses: CombatStatusName[],
+): CombatState {
+  if (target !== "Player" && target !== "Enemy") {
+    return state;
+  }
+
+  return statuses.reduce((currentState, status) => {
+    if (target === "Player" && status === "Fear") {
+      return { ...currentState, hasFear: false };
+    }
+
+    if (status === "Might") {
+      return currentState;
+    }
+
+    const statusKey = target === "Player" ? "playerStatuses" : "enemyStatuses";
+
+    return {
+      ...currentState,
+      [statusKey]: currentState[statusKey].filter(
+        (currentStatus) => currentStatus !== status,
+      ),
+    };
   }, state);
 }
 

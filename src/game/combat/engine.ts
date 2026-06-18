@@ -15,6 +15,7 @@ import {
 } from "./actionQueue";
 import { applyCardEffect } from "./cardEffects";
 import { buildStartingDeck, drawCards, shuffleDeck } from "./deck";
+import { getEnemyMaxHealth } from "./enemyPatterns";
 import {
   applyStartOfCombatMemorials,
   applyStartOfTurnMemorials,
@@ -40,6 +41,7 @@ export function createCombatState(
   runHealth = hero.maxHealth,
 ): CombatState {
   const deck = shuffleDeck(buildStartingDeck(runDeck, cardsById), random);
+  const enemyMaxHealth = getEnemyMaxHealth(enemy.id, enemy.maxHealth);
   const turnStartResources = getTurnStartResources(memorials, startingFaithBonus);
   const hasGiantThreat = enemy.traits.some(
     (trait) => trait === "Giant" || trait === "Nephilim",
@@ -129,13 +131,16 @@ export function createCombatState(
       might: 0,
     },
     enemyState: {
-      health: enemy.maxHealth,
-      maxHealth: enemy.maxHealth,
+      health: enemyMaxHealth,
+      maxHealth: enemyMaxHealth,
       guard: 0,
       might: oppressedMight,
     },
     resources: {
-      ...courageResources,
+      resolve: courageResources.resolve,
+      faith: Math.max(runResources.faith, courageResources.faith),
+      wisdom: runResources.wisdom,
+      authority: runResources.authority,
       corruption: runResources.corruption,
     },
     drawPile: deck,
@@ -158,6 +163,14 @@ export function createCombatState(
     actionQueue: [],
     activeAction: undefined,
     lastResolvedAction: undefined,
+    metrics: {
+      roundsTaken: 1,
+      damageDealt: 0,
+      damageReceived: 0,
+      guardGenerated: 0,
+      corruptionGained: 0,
+      cardsPlayed: 0,
+    },
     feedback: initialFeedback,
   };
 
@@ -254,6 +267,10 @@ function playCard(
     ...paidState,
     hand,
     discardPile: [...paidState.discardPile, instance],
+    metrics: {
+      ...paidState.metrics,
+      cardsPlayed: paidState.metrics.cardsPlayed + 1,
+    },
     feedback: [...paidState.feedback, ...paymentFeedback],
     nextPrayerCostReduction:
       card.type.includes("Prayer") && state.nextPrayerCostReduction > 0
@@ -410,6 +427,13 @@ function startNextPlayerTurn(
     state.memorials,
     state.startingFaithBonus,
   );
+  const nextResources: ResourceState = {
+    resolve: turnStartResources.resolve,
+    faith: Math.max(state.resources.faith, turnStartResources.faith),
+    wisdom: state.resources.wisdom,
+    authority: state.resources.authority,
+    corruption: state.resources.corruption,
+  };
   let nextState = addFeedback(
     {
       ...state,
@@ -426,19 +450,20 @@ function startNextPlayerTurn(
         ...state.runResources,
         corruption: state.resources.corruption,
       },
-      resources: {
-        ...turnStartResources,
-        corruption: state.resources.corruption,
-      },
+      resources: nextResources,
       turn: state.turn + 1,
       nextAttackBonus: 0,
       nextPrayerCostReduction: 0,
       covenantCardsTriggerTwice: false,
       firstPsalmDiscountUsed: false,
+      metrics: {
+        ...state.metrics,
+        roundsTaken: state.turn + 1,
+      },
       lastPlayedInstanceId: undefined,
     },
     "system",
-    `New turn: Guard reset. Resolve ${turnStartResources.resolve}, Faith ${turnStartResources.faith}. Corruption ${state.resources.corruption}.`,
+    `New turn: Guard reset. Resolve ${nextResources.resolve}, Faith ${nextResources.faith}. Wisdom ${nextResources.wisdom}, Authority ${nextResources.authority}. Corruption ${nextResources.corruption}.`,
   );
   const nextIntent = getEnemyIntentDetails(nextState);
 
@@ -462,6 +487,10 @@ function syncTerminalPhase(state: CombatState): CombatState {
       phase: "Victory",
       actionQueue: [],
       activeAction: undefined,
+      metrics: {
+        ...state.metrics,
+        roundsTaken: state.turn,
+      },
     };
   }
 
@@ -471,6 +500,10 @@ function syncTerminalPhase(state: CombatState): CombatState {
       phase: "Defeat",
       actionQueue: [],
       activeAction: undefined,
+      metrics: {
+        ...state.metrics,
+        roundsTaken: state.turn,
+      },
     };
   }
 

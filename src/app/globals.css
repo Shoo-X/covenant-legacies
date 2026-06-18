@@ -3359,6 +3359,26 @@ button {
   box-shadow: 0 34px 90px rgba(0, 0, 0, 0.58);
 }
 
+.combat-result-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.combat-result-metrics > div {
+  min-height: 3.4rem;
+  padding: 0.55rem 0.65rem;
+}
+
+.combat-result-metrics > div p:first-child {
+  font-size: 0.6rem;
+}
+
+.combat-result-metrics > div p:last-child {
+  font-size: 1.05rem;
+}
+
 .home-screen-grid {
   display: grid;
   grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr) minmax(17rem, 0.48fr);

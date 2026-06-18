@@ -78,9 +78,11 @@ export interface QueuedCombatAction {
   presentation: CombatActionPresentation;
   damage?: number;
   blockedValue?: number;
+  guardLoss?: number;
   hpDamage?: number;
   guardValue?: number;
   statusesApplied?: CombatStatusName[];
+  statusesRemoved?: CombatStatusName[];
   resourceChanges?: Partial<ResourceState>;
   mightChange?: number;
   logKind: CombatFeedbackKind;
@@ -96,6 +98,15 @@ export interface EnemyIntentDetails {
   statusesApplied?: CombatStatusName[];
   resourceChanges?: Partial<ResourceState>;
   summary: string;
+}
+
+export interface CombatMetrics {
+  roundsTaken: number;
+  damageDealt: number;
+  damageReceived: number;
+  guardGenerated: number;
+  corruptionGained: number;
+  cardsPlayed: number;
 }
 
 export interface CombatState {
@@ -129,6 +140,7 @@ export interface CombatState {
   actionQueue: QueuedCombatAction[];
   activeAction?: QueuedCombatAction;
   lastResolvedAction?: QueuedCombatAction;
+  metrics: CombatMetrics;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;
 }
