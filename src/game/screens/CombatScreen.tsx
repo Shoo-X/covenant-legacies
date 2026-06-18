@@ -28,6 +28,7 @@ import {
 } from "@/game/combat/engine";
 import { hasCardEffectType } from "@/game/combat/effectResolver";
 import { getUpgradedCombatCard } from "@/game/cardUpgrades";
+import { getEnemyEncounterPresentation } from "@/game/combat/enemyPatterns";
 import { getCorruptionThreshold } from "@/game/corruption";
 import type {
   CombatAction,
@@ -39,6 +40,7 @@ import type {
 } from "@/game/combat/types";
 import type {
   Card,
+  Enemy,
   Encounter,
   GameScreen,
   Memorial,
@@ -107,6 +109,9 @@ export function CombatScreen({
   const cueIdRef = useRef(0);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
+  const [hasSeenEncounterIntro, setHasSeenEncounterIntro] = useState(() =>
+    hasStoredEncounterIntro(enemy.id),
+  );
   const [combat, setCombat] = useState(() =>
     createCombatState(
       hero,
@@ -122,9 +127,15 @@ export function CombatScreen({
   );
   const corruptionThreshold = getCorruptionThreshold(combat.resources.corruption);
   const intentDetails = getEnemyIntentDetails(combat);
+  const encounterPresentation = getEnemyEncounterPresentation(enemy.id);
   const prefersReducedMotion = usePrefersReducedMotion();
   const isPlayerInputLocked =
     combat.status !== "active" || combat.phase !== "PlayerMain";
+  const isHighDangerIntent = getIsHighDangerIntent(intentDetails);
+  const hasLowGuardForIntent =
+    isHighDangerIntent &&
+    intentDetails.expectedDamage > 0 &&
+    combat.player.guard < intentDetails.expectedDamage;
   const phaseBanner = getCombatPhaseBanner(combat.phase);
   const lastResolvedAction = combat.lastResolvedAction;
   const shouldAutoAdvancePresentation = shouldAutoAdvanceCombatPresentation(combat);
@@ -151,6 +162,10 @@ export function CombatScreen({
       return;
     }
 
+    if (combat.phase === "BattleIntro" && !hasSeenEncounterIntro) {
+      return;
+    }
+
     const timeout = window.setTimeout(() => {
       setCombat((current) =>
         combatReducer(
@@ -165,7 +180,20 @@ export function CombatScreen({
     }, presentationDelay);
 
     return () => window.clearTimeout(timeout);
-  }, [cardsById, presentationDelay, presentationStepKey, shouldAutoAdvancePresentation]);
+  }, [
+    cardsById,
+    combat.phase,
+    hasSeenEncounterIntro,
+    presentationDelay,
+    presentationStepKey,
+    shouldAutoAdvancePresentation,
+  ]);
+
+  function enterBattle() {
+    setHasSeenEncounterIntro(true);
+    storeEncounterIntro(enemy.id);
+    dispatch({ type: "advance-presentation" });
+  }
 
   function playCard(instanceId: string) {
     if (isPlayerInputLocked) {
@@ -301,7 +329,7 @@ export function CombatScreen({
                 combat.phase === "EnemyTurnStart" || combat.phase === "EnemyActing"
                   ? "combat-intent-active"
                   : ""
-              }`}
+              } ${isHighDangerIntent ? "combat-intent-high-danger" : ""}`}
             >
               <span className="combat-intent-icon" aria-hidden="true" />
               <div className="combat-intent-copy">
@@ -328,7 +356,11 @@ export function CombatScreen({
             </div>
           </GamePanel>
 
-          <div className="combat-battlefield-zone">
+            <div
+              className={`combat-battlefield-zone combat-battlefield-${getBattlefieldTone(
+                combat.phase,
+              )}`}
+            >
             <div className="combat-valley-bg" aria-hidden="true" />
             <div className="combat-high-place-bg" aria-hidden="true" />
             <div className="combat-battlefield-glow" aria-hidden="true" />
@@ -340,7 +372,11 @@ export function CombatScreen({
             )}
             {combat.activeAction && (
               <div
-                className={`combat-action-title combat-action-${combat.activeAction.presentation}`}
+                className={`combat-action-title combat-action-${combat.activeAction.presentation} ${
+                  getIsHighDangerIntent(combat.activeAction)
+                    ? "combat-action-high-danger"
+                    : ""
+                }`}
                 key={`active-action-${combat.activeAction.id}`}
               >
                 <p>{combat.activeAction.intentType}</p>
@@ -582,6 +618,11 @@ export function CombatScreen({
             >
               End Turn
             </PrimaryButton>
+            {combat.phase === "PlayerMain" && hasLowGuardForIntent && (
+              <p className="combat-end-turn-warning">
+                Warning: {intentDetails.actionName} can break through current Guard.
+              </p>
+            )}
             {combat.status === "active" && (
               <PrimaryButton
                 disabled={isPlayerInputLocked}
@@ -631,13 +672,21 @@ export function CombatScreen({
                   : "The champion has fallen."}
               </h2>
               <div className="combat-result-metrics" aria-label="Combat summary">
-                <Stat label="Rounds" value={combat.metrics.roundsTaken} />
-                <Stat label="Damage Dealt" value={combat.metrics.damageDealt} />
+                <Stat label="Starting HP" value={combat.metrics.startingHealth} />
+                <Stat label="Ending HP" value={combat.metrics.endingHealth} />
                 <Stat label="Damage Taken" value={combat.metrics.damageReceived} />
-                <Stat label="Guard Raised" value={combat.metrics.guardGenerated} />
+                <Stat label="Rounds" value={combat.metrics.roundsTaken} />
                 <Stat label="Corruption" value={combat.metrics.corruptionGained} />
                 <Stat label="Cards Played" value={combat.metrics.cardsPlayed} />
               </div>
+              {(combat.metrics.notableCardName || combat.metrics.notableArchetype) && (
+                <p className="combat-result-note">
+                  Notable: {combat.metrics.notableCardName ?? "No card played"}
+                  {combat.metrics.notableArchetype
+                    ? ` / ${combat.metrics.notableArchetype}`
+                    : ""}
+                </p>
+              )}
               <div className="mt-5">
                 <PrimaryButton
                   onClick={() =>
@@ -651,11 +700,29 @@ export function CombatScreen({
                   }
                   tone={combat.status === "victory" ? "primary" : "danger"}
                 >
-                  {combat.status === "victory" ? "Claim Reward" : "Restart Combat"}
+                  {combat.status === "victory"
+                    ? "Continue to Reward"
+                    : "Retry Battle From Start"}
                 </PrimaryButton>
+                {combat.status === "defeat" && (
+                  <div className="mt-3">
+                    <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
+                      Return to Map
+                    </PrimaryButton>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        )}
+        {combat.phase === "BattleIntro" && !hasSeenEncounterIntro && (
+          <EncounterIntroOverlay
+            dangerLevel={encounterPresentation.dangerLevel}
+            definingMechanic={encounterPresentation.definingMechanic}
+            enemy={enemy}
+            onEnterBattle={enterBattle}
+            tacticalIdentity={encounterPresentation.tacticalIdentity}
+          />
         )}
       </div>
     </ScreenFrame>
@@ -786,6 +853,60 @@ function CombatArtPortrait({
   );
 }
 
+function EncounterIntroOverlay({
+  dangerLevel,
+  definingMechanic,
+  enemy,
+  onEnterBattle,
+  tacticalIdentity,
+}: {
+  dangerLevel: string;
+  definingMechanic: string;
+  enemy: Enemy;
+  onEnterBattle: () => void;
+  tacticalIdentity: string;
+}) {
+  return (
+    <div className="combat-intro-overlay">
+      <div className="combat-intro-card">
+        <div className="combat-intro-art">
+          {enemy.imagePath ? (
+            <CombatArtPortrait
+              alt={enemy.artworkTitle ?? enemy.name}
+              imagePath={enemy.imagePath}
+              objectPosition={enemy.imageObjectPosition}
+              sizes="220px"
+            />
+          ) : (
+            <SymbolicArt kind="enemy" subject={enemy} variant="portrait" />
+          )}
+        </div>
+        <div className="combat-intro-copy">
+          <p>Encounter</p>
+          <h2>{enemy.name}</h2>
+          <div className="combat-intro-traits">
+            {enemy.traits.map((trait) => (
+              <Chip key={trait} label={trait} tone="gold" />
+            ))}
+            <Chip label={dangerLevel} tone={dangerLevel === "Boss" ? "crimson" : "violet"} />
+          </div>
+          <dl>
+            <div>
+              <dt>Tactical Identity</dt>
+              <dd>{tacticalIdentity}</dd>
+            </div>
+            <div>
+              <dt>Defining Mechanic</dt>
+              <dd>{definingMechanic}</dd>
+            </div>
+          </dl>
+          <PrimaryButton onClick={onEnterBattle}>Enter Battle</PrimaryButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CombatPopup({
   feedback,
   tone,
@@ -826,27 +947,93 @@ function formatFeedbackPopup(feedback: CombatFeedback, tone: "damage" | "guard" 
 }
 
 function formatQueuedActionSummary(action: QueuedCombatAction) {
-  if (action.mightChange) {
-    return `+${action.mightChange} Might`;
-  }
+  const parts: string[] = [];
 
-  if (action.blockedValue) {
-    return `${action.blockedValue} blocked by Guard`;
+  if (action.damage) {
+    parts.push(`${action.damage} incoming damage`);
   }
 
   if (action.hpDamage) {
-    return `${action.hpDamage} health damage`;
+    parts.push(`${action.hpDamage} health damage`);
   }
 
-  if (action.damage) {
-    return `${action.damage} incoming damage`;
+  if (action.blockedValue) {
+    parts.push(`${action.blockedValue} blocked`);
+  }
+
+  if (action.guardValue) {
+    parts.push(`enemy gains ${action.guardValue} Guard`);
+  }
+
+  if (action.mightChange) {
+    parts.push(`${action.mightChange > 0 ? "+" : ""}${action.mightChange} Might`);
   }
 
   if (action.statusesApplied?.length) {
-    return action.statusesApplied.join(", ");
+    parts.push(`applies ${action.statusesApplied.join(", ")}`);
+  }
+
+  if (action.resourceChanges?.corruption) {
+    parts.push(`+${action.resourceChanges.corruption} Corruption`);
+  }
+
+  if (parts.length > 0) {
+    return parts.join(" - ");
   }
 
   return action.logMessage;
+}
+
+function getIsHighDangerIntent(
+  intent: {
+    damage?: number;
+    expectedDamage?: number;
+    hpDamage?: number;
+    intentType: string;
+    resourceChanges?: Partial<ResourceState>;
+  },
+) {
+  const expectedDamage = intent.damage ?? intent.hpDamage ?? intent.expectedDamage ?? 0;
+
+  return (
+    intent.intentType === "Heavy Attack" ||
+    intent.intentType === "Ritual" ||
+    intent.intentType === "Special" ||
+    (intent.resourceChanges?.corruption ?? 0) > 0 ||
+    expectedDamage >= 15
+  );
+}
+
+function getBattlefieldTone(phase: CombatPhase) {
+  if (phase === "EnemyTurnStart" || phase === "EnemyActing") {
+    return "enemy";
+  }
+
+  if (phase === "PlayerTurnStart" || phase === "PlayerMain") {
+    return "player";
+  }
+
+  return "neutral";
+}
+
+function hasStoredEncounterIntro(enemyId: string) {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.localStorage.getItem(getEncounterIntroStorageKey(enemyId)) === "seen";
+}
+
+function storeEncounterIntro(enemyId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(getEncounterIntroStorageKey(enemyId), "seen");
+}
+
+function getEncounterIntroStorageKey(enemyId: string) {
+  return `covenant-legacies:encounter-intro:${enemyId}`;
 }
 
 function getCombatPhaseBanner(phase: CombatPhase) {

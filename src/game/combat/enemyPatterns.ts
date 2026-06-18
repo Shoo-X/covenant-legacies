@@ -15,6 +15,9 @@ export interface EnemyPatternStep {
 
 export interface EnemyCombatConfig {
   maxHealth: number;
+  dangerLevel: "Low" | "Moderate" | "High" | "Boss";
+  tacticalIdentity: string;
+  definingMechanic: string;
   phaseThresholds?: {
     phase2: number;
     phase3: number;
@@ -29,6 +32,9 @@ export interface EnemyCombatConfig {
 export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   "enemy-corrupted-raider": {
     maxHealth: 42,
+    dangerLevel: "Moderate",
+    tacticalIdentity: "Mounting physical pressure",
+    definingMechanic: "Relentless attacks culminate in a heavy strike.",
     patterns: {
       default: [
         {
@@ -54,6 +60,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   },
   "enemy-idol-priest": {
     maxHealth: 46,
+    dangerLevel: "High",
+    tacticalIdentity: "Ritual and altar pressure",
+    definingMechanic: "Destroy or suppress the altar before the ritual completes.",
     patterns: {
       default: [
         {
@@ -82,6 +91,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   },
   "enemy-giant-blooded-brute": {
     maxHealth: 62,
+    dangerLevel: "High",
+    tacticalIdentity: "Fear and heavy attacks",
+    definingMechanic: "Fear precedes a devastating blow.",
     patterns: {
       default: [
         {
@@ -108,6 +120,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   },
   "enemy-watcher-taught-smith": {
     maxHealth: 78,
+    dangerLevel: "High",
+    tacticalIdentity: "Scaling Might",
+    definingMechanic: "Unchecked forge work turns each strike heavier.",
     patterns: {
       default: [
         {
@@ -140,6 +155,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   },
   "enemy-giant-of-the-high-place": {
     maxHealth: 128,
+    dangerLevel: "Boss",
+    tacticalIdentity: "Phases, altars, and Corruption punishment",
+    definingMechanic: "The high place escalates through Fear, altars, and Corruption.",
     phaseThresholds: {
       phase2: 0.6,
       phase3: 0.3,
@@ -220,6 +238,17 @@ export function getEnemyCombatConfig(enemyId: string): EnemyCombatConfig | undef
 
 export function getEnemyMaxHealth(enemyId: string, fallbackMaxHealth: number) {
   return getEnemyCombatConfig(enemyId)?.maxHealth ?? fallbackMaxHealth;
+}
+
+export function getEnemyEncounterPresentation(enemyId: string) {
+  const config = getEnemyCombatConfig(enemyId);
+
+  return {
+    dangerLevel: config?.dangerLevel ?? "Moderate",
+    tacticalIdentity: config?.tacticalIdentity ?? "Direct combat pressure",
+    definingMechanic:
+      config?.definingMechanic ?? "Watch the intent and prepare your Guard.",
+  };
 }
 
 export function getEnemyPatternStep(state: CombatState): EnemyPatternStep {

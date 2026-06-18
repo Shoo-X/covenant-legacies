@@ -25,7 +25,15 @@ import {
   getTurnStartResources,
 } from "./memorials";
 import { getResourceValue, spendResource } from "./resources";
-import type { CombatAction, CombatContext, CombatFeedback, CombatState } from "./types";
+import type {
+  CombatAction,
+  CombatCardInstance,
+  CombatContext,
+  CombatFeedback,
+  CombatStartSnapshot,
+  CombatState,
+  CombatantState,
+} from "./types";
 
 const startingHandSize = 5;
 
@@ -42,6 +50,7 @@ export function createCombatState(
 ): CombatState {
   const deck = shuffleDeck(buildStartingDeck(runDeck, cardsById), random);
   const enemyMaxHealth = getEnemyMaxHealth(enemy.id, enemy.maxHealth);
+  const playerStartHealth = Math.max(1, Math.min(hero.maxHealth, runHealth));
   const turnStartResources = getTurnStartResources(memorials, startingFaithBonus);
   const hasGiantThreat = enemy.traits.some(
     (trait) => trait === "Giant" || trait === "Nephilim",
@@ -125,7 +134,7 @@ export function createCombatState(
     memorials,
     startingFaithBonus,
     player: {
-      health: Math.max(1, Math.min(hero.maxHealth, runHealth)),
+      health: playerStartHealth,
       maxHealth: hero.maxHealth,
       guard: 0,
       might: 0,
@@ -165,6 +174,8 @@ export function createCombatState(
     lastResolvedAction: undefined,
     metrics: {
       roundsTaken: 1,
+      startingHealth: playerStartHealth,
+      endingHealth: playerStartHealth,
       damageDealt: 0,
       damageReceived: 0,
       guardGenerated: 0,
@@ -174,13 +185,18 @@ export function createCombatState(
     feedback: initialFeedback,
   };
 
-  return applyStartOfCombatCards(
+  const readyState = applyStartOfCombatCards(
     applyStartOfCombatMemorials(
       applyStartOfTurnMemorials(drawCards(initialState, startingHandSize, random)),
       cardsById,
       random,
     ),
   );
+
+  return {
+    ...readyState,
+    startSnapshot: createCombatStartSnapshot(readyState),
+  };
 }
 
 export function combatReducer(
@@ -189,6 +205,10 @@ export function combatReducer(
   context: CombatContext,
 ): CombatState {
   if (action.type === "restart") {
+    if (state.startSnapshot) {
+      return restoreCombatStartSnapshot(state.startSnapshot);
+    }
+
     return createCombatState(
       state.hero,
       state.enemy,
@@ -270,6 +290,8 @@ function playCard(
     metrics: {
       ...paidState.metrics,
       cardsPlayed: paidState.metrics.cardsPlayed + 1,
+      notableArchetype: card.archetypeTags?.[0] ?? card.type.split("/")[0],
+      notableCardName: card.name,
     },
     feedback: [...paidState.feedback, ...paymentFeedback],
     nextPrayerCostReduction:
@@ -489,6 +511,7 @@ function syncTerminalPhase(state: CombatState): CombatState {
       activeAction: undefined,
       metrics: {
         ...state.metrics,
+        endingHealth: state.player.health,
         roundsTaken: state.turn,
       },
     };
@@ -502,12 +525,104 @@ function syncTerminalPhase(state: CombatState): CombatState {
       activeAction: undefined,
       metrics: {
         ...state.metrics,
+        endingHealth: state.player.health,
         roundsTaken: state.turn,
       },
     };
   }
 
   return state;
+}
+
+function createCombatStartSnapshot(state: CombatState): CombatStartSnapshot {
+  return {
+    hero: state.hero,
+    enemy: state.enemy,
+    runDeck: cloneStartingDeck(state.runDeck),
+    runHealth: state.runHealth,
+    runResources: cloneResources(state.runResources),
+    memorials: [...state.memorials],
+    startingFaithBonus: state.startingFaithBonus,
+    player: cloneCombatant(state.player),
+    enemyState: cloneCombatant(state.enemyState),
+    resources: cloneResources(state.resources),
+    drawPile: cloneCardInstances(state.drawPile),
+    hand: cloneCardInstances(state.hand),
+    discardPile: cloneCardInstances(state.discardPile),
+    turn: state.turn,
+    nextAttackBonus: state.nextAttackBonus,
+    nextPrayerCostReduction: state.nextPrayerCostReduction,
+    covenantCardsTriggerTwice: state.covenantCardsTriggerTwice,
+    firstPsalmDiscountUsed: state.firstPsalmDiscountUsed,
+    oilOfGladnessUsed: state.oilOfGladnessUsed,
+    hasFear: state.hasFear,
+    playerStatuses: [...state.playerStatuses],
+    enemyStatuses: [...state.enemyStatuses],
+    heartOfCourageUsed: state.heartOfCourageUsed,
+    bossPhase: state.bossPhase,
+    destroyedAltarOrStructure: state.destroyedAltarOrStructure,
+    metrics: { ...state.metrics },
+    feedback: state.feedback.map((item) => ({ ...item })),
+  };
+}
+
+function restoreCombatStartSnapshot(snapshot: CombatStartSnapshot): CombatState {
+  const restoredState: CombatState = {
+    hero: snapshot.hero,
+    enemy: snapshot.enemy,
+    runDeck: cloneStartingDeck(snapshot.runDeck),
+    runHealth: snapshot.runHealth,
+    runResources: cloneResources(snapshot.runResources),
+    memorials: [...snapshot.memorials],
+    startingFaithBonus: snapshot.startingFaithBonus,
+    player: cloneCombatant(snapshot.player),
+    enemyState: cloneCombatant(snapshot.enemyState),
+    resources: cloneResources(snapshot.resources),
+    drawPile: cloneCardInstances(snapshot.drawPile),
+    hand: cloneCardInstances(snapshot.hand),
+    discardPile: cloneCardInstances(snapshot.discardPile),
+    turn: snapshot.turn,
+    nextAttackBonus: snapshot.nextAttackBonus,
+    nextPrayerCostReduction: snapshot.nextPrayerCostReduction,
+    covenantCardsTriggerTwice: snapshot.covenantCardsTriggerTwice,
+    firstPsalmDiscountUsed: snapshot.firstPsalmDiscountUsed,
+    oilOfGladnessUsed: snapshot.oilOfGladnessUsed,
+    hasFear: snapshot.hasFear,
+    playerStatuses: [...snapshot.playerStatuses],
+    enemyStatuses: [...snapshot.enemyStatuses],
+    heartOfCourageUsed: snapshot.heartOfCourageUsed,
+    bossPhase: snapshot.bossPhase,
+    destroyedAltarOrStructure: snapshot.destroyedAltarOrStructure,
+    status: "active",
+    phase: "BattleIntro",
+    actionQueue: [],
+    activeAction: undefined,
+    lastResolvedAction: undefined,
+    metrics: { ...snapshot.metrics },
+    feedback: snapshot.feedback.map((item) => ({ ...item })),
+    lastPlayedInstanceId: undefined,
+  };
+
+  return {
+    ...restoredState,
+    startSnapshot: createCombatStartSnapshot(restoredState),
+  };
+}
+
+function cloneResources(resources: ResourceState): ResourceState {
+  return { ...resources };
+}
+
+function cloneStartingDeck(runDeck: StartingDeckCard[]) {
+  return runDeck.map((entry) => ({ ...entry }));
+}
+
+function cloneCardInstances(instances: CombatCardInstance[]) {
+  return instances.map((instance) => ({ ...instance }));
+}
+
+function cloneCombatant(combatant: CombatantState) {
+  return { ...combatant };
 }
 
 export function canPayForCard(state: CombatState, card: Card) {

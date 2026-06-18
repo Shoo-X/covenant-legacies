@@ -102,11 +102,45 @@ export interface EnemyIntentDetails {
 
 export interface CombatMetrics {
   roundsTaken: number;
+  startingHealth: number;
+  endingHealth: number;
   damageDealt: number;
   damageReceived: number;
   guardGenerated: number;
   corruptionGained: number;
   cardsPlayed: number;
+  notableCardName?: string;
+  notableArchetype?: string;
+}
+
+export interface CombatStartSnapshot {
+  hero: Hero;
+  enemy: Enemy;
+  runDeck: StartingDeckCard[];
+  runHealth: number;
+  runResources: ResourceState;
+  memorials: Memorial[];
+  startingFaithBonus: number;
+  player: CombatantState;
+  enemyState: CombatantState;
+  resources: ResourceState;
+  drawPile: CombatCardInstance[];
+  hand: CombatCardInstance[];
+  discardPile: CombatCardInstance[];
+  turn: number;
+  nextAttackBonus: number;
+  nextPrayerCostReduction: number;
+  covenantCardsTriggerTwice: boolean;
+  firstPsalmDiscountUsed: boolean;
+  oilOfGladnessUsed: boolean;
+  hasFear: boolean;
+  playerStatuses: CombatStatusName[];
+  enemyStatuses: CombatStatusName[];
+  heartOfCourageUsed: boolean;
+  bossPhase: number;
+  destroyedAltarOrStructure: boolean;
+  metrics: CombatMetrics;
+  feedback: CombatFeedback[];
 }
 
 export interface CombatState {
@@ -143,6 +177,7 @@ export interface CombatState {
   metrics: CombatMetrics;
   feedback: CombatFeedback[];
   lastPlayedInstanceId?: string;
+  startSnapshot?: CombatStartSnapshot;
 }
 
 export interface CombatContext {
