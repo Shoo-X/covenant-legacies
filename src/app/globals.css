@@ -424,8 +424,8 @@ button {
 }
 
 .tcg-card.is-unplayable {
-  opacity: 0.68;
-  filter: saturate(0.72) brightness(0.86);
+  opacity: 0.86;
+  filter: saturate(0.76) brightness(0.9);
 }
 
 .tcg-card.is-unplayable:hover,
@@ -562,18 +562,264 @@ button {
   -webkit-line-clamp: 2;
 }
 
-.tcg-card-cost-gem {
+.tcg-card-cost-cluster {
+  position: relative;
+  z-index: 5;
   display: grid;
-  min-width: 2rem;
-  min-height: 2rem;
-  place-items: center;
-  border: 1px solid rgba(215, 180, 93, 0.44);
+  min-width: 0;
+  justify-items: end;
+  gap: 0.16rem;
+}
+
+.resource-cost-display {
+  display: flex;
+  max-width: 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.18rem;
+}
+
+.resource-badge,
+.resource-free-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+  min-width: 2.1rem;
+  min-height: 1.42rem;
+  border: 1px solid rgba(215, 180, 93, 0.28);
   border-radius: 999px;
-  background: radial-gradient(circle at 50% 28%, rgba(255, 230, 156, 0.22), rgba(8, 7, 5, 0.72));
-  color: var(--color-gold);
-  font-size: 0.68rem;
-  line-height: 1.05;
-  text-align: center;
+  background: rgba(8, 7, 5, 0.78);
+  color: #fff3cf;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 243, 207, 0.06),
+    0 0 12px rgba(0, 0, 0, 0.22);
+}
+
+.resource-badge strong,
+.resource-free-badge strong {
+  font-size: 0.82em;
+  line-height: 1;
+}
+
+.resource-badge > span:not(.resource-badge-icon),
+.resource-free-badge > span:not(.resource-badge-icon) {
+  overflow: hidden;
+  max-width: 4.8rem;
+  color: rgba(241, 228, 194, 0.72);
+  font-size: 0.72em;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.resource-badge-icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 0.72rem;
+  height: 0.72rem;
+}
+
+.resource-badge-icon::before,
+.resource-badge-icon::after,
+.resource-free-badge .resource-badge-icon::before,
+.resource-free-badge .resource-badge-icon::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.resource-badge-resolve {
+  border-color: rgba(192, 126, 58, 0.46);
+  background: linear-gradient(180deg, rgba(91, 56, 25, 0.88), rgba(8, 7, 5, 0.82));
+}
+
+.resource-badge-resolve .resource-badge-icon::before {
+  top: 42%;
+  left: 8%;
+  height: 18%;
+  border-radius: 999px;
+  background: #d7b45d;
+  transform: rotate(-38deg);
+}
+
+.resource-badge-resolve .resource-badge-icon::after {
+  left: 47%;
+  top: 15%;
+  width: 14%;
+  height: 70%;
+  border-radius: 999px;
+  background: rgba(255, 243, 207, 0.62);
+  transform: rotate(-38deg);
+}
+
+.resource-badge-faith {
+  border-color: rgba(93, 183, 232, 0.42);
+  background: linear-gradient(180deg, rgba(42, 62, 76, 0.86), rgba(8, 7, 5, 0.82));
+}
+
+.resource-badge-faith .resource-badge-icon::before {
+  left: 27%;
+  top: 4%;
+  width: 46%;
+  height: 58%;
+  border-radius: 58% 58% 58% 8%;
+  background: linear-gradient(180deg, #fff3cf, #5db7e8 64%, #d7b45d);
+  transform: rotate(45deg);
+}
+
+.resource-badge-faith .resource-badge-icon::after {
+  left: 18%;
+  right: 18%;
+  bottom: 7%;
+  height: 17%;
+  border-radius: 999px;
+  background: rgba(215, 180, 93, 0.72);
+}
+
+.resource-badge-wisdom {
+  border-color: rgba(93, 183, 232, 0.48);
+  background: linear-gradient(180deg, rgba(25, 54, 75, 0.9), rgba(8, 7, 5, 0.82));
+}
+
+.resource-badge-wisdom .resource-badge-icon::before {
+  left: 14%;
+  top: 20%;
+  width: 72%;
+  height: 58%;
+  border: 1px solid rgba(255, 243, 207, 0.6);
+  border-radius: 0.12rem;
+  background: linear-gradient(90deg, rgba(93, 183, 232, 0.38), rgba(255, 243, 207, 0.18));
+}
+
+.resource-badge-wisdom .resource-badge-icon::after {
+  top: 14%;
+  left: 10%;
+  width: 18%;
+  height: 70%;
+  border-radius: 999px;
+  background: rgba(93, 183, 232, 0.74);
+  box-shadow: 0.42rem 0 rgba(215, 180, 93, 0.44);
+}
+
+.resource-badge-authority {
+  border-color: rgba(255, 243, 207, 0.42);
+  background: linear-gradient(180deg, rgba(91, 74, 42, 0.9), rgba(8, 7, 5, 0.82));
+}
+
+.resource-badge-authority .resource-badge-icon::before {
+  inset: 13%;
+  border: 1px solid rgba(255, 243, 207, 0.72);
+  background: rgba(215, 180, 93, 0.22);
+  transform: rotate(45deg);
+}
+
+.resource-badge-authority .resource-badge-icon::after {
+  inset: 37%;
+  border-radius: 999px;
+  background: #fff3cf;
+  box-shadow: 0 0 8px rgba(255, 243, 207, 0.42);
+}
+
+.resource-badge-corruption {
+  border-color: rgba(159, 61, 40, 0.54);
+  background: linear-gradient(180deg, rgba(72, 24, 61, 0.9), rgba(8, 7, 5, 0.84));
+}
+
+.resource-badge-corruption .resource-badge-icon::before {
+  inset: 8% 22% 8% 22%;
+  clip-path: polygon(50% 0, 100% 92%, 0 92%);
+  background: rgba(159, 61, 40, 0.72);
+}
+
+.resource-badge-corruption .resource-badge-icon::after {
+  left: 47%;
+  top: 12%;
+  width: 12%;
+  height: 76%;
+  background: rgba(240, 212, 255, 0.68);
+  transform: rotate(24deg);
+}
+
+.resource-free-badge {
+  border-color: rgba(203, 185, 143, 0.24);
+  background: rgba(8, 7, 5, 0.72);
+}
+
+.resource-free-badge .resource-badge-icon::before {
+  inset: 16%;
+  border: 1px solid rgba(255, 243, 207, 0.46);
+  border-radius: 999px;
+}
+
+.resource-free-badge .resource-badge-icon::after {
+  inset: 39%;
+  border-radius: 999px;
+  background: rgba(215, 180, 93, 0.74);
+}
+
+.resource-badge.is-missing {
+  border-color: rgba(255, 116, 89, 0.82);
+  background:
+    linear-gradient(180deg, rgba(104, 38, 45, 0.95), rgba(8, 7, 5, 0.88)),
+    rgba(159, 61, 40, 0.24);
+  color: #ffe2d8;
+  opacity: 1;
+  box-shadow:
+    0 0 0 1px rgba(255, 116, 89, 0.28),
+    0 0 18px rgba(159, 61, 40, 0.32);
+}
+
+.resource-consequence-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.resource-consequence-row .resource-badge {
+  min-height: 1.12rem;
+  border-color: rgba(159, 61, 40, 0.44);
+  font-size: 0.52rem;
+}
+
+.resource-badge-hand,
+.resource-cost-display-hand .resource-free-badge {
+  min-width: 1.42rem;
+  min-height: 1.14rem;
+  gap: 0.1rem;
+  padding: 0.12rem 0.16rem;
+  font-size: 0.58rem;
+}
+
+.resource-badge-hand .resource-badge-icon,
+.resource-cost-display-hand .resource-free-badge .resource-badge-icon {
+  width: 0.52rem;
+  height: 0.52rem;
+}
+
+.resource-badge-full,
+.resource-cost-display-full .resource-free-badge {
+  min-width: 3.7rem;
+  justify-content: flex-start;
+  padding: 0.2rem 0.38rem;
+}
+
+.resource-badge-bar {
+  width: 100%;
+  justify-content: flex-start;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.resource-badge-bar strong {
+  margin-left: auto;
+  font-size: 1rem;
 }
 
 .tcg-card-art {
@@ -1442,7 +1688,6 @@ button {
     0 0 28px rgba(127, 35, 95, 0.14);
 }
 
-.tcg-card-forbidden .tcg-card-cost-gem,
 .tcg-card-forbidden .tcg-card-type-line {
   color: #f0d4ff;
 }
@@ -1468,13 +1713,7 @@ button {
 }
 
 .tcg-card-collection .tcg-card-header {
-  grid-template-columns: minmax(0, 1fr) 1.85rem;
-}
-
-.tcg-card-collection .tcg-card-cost-gem {
-  min-width: 1.8rem;
-  min-height: 1.8rem;
-  font-size: 0.62rem;
+  grid-template-columns: minmax(0, 1fr) minmax(3rem, auto);
 }
 
 .tcg-card-collection .tcg-card-footer {
@@ -1532,7 +1771,7 @@ button {
 
 .tcg-card-hand.is-full-art .tcg-card-header {
   margin: -0.06rem -0.06rem 0;
-  grid-template-columns: minmax(0, 1fr) 1.9rem;
+  grid-template-columns: minmax(0, 1fr) auto;
   background: linear-gradient(90deg, rgba(8, 7, 5, 0.9), rgba(8, 7, 5, 0.58));
   padding: 0.18rem 0.24rem;
 }
@@ -1554,22 +1793,12 @@ button {
   line-height: 1.08;
 }
 
-.tcg-card-hand .tcg-card-cost-gem {
-  position: relative;
-  z-index: 5;
-  min-width: 1.82rem;
-  min-height: 1.82rem;
-  border-color: rgba(255, 226, 150, 0.76);
-  background:
-    radial-gradient(circle at 50% 28%, rgba(255, 226, 150, 0.38), rgba(65, 42, 20, 0.86) 54%, rgba(8, 7, 5, 0.95)),
-    rgba(8, 7, 5, 0.92);
-  color: #fff3cf;
-  font-size: 0.68rem;
-  font-weight: 900;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.88);
-  box-shadow:
-    0 0 0 1px rgba(8, 7, 5, 0.84),
-    0 0 16px rgba(215, 180, 93, 0.22);
+.tcg-card-hand .tcg-card-cost-cluster {
+  max-width: 4.4rem;
+}
+
+.tcg-card-hand .resource-cost-display {
+  gap: 0.12rem;
 }
 
 .tcg-card-hand .tcg-card-type-line,
@@ -1638,10 +1867,8 @@ button {
   font-size: 0.78rem;
 }
 
-.tcg-card-preview .tcg-card-cost-gem {
-  min-width: 1.55rem;
-  min-height: 1.55rem;
-  font-size: 0.56rem;
+.tcg-card-preview .tcg-card-cost-cluster {
+  max-width: 4rem;
 }
 
 .tcg-card-preview .tcg-card-effect p {
@@ -1791,6 +2018,35 @@ button {
   color: rgba(241, 228, 194, 0.68);
   font-size: 0.95rem;
   line-height: 1.55;
+}
+
+.rest-choice-details {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0.85rem 0 0;
+  max-height: 11rem;
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.rest-choice-details div {
+  border-top: 1px solid rgba(215, 180, 93, 0.12);
+  padding-top: 0.45rem;
+}
+
+.rest-choice-details dt {
+  color: rgba(215, 180, 93, 0.78);
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.rest-choice-details dd {
+  margin: 0.18rem 0 0;
+  color: rgba(241, 228, 194, 0.78);
+  font-size: 0.82rem;
+  line-height: 1.38;
 }
 
 .rest-node-status {
@@ -2654,23 +2910,19 @@ button {
   animation: combat-resource-pulse 520ms ease-out both;
 }
 
-.combat-resource-pip span {
-  display: block;
-  overflow: hidden;
+.combat-resource-pip .resource-badge {
+  color: #fff3cf;
+}
+
+.combat-resource-pip .resource-badge > span:not(.resource-badge-icon) {
   color: rgba(241, 228, 194, 0.58);
   font-size: 0.58rem;
   letter-spacing: 0.12em;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
 }
 
-.combat-resource-pip strong {
-  display: block;
-  margin-top: 0.15rem;
-  color: #fff3cf;
-  font-size: 1rem;
-  line-height: 1;
+.combat-resource-pip .resource-badge-icon {
+  width: 0.72rem;
+  height: 0.72rem;
 }
 
 .combat-resource-pip em {

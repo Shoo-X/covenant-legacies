@@ -180,6 +180,12 @@ export type CardEffect =
   | { type: "TriggerIfEnemyTrait"; effects: CardEffect[]; traits: EnemyTrait[] }
   | { type: "TriggerIfCorruptionAtMost"; amount: number; effects: CardEffect[] }
   | { type: "TriggerIfCorruptionAtLeast"; amount: number; effects: CardEffect[] }
+  | {
+      type: "TriggerIfStatusPresent";
+      effects: CardEffect[];
+      status: CombatStatusName;
+      target: CardEffectTarget;
+    }
   | { type: "RevealIntent" }
   | { type: "DestroyAltarOrStructure"; label?: string }
   | { type: "ModifyNextPrayerCost"; amount: number }

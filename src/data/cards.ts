@@ -1368,7 +1368,8 @@ export const cards: Card[] = [
     rarity: "Common",
     archetypeTags: ["Psalm", "Courage"],
     synergyNotes: "Keeps Psalm decks moving while protecting Courage decks from Fear.",
-    upgradedVersion: "Gain 6 Guard. Draw 1 card. Remove Fear.",
+    upgradedVersion:
+      "Gain 6 Guard. Draw 1 card. Remove Fear. If Fear was removed, gain 1 Faith.",
     effects: [
       { type: "GainGuard", amount: 4, source: "Psalm of Courage" },
       { type: "DrawCards", amount: 1 },
@@ -1422,7 +1423,7 @@ export const cards: Card[] = [
     rarity: "Rare",
     archetypeTags: [],
     synergyNotes: "Powerful draw that works against Covenant purity plans by adding Corruption.",
-    upgradedVersion: "Draw 3 cards. Gain 1 Corruption.",
+    upgradedVersion: "Draw 4 cards. Gain 2 Corruption.",
     effects: [
       { type: "GainCorruption", amount: 2 },
       { type: "DrawCards", amount: 3 },
@@ -1863,7 +1864,8 @@ export const cards: Card[] = [
     rarity: "Common",
     archetypeTags: ["Covenant"],
     synergyNotes: "Core Covenant cleanser that stabilizes against forbidden cards.",
-    upgradedVersion: "Remove 3 Corruption. Gain 5 Guard.",
+    upgradedVersion:
+      "Gain 5 Guard. If Corruption is 0, draw 2 cards; otherwise remove 2 Corruption.",
     combatEffect: { removeCorruption: 2, guard: 4 },
     sourceTier: "Scripture",
     references: ["Psalm 24:4"],

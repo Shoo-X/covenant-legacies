@@ -65,7 +65,8 @@ function effectIncludesType(
   if (
     effect.type === "TriggerIfEnemyTrait" ||
     effect.type === "TriggerIfCorruptionAtMost" ||
-    effect.type === "TriggerIfCorruptionAtLeast"
+    effect.type === "TriggerIfCorruptionAtLeast" ||
+    effect.type === "TriggerIfStatusPresent"
   ) {
     return effect.effects.some((nestedEffect) =>
       effectIncludesType(nestedEffect, effectTypes),
@@ -306,6 +307,15 @@ function resolveEffect(
           )
         : state;
 
+    case "TriggerIfStatusPresent":
+      return hasStatus(state, effect.target, effect.status)
+        ? effect.effects.reduce(
+            (nextState, nestedEffect) =>
+              resolveEffect(nextState, card, nestedEffect, context),
+            state,
+          )
+        : state;
+
     case "RevealIntent":
       return applyStatus(
         appendFeedback(state, "enemy", "Enemy intent revealed."),
@@ -371,6 +381,24 @@ function getTraitDamageBonus(
 
 function enemyHasAnyTrait(state: CombatState, traits: EnemyTrait[]) {
   return traits.some((trait) => state.enemy.traits.includes(trait));
+}
+
+function hasStatus(
+  state: CombatState,
+  target: "Player" | "Enemy",
+  status: CombatStatusName,
+) {
+  if (status === "Fear" && target === "Player") {
+    return state.hasFear;
+  }
+
+  if (status === "Might") {
+    return target === "Player" ? state.player.might > 0 : state.enemyState.might > 0;
+  }
+
+  const statusKey = target === "Player" ? "playerStatuses" : "enemyStatuses";
+
+  return state[statusKey].includes(status);
 }
 
 export function dealEnemyDamage(

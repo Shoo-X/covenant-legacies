@@ -1,5 +1,5 @@
 import type { Card, ResourceState, StartingDeckCard } from "@/types/game";
-import { getUpgradeTarget } from "@/game/cardUpgrades";
+import { getCardUpgradeText, getUpgradeTarget } from "@/game/cardUpgrades";
 
 export type RestChoiceId = "rest" | "upgrade" | "cleanse";
 
@@ -16,7 +16,13 @@ export interface RestChoice {
   label: string;
   description: string;
   disabled?: boolean;
+  details?: RestChoiceDetail[];
   effectSummary: string;
+}
+
+export interface RestChoiceDetail {
+  label: string;
+  value: string;
 }
 
 export interface RestResolution {
@@ -55,8 +61,19 @@ export function getRestChoices(
         : "No upgradeable cards remain in the run deck.",
       disabled: !upgradeTarget,
       effectSummary: upgradeTarget
-        ? `${upgradeTarget.name} will use its upgraded text in combat.`
+        ? `${upgradeTarget.name} will use upgraded card text in combat.`
         : "No card can be upgraded.",
+      details: upgradeTarget
+        ? [
+            { label: "Original", value: upgradeTarget.text },
+            { label: "Upgraded", value: getCardUpgradeText(upgradeTarget) },
+            { label: "Source", value: upgradeTarget.sourceTier },
+            {
+              label: "References",
+              value: upgradeTarget.references.join(", "),
+            },
+          ]
+        : undefined,
     },
     {
       id: "cleanse",

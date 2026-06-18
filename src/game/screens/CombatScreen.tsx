@@ -8,12 +8,18 @@ import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import {
+  getResourceBarTooltip,
+  ResourceBadge,
+  resourceOrder,
+  resourceVisuals,
+} from "@/components/ResourceBadge";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { SymbolicArt } from "@/components/SymbolicArt";
 import {
-  canPayForCard,
   combatReducer,
   createCombatState,
+  getCardAffordability,
 } from "@/game/combat/engine";
 import { hasCardEffectType } from "@/game/combat/effectResolver";
 import { getUpgradedCombatCard } from "@/game/cardUpgrades";
@@ -29,6 +35,7 @@ import type {
   Encounter,
   GameScreen,
   Memorial,
+  ResourceName,
   ResourceState,
   StartingDeckCard,
 } from "@/types/game";
@@ -48,14 +55,6 @@ interface CombatScreenProps {
   startingFaithBonus: number;
   upgradedCardIds: string[];
 }
-
-const resourceLabels: Array<[keyof ResourceState, string]> = [
-  ["resolve", "Resolve"],
-  ["faith", "Faith"],
-  ["wisdom", "Wisdom"],
-  ["authority", "Authority"],
-  ["corruption", "Corruption"],
-];
 
 const feedbackTone: Record<CombatFeedbackKind, string> = {
   damage: "border-[rgba(159,61,40,0.45)] text-[#ffd7c9]",
@@ -154,9 +153,13 @@ export function CombatScreen({
     .filter((entry): entry is { instance: CombatCardInstance; card: Card } =>
       Boolean(entry.card),
     );
-  const selectedHandCard = handCards.find(
+  const selectedHandEntry = handCards.find(
     ({ instance }) => instance.instanceId === selectedCardId,
-  )?.card;
+  );
+  const selectedHandCard = selectedHandEntry?.card;
+  const selectedHandAffordability = selectedHandCard
+    ? getCardAffordability(combat, selectedHandCard)
+    : undefined;
 
   const latestFeedback = [...combat.feedback].slice(-8).reverse();
   const feedbackByNewest = [...combat.feedback].reverse();
@@ -355,25 +358,25 @@ export function CombatScreen({
             </div>
 
             <div className="combat-resource-bank">
-              {resourceLabels.map(([key, label]) => (
+              {resourceOrder.map((resource) => (
                 <ResourcePip
                   isChanged={Boolean(
                     latestResourceFeedback?.message
                       .toLowerCase()
-                      .includes(label.toLowerCase()),
+                      .includes(resource.toLowerCase()),
                   )}
-                  key={`${key}-${
+                  key={`${resource}-${
                     latestResourceFeedback?.message
                       .toLowerCase()
-                      .includes(label.toLowerCase())
+                      .includes(resource.toLowerCase())
                       ? latestResourceFeedback.id
                       : "stable"
                   }`}
-                  label={label}
+                  resource={resource}
                   thresholdName={
-                    key === "corruption" ? corruptionThreshold.name : undefined
+                    resource === "Corruption" ? corruptionThreshold.name : undefined
                   }
-                  value={combat.resources[key]}
+                  value={combat.resources[resourceVisuals[resource].key]}
                 />
               ))}
             </div>
@@ -405,20 +408,30 @@ export function CombatScreen({
             </div>
             {selectedHandCard && (
               <div className="combat-hand-inspector" aria-live="polite">
-                <CollectibleCard as="article" card={selectedHandCard} size="inspect" />
+                <CollectibleCard
+                  affordabilityNote={selectedHandAffordability?.missingSummary}
+                  as="article"
+                  card={selectedHandCard}
+                  costs={selectedHandAffordability?.costs}
+                  missingCosts={selectedHandAffordability?.missingCosts}
+                  size="inspect"
+                />
               </div>
             )}
             <div className="combat-hand-scroll" aria-label="Card hand">
               {handCards.map(({ instance, card }) => {
-                const playable =
-                  canPayForCard(combat, card) && combat.status === "active";
+                const affordability = getCardAffordability(combat, card);
+                const playable = affordability.canPay && combat.status === "active";
 
                 return (
                   <CollectibleCard
+                    affordabilityNote={affordability.missingSummary}
                     card={card}
+                    costs={affordability.costs}
                     isPlayable={playable}
                     isSelected={selectedCardId === instance.instanceId}
                     key={instance.instanceId}
+                    missingCosts={affordability.missingCosts}
                     onBlur={() => setSelectedCardId(undefined)}
                     onFocus={() => setSelectedCardId(instance.instanceId)}
                     onMouseEnter={() => setSelectedCardId(instance.instanceId)}
@@ -576,25 +589,31 @@ function Stat({ isChanged = false, label, value, tone = "default" }: StatProps) 
 
 function ResourcePip({
   isChanged = false,
-  label,
+  resource,
   thresholdName,
   value,
 }: {
   isChanged?: boolean;
-  label: string;
+  resource: ResourceName;
   thresholdName?: string;
   value: number;
 }) {
-  const danger = label === "Corruption";
+  const danger = resource === "Corruption";
 
   return (
     <div
       className={`combat-resource-pip ${
         danger ? "combat-resource-corruption" : "combat-resource-faith"
       } ${isChanged ? "combat-resource-pulse" : ""}`}
+      title={getResourceBarTooltip(resource, value, thresholdName)}
     >
-      <span>{label}</span>
-      <strong>{value}</strong>
+      <ResourceBadge
+        amount={value}
+        resource={resource}
+        showLabel
+        title={getResourceBarTooltip(resource, value, thresholdName)}
+        variant="bar"
+      />
       {thresholdName && <em>{thresholdName}</em>}
     </div>
   );

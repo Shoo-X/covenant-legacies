@@ -1,14 +1,21 @@
-import { formatCardCost } from "@/game/cardText";
 import { CardArtwork } from "@/components/CardArtwork";
+import {
+  ResourceConsequenceBadge,
+  ResourceCostDisplay,
+} from "@/components/ResourceBadge";
+import { getCardCorruptionGain } from "@/game/cardCosts";
 import Image from "next/image";
-import type { Card } from "@/types/game";
+import type { Card, ResourceCost } from "@/types/game";
 
 interface CollectibleCardProps {
   as?: "article" | "button";
   card: Card;
+  costs?: ResourceCost[];
   disabled?: boolean;
+  affordabilityNote?: string;
   isPlayable?: boolean;
   isSelected?: boolean;
+  missingCosts?: ResourceCost[];
   onBlur?: () => void;
   onClick?: () => void;
   onFocus?: () => void;
@@ -94,22 +101,6 @@ function getSourceAbbreviation(card: Card) {
   return "Script.";
 }
 
-function getCostGemText(card: Card) {
-  if (card.isPlayable === false) {
-    return "--";
-  }
-
-  if (card.cost.length === 0) {
-    return "0";
-  }
-
-  if (card.cost.length === 1) {
-    return `${card.cost[0].amount}`;
-  }
-
-  return card.cost.map((cost) => cost.amount).join("/");
-}
-
 const fullArtSizesByDisplaySize: Record<string, string> = {
   collection: "220px",
   hand: "120px",
@@ -119,11 +110,14 @@ const fullArtSizesByDisplaySize: Record<string, string> = {
 };
 
 export function CollectibleCard({
+  affordabilityNote,
   as,
   card,
+  costs,
   disabled = false,
   isPlayable = true,
   isSelected = false,
+  missingCosts = [],
   onBlur,
   onClick,
   onFocus,
@@ -135,6 +129,11 @@ export function CollectibleCard({
   const artSymbol = getArtSymbol(card);
   const rarityClass = getRarityClass(card);
   const displaySize = size === "viewer" ? "inspect" : size;
+  const displayedCosts = costs ?? card.cost;
+  const showResourceLabels = displaySize === "inspect" || displaySize === "reward";
+  const costVariant =
+    displaySize === "hand" ? "hand" : showResourceLabels ? "full" : "compact";
+  const corruptionConsequence = getCardCorruptionGain(card);
   const hasFullCardArt = Boolean(card.imagePath);
   const isInteractive = as
     ? as === "button"
@@ -176,8 +175,19 @@ export function CollectibleCard({
 
       <div className="tcg-card-header">
         <h3 className="tcg-card-title">{card.name}</h3>
-        <span className="tcg-card-cost-gem" aria-label={`Cost ${formatCardCost(card)}`}>
-          {getCostGemText(card)}
+        <span className="tcg-card-cost-cluster">
+          <ResourceCostDisplay
+            costs={displayedCosts}
+            missingCosts={missingCosts}
+            showLabels={showResourceLabels}
+            unplayable={card.isPlayable === false}
+            variant={costVariant}
+          />
+          <ResourceConsequenceBadge
+            amount={corruptionConsequence}
+            showLabel={showResourceLabels}
+            variant={costVariant}
+          />
         </span>
       </div>
 
@@ -229,7 +239,7 @@ export function CollectibleCard({
 
   if (!isInteractive) {
     return (
-      <article className={frameClass} title={card.text}>
+      <article className={frameClass} title={affordabilityNote ?? card.text}>
         {body}
       </article>
     );
@@ -245,7 +255,7 @@ export function CollectibleCard({
       onFocus={onFocus}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      title={card.text}
+      title={affordabilityNote ? `${affordabilityNote} ${card.text}` : card.text}
       type="button"
     >
       {body}

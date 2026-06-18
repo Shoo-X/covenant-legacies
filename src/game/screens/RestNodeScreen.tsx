@@ -63,6 +63,16 @@ export function RestNodeScreen({
                 <p>{choice.label}</p>
                 <h3>{choice.description}</h3>
                 <span>{choice.effectSummary}</span>
+                {choice.details && (
+                  <dl className="rest-choice-details">
+                    {choice.details.map((detail) => (
+                      <div key={detail.label}>
+                        <dt>{detail.label}</dt>
+                        <dd>{detail.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
               </div>
               <PrimaryButton
                 disabled={choice.disabled}

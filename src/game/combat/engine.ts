@@ -3,6 +3,7 @@ import type {
   Enemy,
   Hero,
   Memorial,
+  ResourceCost,
   ResourceState,
   StartingDeckCard,
 } from "@/types/game";
@@ -371,20 +372,46 @@ function endTurn(state: CombatState, context: CombatContext): CombatState {
 }
 
 export function canPayForCard(state: CombatState, card: Card) {
-  if (card.isPlayable === false) {
-    return false;
-  }
-
-  return getAdjustedCosts(state, card).every((cost) => {
-    if (!cost.resource) {
-      return true;
-    }
-
-    return getResourceValue(state.resources, cost.resource) >= cost.amount;
-  });
+  return getCardAffordability(state, card).canPay;
 }
 
-function getAdjustedCosts(state: CombatState, card: Card) {
+export function getCardAffordability(state: CombatState, card: Card) {
+  const costs = getAdjustedCardCosts(state, card);
+  const missingCosts = getMissingCardCosts(state, card);
+
+  return {
+    canPay: card.isPlayable !== false && missingCosts.length === 0,
+    costs,
+    missingCosts,
+    missingSummary:
+      card.isPlayable === false
+        ? "This card cannot be played."
+        : formatMissingResourceSummary(missingCosts),
+  };
+}
+
+export function getAdjustedCardCosts(state: CombatState, card: Card) {
+  return getAdjustedCosts(state, card);
+}
+
+export function getMissingCardCosts(state: CombatState, card: Card): ResourceCost[] {
+  if (card.isPlayable === false) {
+    return [];
+  }
+
+  return getAdjustedCosts(state, card)
+    .filter((cost) => cost.resource && cost.amount > 0)
+    .map((cost) => ({
+      ...cost,
+      amount: Math.max(
+        0,
+        cost.amount - getResourceValue(state.resources, cost.resource!),
+      ),
+    }))
+    .filter((cost) => cost.amount > 0);
+}
+
+function getAdjustedCosts(state: CombatState, card: Card): ResourceCost[] {
   let remainingReduction =
     (card.type.includes("Prayer") ? state.nextPrayerCostReduction : 0) +
     (isPsalmCard(card) ? getFirstPsalmCostReduction(state) : 0);
@@ -423,6 +450,16 @@ function getAdjustedCosts(state: CombatState, card: Card) {
   }
 
   return [...adjustedCosts, { amount: taintedPrayerPenalty, resource: "Faith" as const }];
+}
+
+function formatMissingResourceSummary(missingCosts: ResourceCost[]) {
+  if (missingCosts.length === 0) {
+    return undefined;
+  }
+
+  return missingCosts
+    .map((cost) => `Need ${cost.amount} more ${cost.resource}`)
+    .join(", ");
 }
 
 function isPsalmCard(card: Card) {
