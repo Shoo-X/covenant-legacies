@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { starterCampaign } from "@/data/campaigns";
+import { codexEntries } from "@/data/codexEntries";
 import { encounters } from "@/data/encounters";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -51,6 +52,7 @@ export function MapScreen({
     completedEncounterIds,
   );
   const selectedCompleted = completedEncounterIds.includes(selectedEncounter.id);
+  const selectedCodexLinks = getCodexLinkLabels(selectedEncounter.codexEntryIds);
 
   return (
     <ScreenFrame>
@@ -163,6 +165,31 @@ export function MapScreen({
             Reward: {selectedEncounter.rewardPreview}
           </p>
 
+          <div className="campaign-detail-scroll game-scroll">
+            {selectedEncounter.description && (
+              <div className="campaign-detail-note">
+                <p>Encounter Intro</p>
+                <span>{selectedEncounter.description}</span>
+              </div>
+            )}
+            {selectedEncounter.conversationStarter && (
+              <div className="campaign-detail-note">
+                <p>Bible Conversation Starter</p>
+                <span>{selectedEncounter.conversationStarter}</span>
+              </div>
+            )}
+            <div className="campaign-detail-note">
+              <p>References</p>
+              <span>{selectedEncounter.references.join("; ")}</span>
+            </div>
+            {selectedCodexLinks.length > 0 && (
+              <div className="campaign-detail-note">
+                <p>Codex Links</p>
+                <span>{selectedCodexLinks.join("; ")}</span>
+              </div>
+            )}
+          </div>
+
           <PrimaryButton
             disabled={!selectedCanEnter}
             onClick={() => onStartEncounter(selectedEncounter)}
@@ -218,6 +245,18 @@ function hasEncounterAction(encounter: Encounter) {
     encounter.enemyIds.length > 0 ||
     Boolean(encounter.mysteryEncounterIds?.length)
   );
+}
+
+function getCodexLinkLabels(codexEntryIds?: string[]) {
+  if (!codexEntryIds?.length) {
+    return [];
+  }
+
+  return codexEntryIds.map((entryId) => {
+    const entry = codexEntries.find((candidate) => candidate.id === entryId);
+
+    return entry?.title ?? entryId;
+  });
 }
 
 interface RunStatProps {

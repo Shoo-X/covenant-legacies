@@ -442,8 +442,11 @@ export function dealEnemyDamage(
   }
 
   const memorialBonus = getLowHealthAttackBonus(state) + getGiantDamageBonus(state);
+  const exposedBonus = state.enemyStatuses.includes("Exposed")
+    ? getExposedDamageBonus(state)
+    : 0;
   const fearPenalty = state.hasFear ? Math.min(3, damage + memorialBonus) : 0;
-  const totalDamage = Math.max(0, damage + memorialBonus - fearPenalty);
+  const totalDamage = Math.max(0, damage + memorialBonus + exposedBonus - fearPenalty);
   const guardBlocked = Math.min(state.enemyState.guard, totalDamage);
   const healthDamage = Math.max(0, totalDamage - guardBlocked);
   const nextHealth = Math.max(0, state.enemyState.health - healthDamage);
@@ -462,6 +465,10 @@ export function dealEnemyDamage(
           ? state.enemyState.might + 1
           : state.enemyState.might,
     },
+    enemyStatuses:
+      exposedBonus > 0
+        ? state.enemyStatuses.filter((currentStatus) => currentStatus !== "Exposed")
+        : state.enemyStatuses,
     bossPhase: nextBossPhase,
     hasFear: phaseChanged && nextBossPhase >= 2 ? true : state.hasFear,
     metrics: {
@@ -477,6 +484,8 @@ export function dealEnemyDamage(
     "damage",
     `${message} -${healthDamage} enemy health${
       guardBlocked > 0 ? ` (${guardBlocked} blocked by Guard)` : ""
+    }${exposedBonus > 0 ? ` (${exposedBonus} from Exposed)` : ""}${
+      state.enemyStatuses.includes("Exposed") ? " Exposed is spent." : ""
     }${fearPenalty > 0 ? ` (${fearPenalty} lost to Fear)` : ""}${
       memorialBonus > 0 ? ` (${memorialBonus} from Memorials)` : ""
     }.`,
@@ -491,6 +500,13 @@ export function dealEnemyDamage(
   }
 
   return nextState;
+}
+
+function getExposedDamageBonus(state: CombatState) {
+  const courageBonus = state.courage > 0 ? 2 : 0;
+  const faithBonus = state.resources.faith > 0 ? 2 : 0;
+
+  return 4 + courageBonus + faithBonus;
 }
 
 function dealStructureDamage(
@@ -617,11 +633,13 @@ function getBossPhaseMessages(
       return ["Phase 3: Shadow of the Watchers gathers. The enemy gains 1 Might."];
     }
 
-    return ["Phase 3: Goliath presses the challenge. Guard the heavy blow."];
+    return [
+      "Phase 3: The battle belongs to the Lord. Watch for the opening and answer with Courage.",
+    ];
   }
 
   if (nextBossPhase >= 2) {
-    return ["Phase 2: Fear rises from the high place."];
+    return ["Phase 2: Spear like a weaver's beam. Heavy attacks become more dangerous."];
   }
 
   return [];

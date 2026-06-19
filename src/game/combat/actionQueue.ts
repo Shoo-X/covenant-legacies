@@ -1,5 +1,11 @@
 import type { CombatStatusName, ResourceState } from "@/types/game";
-import { getEnemyPatternStep } from "./enemyPatterns";
+import {
+  getConditionalMightChange,
+  getConditionalStatusesApplied,
+  getEnemyPatternStep,
+  getPatternStepDamage,
+  type EnemyPatternStep,
+} from "./enemyPatterns";
 import type {
   CombatFeedbackKind,
   CombatIntentType,
@@ -15,15 +21,27 @@ import { getActiveStructures, hasActiveAltarPressure } from "./structures";
 
 export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
   const step = getEnemyPatternStep(state);
-  const expectedDamage = getStepDamage(state, step.damage);
+  const expectedDamage = getStepDamage(state, step);
+  const conditionalMightChange = getConditionalMightChange(state, step);
+  const statusesApplied = uniqueStatuses([
+    ...(step.statusesApplied ?? []),
+    ...getConditionalStatusesApplied(state, step),
+  ]);
   const summaryParts = [step.summary];
 
   if (step.damage) {
     summaryParts[0] = `${expectedDamage} damage`;
+    if (state.hasFear && step.damageBonusIfPlayerHasFear) {
+      summaryParts.push(`Fear adds ${step.damageBonusIfPlayerHasFear} damage`);
+    }
   }
 
-  if (step.statusesApplied?.length) {
-    summaryParts.push(`applies ${step.statusesApplied.join(", ")}`);
+  if (statusesApplied.length) {
+    summaryParts.push(`applies ${statusesApplied.join(", ")}`);
+  }
+
+  if (step.statusesAppliedToEnemy?.length) {
+    summaryParts.push(`enemy gains ${step.statusesAppliedToEnemy.join(", ")}`);
   }
 
   if (step.guard) {
@@ -32,6 +50,10 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
 
   if (step.mightChange && step.mightChange > 0) {
     summaryParts.push(`gains ${step.mightChange} Might`);
+  }
+
+  if (conditionalMightChange > 0) {
+    summaryParts.push(`high Corruption: gains ${conditionalMightChange} Might`);
   }
 
   if (step.corruptionIfAltarActive && hasActiveAltarPressure(state)) {
@@ -50,7 +72,7 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
       step.corruptionIfAltarActive && hasActiveAltarPressure(state)
         ? { corruption: step.corruptionIfAltarActive }
         : undefined,
-    statusesApplied: step.statusesApplied,
+    statusesApplied,
     summary: summaryParts.join(" - "),
   };
 }
@@ -124,7 +146,12 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
   const intent = getEnemyIntentDetails(state);
   const step = getEnemyPatternStep(state);
   const altarIsActive = hasActiveAltarPressure(state);
-  const damage = getStepDamage(state, step.damage);
+  const conditionalMightChange = getConditionalMightChange(state, step);
+  const statusesApplied = uniqueStatuses([
+    ...(step.statusesApplied ?? []),
+    ...getConditionalStatusesApplied(state, step),
+  ]);
+  const damage = getStepDamage(state, step);
   const { guardBlocked, hpDamage, protectedBlocked } = getIncomingDamagePreview(
     state,
     damage,
@@ -171,6 +198,20 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     );
   }
 
+  if (conditionalMightChange > 0) {
+    queue.push(
+      createQueuedAction(state, "corruption-might", {
+        actionName: "Corruption Pressure",
+        intentType: "Special",
+        logKind: "enemy",
+        logMessage: `High Corruption hardens the challenge: ${state.enemy.name} gains ${conditionalMightChange} Might.`,
+        mightChange: conditionalMightChange,
+        presentation: "buff",
+        target: "Self",
+      }),
+    );
+  }
+
   if (step.guard && (!step.requiresActiveAltar || altarIsActive)) {
     queue.push(
       createQueuedAction(state, "enemy-guard", {
@@ -185,16 +226,30 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     );
   }
 
-  if (step.statusesApplied?.length) {
+  if (statusesApplied.length) {
     queue.push(
       createQueuedAction(state, "status", {
         actionName: step.actionName,
         intentType: step.intentType,
         logKind: "enemy",
-        logMessage: formatStatusesApplied(step.statusesApplied),
+        logMessage: formatStatusesApplied(statusesApplied),
         presentation: "status",
-        statusesApplied: step.statusesApplied,
+        statusesApplied,
         target: "Player",
+      }),
+    );
+  }
+
+  if (step.statusesAppliedToEnemy?.length) {
+    queue.push(
+      createQueuedAction(state, "enemy-status", {
+        actionName: step.actionName,
+        intentType: step.intentType,
+        logKind: "enemy",
+        logMessage: `${state.enemy.name} is ${step.statusesAppliedToEnemy.join(", ")}.`,
+        presentation: "status",
+        statusesApplied: step.statusesAppliedToEnemy,
+        target: "Enemy",
       }),
     );
   }
@@ -527,12 +582,12 @@ function getIntentTone(intentType: CombatIntentType): EnemyIntentDetails["iconTo
   return "attack";
 }
 
-function getStepDamage(state: CombatState, baseDamage = 0) {
-  if (baseDamage <= 0) {
+function getStepDamage(state: CombatState, step: EnemyPatternStep) {
+  if (!step.damage || step.damage <= 0) {
     return 0;
   }
 
-  return baseDamage + state.enemyState.might;
+  return getPatternStepDamage(state, step);
 }
 
 function createStructureActionQueue(state: CombatState): QueuedCombatAction[] {
@@ -593,6 +648,10 @@ function formatStatusesApplied(statuses: CombatStatusName[]) {
   }
 
   return `${statuses.join(", ")} applied.`;
+}
+
+function uniqueStatuses(statuses: CombatStatusName[]) {
+  return statuses.filter((status, index, allStatuses) => allStatuses.indexOf(status) === index);
 }
 
 function applyResourceChanges(

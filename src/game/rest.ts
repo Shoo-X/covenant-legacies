@@ -1,9 +1,10 @@
 import type { Card, ResourceState, StartingDeckCard } from "@/types/game";
 import { getCardUpgradeText, getUpgradeTarget } from "@/game/cardUpgrades";
 
-export type RestChoiceId = "rest" | "upgrade" | "cleanse";
+export type RestChoiceId = "rest" | "upgrade" | "remember" | "cleanse";
 
 export interface RestRunState {
+  hasFear: boolean;
   maxHealth: number;
   runDeck: StartingDeckCard[];
   runHealth: number;
@@ -31,12 +32,13 @@ export interface RestResolution {
 }
 
 const restHealAmount = 18;
+const lionAndBearCardId = "card-lion-and-bear";
 
 export function getRestChoices(
   state: RestRunState,
   cardsById: Map<string, Card>,
 ): RestChoice[] {
-  const upgradeTarget = getUpgradeTarget(
+  const upgradeTarget = getCourageUpgradeTarget(
     state.runDeck,
     state.upgradedCardIds,
     cardsById,
@@ -45,8 +47,8 @@ export function getRestChoices(
   return [
     {
       id: "rest",
-      label: "Rest",
-      description: `Heal ${restHealAmount} Health at the spring.`,
+      label: "Rest by the Brook",
+      description: `Heal ${restHealAmount} Health before the final ascent.`,
       disabled: state.runHealth >= state.maxHealth,
       effectSummary:
         state.runHealth >= state.maxHealth
@@ -55,14 +57,14 @@ export function getRestChoices(
     },
     {
       id: "upgrade",
-      label: "Upgrade",
+      label: "Choose a Smooth Stone",
       description: upgradeTarget
-        ? `Improve ${upgradeTarget.name} for the rest of this run.`
-        : "No upgradeable cards remain in the run deck.",
+        ? `Upgrade ${upgradeTarget.name}, a Courage card, for the rest of this run.`
+        : "No upgradeable Courage cards remain in the run deck.",
       disabled: !upgradeTarget,
       effectSummary: upgradeTarget
         ? `${upgradeTarget.name} will use upgraded card text in combat.`
-        : "No card can be upgraded.",
+        : "No Courage card can be upgraded.",
       details: upgradeTarget
         ? [
             { label: "Original", value: upgradeTarget.text },
@@ -76,14 +78,29 @@ export function getRestChoices(
         : undefined,
     },
     {
+      id: "remember",
+      label: "Remember the Lion and Bear",
+      description:
+        "Carry the memory of former deliverance into the public battle.",
+      effectSummary: "Add Lion and Bear to the run deck.",
+      details: [
+        { label: "Reference", value: "1 Samuel 17:34-37" },
+        { label: "Role", value: "Courage attack with Guard" },
+      ],
+    },
+    {
       id: "cleanse",
-      label: "Cleanse",
-      description: "Remove 1 Corruption before climbing higher.",
-      disabled: state.runResources.corruption <= 0,
+      label: "Pray in the Valley",
+      description: state.hasFear
+        ? "Remove Fear before Goliath's challenge."
+        : "Cleanse 1 Corruption before Goliath's challenge.",
+      disabled: !state.hasFear && state.runResources.corruption <= 0,
       effectSummary:
-        state.runResources.corruption <= 0
-          ? "There is no Corruption to cleanse."
-          : "Remove 1 Corruption.",
+        state.hasFear
+          ? "Remove Fear."
+          : state.runResources.corruption <= 0
+            ? "There is no Fear or Corruption to cleanse."
+            : "Remove 1 Corruption.",
     },
   ];
 }
@@ -106,7 +123,27 @@ export function applyRestChoice(
     };
   }
 
+  if (choiceId === "remember") {
+    return {
+      message: "Lion and Bear added to your run deck.",
+      state: {
+        ...state,
+        runDeck: addCardToDeck(state.runDeck, lionAndBearCardId),
+      },
+    };
+  }
+
   if (choiceId === "cleanse") {
+    if (state.hasFear) {
+      return {
+        message: "Fear removed.",
+        state: {
+          ...state,
+          hasFear: false,
+        },
+      };
+    }
+
     const nextCorruption = Math.max(0, state.runResources.corruption - 1);
 
     return {
@@ -124,7 +161,7 @@ export function applyRestChoice(
     };
   }
 
-  const upgradeTarget = getUpgradeTarget(
+  const upgradeTarget = getCourageUpgradeTarget(
     state.runDeck,
     state.upgradedCardIds,
     cardsById,
@@ -144,4 +181,34 @@ export function applyRestChoice(
       upgradedCardIds: [...state.upgradedCardIds, upgradeTarget.id],
     },
   };
+}
+
+function addCardToDeck(deck: StartingDeckCard[], cardId: string) {
+  const existing = deck.find((entry) => entry.cardId === cardId);
+
+  if (existing) {
+    return deck.map((entry) =>
+      entry.cardId === cardId ? { ...entry, quantity: entry.quantity + 1 } : entry,
+    );
+  }
+
+  return [...deck, { cardId, quantity: 1 }];
+}
+
+function getCourageUpgradeTarget(
+  runDeck: StartingDeckCard[],
+  upgradedCardIds: string[],
+  cardsById: Map<string, Card>,
+) {
+  const courageTarget = getUpgradeTarget(
+    runDeck.filter((entry) => {
+      const card = cardsById.get(entry.cardId);
+
+      return card?.archetypeTags?.includes("Courage");
+    }),
+    upgradedCardIds,
+    cardsById,
+  );
+
+  return courageTarget ?? getUpgradeTarget(runDeck, upgradedCardIds, cardsById);
 }

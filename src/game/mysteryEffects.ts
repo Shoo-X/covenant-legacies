@@ -48,6 +48,41 @@ export function applyMysteryChoice(
     messages.push("Card added to your run deck.");
   }
 
+  if (choice.upgradeCardId) {
+    const canUpgradeRequestedCard =
+      nextState.runDeck.some(
+        (entry) => entry.cardId === choice.upgradeCardId && entry.quantity > 0,
+      ) && !nextState.upgradedCardIds.includes(choice.upgradeCardId);
+
+    if (canUpgradeRequestedCard) {
+      nextState = {
+        ...nextState,
+        upgradedCardIds: [...nextState.upgradedCardIds, choice.upgradeCardId],
+      };
+      messages.push("Chosen card upgraded.");
+    } else if (choice.fallbackAddCardId) {
+      nextState = {
+        ...nextState,
+        runDeck: addCardToDeck(nextState.runDeck, choice.fallbackAddCardId),
+      };
+
+      const fallbackUpgradeCardId =
+        choice.fallbackUpgradeCardId ?? choice.fallbackAddCardId;
+
+      if (!nextState.upgradedCardIds.includes(fallbackUpgradeCardId)) {
+        nextState = {
+          ...nextState,
+          upgradedCardIds: [
+            ...nextState.upgradedCardIds,
+            fallbackUpgradeCardId,
+          ],
+        };
+      }
+
+      messages.push("Fallback card added in upgraded form.");
+    }
+  }
+
   if (
     choice.addRewardPoolCardId &&
     !nextState.rewardPoolCardIds.includes(choice.addRewardPoolCardId)

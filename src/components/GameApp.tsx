@@ -260,6 +260,7 @@ export function GameApp() {
   function resolveRestChoice(choiceId: RestChoiceId) {
     const resolution = applyRestChoice(
       {
+        hasFear,
         maxHealth: heroes[0].maxHealth,
         runDeck,
         runHealth,
@@ -271,8 +272,10 @@ export function GameApp() {
     );
 
     setRunHealth(resolution.state.runHealth);
+    setRunDeck(resolution.state.runDeck);
     setRunResources(resolution.state.runResources);
     setUpgradedCardIds(resolution.state.upgradedCardIds);
+    setHasFear(resolution.state.hasFear);
     setCompletedEncounterIds((current) =>
       current.includes(selectedEncounter.id)
         ? current
@@ -436,6 +439,7 @@ export function GameApp() {
       {screen === "rest" && (
         runStarted ? (
           <RestNodeScreen
+            hasFear={hasFear}
             maxHealth={heroes[0].maxHealth}
             onChoose={resolveRestChoice}
             runDeck={runDeck}

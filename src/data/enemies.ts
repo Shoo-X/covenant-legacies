@@ -101,7 +101,7 @@ export const enemies: Enemy[] = [
   {
     id: "enemy-giant-of-the-high-place",
     name: "Goliath of Gath",
-    title: "Philistine Champion",
+    title: "Champion of the Philistines",
     maxHealth: 128,
     attackDamage: 12,
     intent: "Phased giant challenge",
@@ -110,13 +110,15 @@ export const enemies: Enemy[] = [
     artworkTitle: giantHighPlaceArt?.title ?? davidGoliathArt?.title ?? "David vs Goliath",
     imageObjectPosition: giantHighPlaceArt?.objectPosition ?? "75% 33%",
     mechanics: [
-      "Challenges David with Fear, heavy attacks, and escalating pressure.",
-      "Tests Courage timing, Guard preparation, and anti-Giant attacks.",
+      "Phase 1, The Challenge: taunts, moderate attacks, Spear Advance, and Armor of Gath Guard pressure.",
+      "Phase 2, Spear Like a Weaver's Beam: heavy spear attacks become more common and more dangerous if Fear remains.",
+      "Phase 3, The Battle Belongs: dangerous final pressure creates Exposed openings that reward Courage, Sling, and Faith timing.",
+      "High Corruption in the final phase can harden the boss with Might or renewed Fear pressure.",
     ],
     sourceTier: "Scripture",
-    references: ["1 Samuel 17"],
+    references: ["1 Samuel 17", "Joshua 11:22", "2 Samuel 21:15-22"],
     theologyNote:
-      "Goliath is represented as the Philistine champion from Gath in 1 Samuel 17. The game does not tag him as Nephilim or Watcher-descended.",
+      "Goliath is represented as the Philistine champion from Gath in 1 Samuel 17. Joshua 11:22 and 2 Samuel 21:15-22 provide related Gath and giant-legacy context, but the game does not state that Goliath is Nephilim or Watcher-descended.",
     gameplayRole: "Boss",
   },
 ];

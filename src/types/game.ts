@@ -74,7 +74,8 @@ export type CombatStatusName =
   | "Might"
   | "Protected"
   | "Burning"
-  | "Discerned";
+  | "Discerned"
+  | "Exposed";
 
 export type CardEffectTarget = "Player" | "Enemy";
 
@@ -316,6 +317,9 @@ export interface Encounter extends SourceBackedContent {
   name: string;
   nodeType: MapNodeType;
   region: string;
+  description?: string;
+  conversationStarter?: string;
+  codexEntryIds?: string[];
   enemyIds: string[];
   mysteryEncounterIds?: string[];
   rewardPreview: string;
@@ -328,8 +332,11 @@ export interface MysteryEncounterChoice {
   description: string;
   effectSummary: string;
   addCardId?: string;
+  fallbackAddCardId?: string;
+  fallbackUpgradeCardId?: string;
   addRewardPoolCardId?: string;
   unlockCodexEntryId?: string;
+  upgradeCardId?: string;
   resourceChanges?: Partial<ResourceState>;
   removeFear?: boolean;
   revealMapNodes?: number;

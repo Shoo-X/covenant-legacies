@@ -164,6 +164,7 @@ export function CombatScreen({
   const prefersReducedMotion = usePrefersReducedMotion();
   const isPlayerInputLocked =
     combat.status !== "active" || combat.phase !== "PlayerMain";
+  const isBossEncounter = encounter.nodeType === "Boss";
   const isHighDangerIntent = getIsHighDangerIntent(intentDetails);
   const endTurnRisk = getEndTurnRiskAssessment(combat);
   const phaseBanner = getCombatPhaseBanner(combat.phase);
@@ -483,6 +484,14 @@ export function CombatScreen({
               {combat.hasFear && (
                 <Chip label="Fear" tone="violet" title={getKeywordTooltip("Fear")} />
               )}
+              {combat.enemyStatuses.map((status) => (
+                <Chip
+                  key={status}
+                  label={status}
+                  tone={status === "Exposed" ? "blue" : "violet"}
+                  title={getKeywordTooltip(status)}
+                />
+              ))}
               {combat.bossPhase > 0 && (
                 <Chip
                   label={`Phase ${combat.bossPhase}`}
@@ -552,8 +561,8 @@ export function CombatScreen({
                 <p>Boss Phase {combat.bossPhase}</p>
                 <span>
                   {combat.bossPhase >= 3
-                    ? "The champion presses the challenge."
-                    : "Fear pressure rises from the battle line."}
+                    ? "The Battle Belongs: watch for Courage, Sling, and Faith timing."
+                    : "Spear Like a Weaver's Beam: Guard before the heavy blow."}
                 </span>
               </div>
             )}
@@ -1051,9 +1060,17 @@ export function CombatScreen({
               </p>
               <h2 className="mt-2 text-3xl font-black text-[#fff3cf]">
                 {combat.status === "victory"
-                  ? `${enemy.name} has fallen.`
+                  ? isBossEncounter
+                    ? `${enemy.name} has fallen. David's Legacy is complete.`
+                    : `${enemy.name} has fallen.`
                   : "The champion has fallen."}
               </h2>
+              {combat.status === "victory" && isBossEncounter && (
+                <p className="combat-result-note">
+                  The valley is answered: fear is broken, the Philistine
+                  challenge is ended, and the campaign road is complete.
+                </p>
+              )}
               <div className="combat-result-metrics" aria-label="Combat summary">
                 <Stat label="Starting HP" value={combat.metrics.startingHealth} />
                 <Stat label="Ending HP" value={combat.metrics.endingHealth} />
@@ -1084,7 +1101,9 @@ export function CombatScreen({
                   tone={combat.status === "victory" ? "primary" : "danger"}
                 >
                   {combat.status === "victory"
-                    ? "Continue to Reward"
+                    ? isBossEncounter
+                      ? "Complete Campaign"
+                      : "Continue to Reward"
                     : "Retry Battle From Start"}
                 </PrimaryButton>
                 {combat.status === "defeat" && (
@@ -1103,6 +1122,7 @@ export function CombatScreen({
             dangerLevel={encounterPresentation.dangerLevel}
             definingMechanic={encounterPresentation.definingMechanic}
             enemy={enemy}
+            encounter={encounter}
             onEnterBattle={enterBattle}
             tacticalIdentity={encounterPresentation.tacticalIdentity}
           />
@@ -1311,12 +1331,14 @@ function EncounterIntroOverlay({
   dangerLevel,
   definingMechanic,
   enemy,
+  encounter,
   onEnterBattle,
   tacticalIdentity,
 }: {
   dangerLevel: string;
   definingMechanic: string;
   enemy: Enemy;
+  encounter: Encounter;
   onEnterBattle: () => void;
   tacticalIdentity: string;
 }) {
@@ -1337,7 +1359,9 @@ function EncounterIntroOverlay({
         </div>
         <div className="combat-intro-copy">
           <p>{starterCampaign.campaignName}</p>
-          <h2>{enemy.name}</h2>
+          <h2>{encounter.name}</h2>
+          <span>{enemy.title}</span>
+          {encounter.description && <span>{encounter.description}</span>}
           <div className="combat-intro-traits">
             {enemy.traits.map((trait) => (
               <Chip key={trait} label={trait} tone="gold" />
@@ -1355,7 +1379,7 @@ function EncounterIntroOverlay({
             </div>
             <div>
               <dt>Biblical Anchor</dt>
-              <dd>{starterCampaign.biblicalAnchor}</dd>
+              <dd>{encounter.references.join("; ")}</dd>
             </div>
           </dl>
           <PrimaryButton onClick={onEnterBattle}>Enter Battle</PrimaryButton>
@@ -2052,6 +2076,8 @@ function getKeywordTooltip(keyword: string) {
       "Champion: named battlefield representative whose defeat carries covenant and morale weight.",
     demon: "Demon: enemy trait used by cards and effects that care about spiritual opposition.",
     empire: "Empire: enemy trait used by cards and effects that care about oppressive powers.",
+    exposed:
+      "Exposed: the next hit against this enemy deals extra damage, then the opening closes.",
     faith:
       "Faith: spendable resource for prayer, psalm, covenant, and deliverance cards.",
     fear: "Fear: harmful status that weakens attacks until removed.",

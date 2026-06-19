@@ -1,13 +1,25 @@
 import type { CombatStatusName } from "@/types/game";
+import type { CorruptionThresholdName } from "@/game/corruption";
+import { isCorruptionAtLeast } from "@/game/corruption";
 import type { CombatIntentType, CombatState } from "./types";
 
 export interface EnemyPatternStep {
   actionName: string;
   intentType: CombatIntentType;
   damage?: number;
+  damageBonusIfPlayerHasFear?: number;
   guard?: number;
   mightChange?: number;
+  mightIfCorruptionAtLeast?: {
+    amount: number;
+    threshold: CorruptionThresholdName;
+  };
   statusesApplied?: CombatStatusName[];
+  statusesAppliedIfCorruptionAtLeast?: {
+    statuses: CombatStatusName[];
+    threshold: CorruptionThresholdName;
+  };
+  statusesAppliedToEnemy?: CombatStatusName[];
   corruptionIfAltarActive?: number;
   requiresActiveAltar?: boolean;
   summary: string;
@@ -189,9 +201,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   "enemy-giant-of-the-high-place": {
     maxHealth: 128,
     dangerLevel: "Boss",
-    tacticalIdentity: "Fear, heavy attacks, and the giant challenge",
+    tacticalIdentity: "Fear, heavy attacks, armor pressure, and a Courage test",
     definingMechanic:
-      "Goliath's taunts and heavy strikes test Guard, Courage, and timing.",
+      "Goliath tests Fear removal, Guard planning, Courage timing, and clean Psalm or Sling turns.",
     phaseThresholds: {
       phase2: 0.6,
       phase3: 0.3,
@@ -199,66 +211,92 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
     patterns: {
       default: [
         {
-          actionName: "Champion's Challenge",
-          damage: 12,
-          intentType: "Attack",
-          summary: "12 damage",
-        },
-        {
-          actionName: "Taunt the Battle Line",
+          actionName: "Defiant Taunt",
           intentType: "Debuff",
           statusesApplied: ["Fear"],
-          mightChange: 1,
-          summary: "Apply Fear and gain 1 Might",
+          summary: "Apply Fear",
         },
         {
-          actionName: "Spear Like a Weaver's Beam",
-          damage: 15,
+          actionName: "Spear Advance",
+          damage: 11,
+          intentType: "Attack",
+          summary: "11 damage",
+        },
+        {
+          actionName: "Armor of Gath",
+          guard: 12,
+          intentType: "Buff",
+          summary: "Gain 12 Guard",
+        },
+        {
+          actionName: "Heavy Spear Thrust",
+          damage: 16,
           intentType: "Heavy Attack",
-          summary: "15 damage",
+          summary: "16 damage",
         },
       ],
       phase2: [
         {
-          actionName: "Goliath's Terror",
-          damage: 10,
+          actionName: "Defiant Taunt",
           intentType: "Debuff",
           statusesApplied: ["Fear"],
-          summary: "10 damage and Fear",
+          summary: "Apply Fear",
         },
         {
-          actionName: "Bronze Spear Thrust",
+          actionName: "Heavy Spear Thrust",
           damage: 18,
+          damageBonusIfPlayerHasFear: 4,
           intentType: "Heavy Attack",
-          summary: "18 damage",
+          summary: "18 damage; +4 if Fear remains",
         },
         {
-          actionName: "Defy the Ranks",
-          damage: 14,
+          actionName: "Spear Advance",
+          damage: 13,
           intentType: "Attack",
-          mightChange: 1,
-          summary: "14 damage; gains 1 Might",
+          summary: "13 damage",
+        },
+        {
+          actionName: "Heavy Spear Thrust",
+          damage: 17,
+          damageBonusIfPlayerHasFear: 4,
+          intentType: "Heavy Attack",
+          summary: "17 damage; +4 if Fear remains",
         },
       ],
       phase3: [
         {
-          actionName: "Champion's Fury",
-          intentType: "Buff",
-          mightChange: 2,
-          summary: "+2 Might",
+          actionName: "Giant's Opening",
+          intentType: "Special",
+          statusesAppliedIfCorruptionAtLeast: {
+            statuses: ["Fear"],
+            threshold: "Oppressed",
+          },
+          statusesAppliedToEnemy: ["Exposed"],
+          summary: "Goliath is Exposed next turn; high Corruption applies Fear",
         },
         {
-          actionName: "Defiant Advance",
-          damage: 16,
-          intentType: "Attack",
+          actionName: "Defiant Taunt",
+          intentType: "Debuff",
           statusesApplied: ["Fear"],
-          summary: "16 damage and Fear",
+          summary: "Apply Fear",
         },
         {
-          actionName: "Champion's Crushing Blow",
-          damage: 22,
+          actionName: "Crushing Advance",
+          damage: 20,
+          damageBonusIfPlayerHasFear: 5,
           intentType: "Heavy Attack",
-          summary: "22 damage",
+          mightIfCorruptionAtLeast: {
+            amount: 1,
+            threshold: "Oppressed",
+          },
+          summary: "20 damage; +5 if Fear remains; high Corruption grants Might",
+        },
+        {
+          actionName: "Heavy Spear Thrust",
+          damage: 19,
+          damageBonusIfPlayerHasFear: 4,
+          intentType: "Heavy Attack",
+          summary: "19 damage; +4 if Fear remains",
         },
       ],
     },
@@ -306,4 +344,47 @@ export function getEnemyPatternStep(state: CombatState): EnemyPatternStep {
   const pattern = phasePattern?.length ? phasePattern : config.patterns.default;
 
   return pattern[(state.turn - 1) % pattern.length] ?? fallbackStep;
+}
+
+export function getPatternStepDamage(state: CombatState, step: EnemyPatternStep) {
+  const fearBonus =
+    state.hasFear && step.damageBonusIfPlayerHasFear
+      ? step.damageBonusIfPlayerHasFear
+      : 0;
+
+  return Math.max(0, (step.damage ?? 0) + fearBonus + state.enemyState.might);
+}
+
+export function getConditionalMightChange(
+  state: CombatState,
+  step: EnemyPatternStep,
+) {
+  if (
+    step.mightIfCorruptionAtLeast &&
+    isCorruptionAtLeast(
+      state.resources.corruption,
+      step.mightIfCorruptionAtLeast.threshold,
+    )
+  ) {
+    return step.mightIfCorruptionAtLeast.amount;
+  }
+
+  return 0;
+}
+
+export function getConditionalStatusesApplied(
+  state: CombatState,
+  step: EnemyPatternStep,
+) {
+  if (
+    step.statusesAppliedIfCorruptionAtLeast &&
+    isCorruptionAtLeast(
+      state.resources.corruption,
+      step.statusesAppliedIfCorruptionAtLeast.threshold,
+    )
+  ) {
+    return step.statusesAppliedIfCorruptionAtLeast.statuses;
+  }
+
+  return [];
 }

@@ -2,6 +2,54 @@ import type { MysteryEncounter } from "@/types/game";
 
 export const mysteryEncounters: MysteryEncounter[] = [
   {
+    id: "mystery-five-smooth-stones",
+    name: "The Five Smooth Stones",
+    encounterType: "MysteryEncounter",
+    tone: "Quiet, Scripture-rooted, preparatory",
+    scene:
+      "David comes to the brook before the battle line and chooses five smooth stones for his shepherd's pouch. The valley is loud with threats, but the preparation is small, deliberate, and faithful.",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:40"],
+    theologyNote:
+      "The stones are presented as prepared obedience before the Lord, not sacred objects or magical weapons.",
+    gameplayRole: "Support",
+    representationMode: "MysteryEncounter",
+    choices: [
+      {
+        id: "choose-carefully",
+        label: "Choose Carefully",
+        description:
+          "Take time at the brook, weighing the stone before the valley demands it.",
+        effectSummary:
+          "Upgrade Sling Stone if possible. Otherwise add Smooth Stone+ to the run deck.",
+        upgradeCardId: "card-sling-stone",
+        fallbackAddCardId: "card-smooth-stone",
+        fallbackUpgradeCardId: "card-smooth-stone",
+      },
+      {
+        id: "pray-before-the-brook",
+        label: "Pray Before the Brook",
+        description:
+          "Let the noise of the champion fall behind a quieter act of trust.",
+        effectSummary: "Gain 1 Faith and remove Fear.",
+        removeFear: true,
+        resourceChanges: {
+          faith: 1,
+        },
+      },
+      {
+        id: "hurry-to-the-battle",
+        label: "Hurry to the Battle",
+        description:
+          "Rise from the brook and run toward the battle line before fear settles in.",
+        effectSummary: "Gain 1 Resolve for the next combat.",
+        resourceChanges: {
+          resolve: 1,
+        },
+      },
+    ],
+  },
+  {
     id: "mystery-king-priest-of-salem",
     name: "The King-Priest of Salem",
     encounterType: "MysteryEncounter",

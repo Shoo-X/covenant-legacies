@@ -60,6 +60,33 @@ const entries: CodexEntry[] = [
       { label: "Node", value: encounter.nodeType },
       { label: "Region", value: encounter.region },
       { label: "Reward", value: encounter.rewardPreview },
+      ...(encounter.description
+        ? [{ label: "Encounter Intro", value: encounter.description }]
+        : []),
+      ...(encounter.conversationStarter
+        ? [
+            {
+              label: "Bible Conversation Starter",
+              value: encounter.conversationStarter,
+            },
+          ]
+        : []),
+      ...(encounter.codexEntryIds?.length
+        ? [
+            {
+              label: "Codex Links",
+              value: encounter.codexEntryIds
+                .map((entryId) => {
+                  const entry = codexEntries.find(
+                    (candidate) => candidate.id === entryId,
+                  );
+
+                  return entry?.title ?? entryId;
+                })
+                .join("; "),
+            },
+          ]
+        : []),
     ],
   })),
   ...mysteryEncounters.map((encounter) => ({

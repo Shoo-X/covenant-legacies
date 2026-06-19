@@ -7,6 +7,7 @@ import { getRestChoices, type RestChoiceId } from "@/game/rest";
 import type { ResourceState, StartingDeckCard } from "@/types/game";
 
 interface RestNodeScreenProps {
+  hasFear: boolean;
   maxHealth: number;
   onChoose: (choiceId: RestChoiceId) => void;
   runDeck: StartingDeckCard[];
@@ -16,6 +17,7 @@ interface RestNodeScreenProps {
 }
 
 export function RestNodeScreen({
+  hasFear,
   maxHealth,
   onChoose,
   runDeck,
@@ -26,6 +28,7 @@ export function RestNodeScreen({
   const cardsById = new Map(cards.map((card) => [card.id, card]));
   const choices = getRestChoices(
     {
+      hasFear,
       maxHealth,
       runDeck,
       runHealth,
@@ -41,9 +44,10 @@ export function RestNodeScreen({
       <div className="rest-node-screen">
         <GamePanel className="rest-node-intro">
           <p>Rest / Upgrade</p>
-          <h2>Spring Beneath the Shepherd&apos;s Rock</h2>
+          <h2>The Brook of Stones</h2>
           <span>
-            Take one careful mercy before the road climbs toward the high place.
+            Take one careful mercy before Goliath&apos;s challenge: rest,
+            choose, remember, or pray.
           </span>
 
           <div className="rest-node-status">
