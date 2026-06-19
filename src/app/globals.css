@@ -6806,7 +6806,8 @@ a:focus-visible,
 
 .gallery-screen {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(18rem, 0.34fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 0.75rem;
   height: 100%;
   min-height: 0;
@@ -6814,17 +6815,19 @@ a:focus-visible,
 }
 
 .gallery-header-panel {
-  display: grid;
-  grid-template-columns: minmax(18rem, 0.72fr) minmax(24rem, 1.28fr);
-  align-items: end;
-  gap: 1.1rem;
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 1rem;
   padding: 1rem;
 }
 
 .gallery-controls {
   display: grid;
-  grid-template-columns: repeat(3, minmax(9rem, 1fr));
-  gap: 0.72rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
 }
 
 .gallery-controls label {
