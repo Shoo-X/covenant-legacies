@@ -395,6 +395,8 @@ export function CombatScreen({
         <section className="combat-main-board" aria-label="Combat board">
           <GamePanel
             className={`combat-enemy-zone ${
+              isBossEncounter ? "combat-boss-enemy-zone" : ""
+            } ${
               latestEnemyDamageImpact
                 ? `combat-enemy-hit-${latestEnemyDamageImpact}`
                 : ""
@@ -427,6 +429,7 @@ export function CombatScreen({
 
             <div className="combat-enemy-summary">
               <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
+                {isBossEncounter ? "Boss / " : ""}
                 {enemy.title}
               </p>
               <h2 className="mt-1 truncate text-2xl font-black leading-tight text-[#fff3cf]">
@@ -674,7 +677,11 @@ export function CombatScreen({
                 tone={latestHealingFeedback ? "heal" : "guard"}
               />
             )}
-            <div className="combat-field-slot combat-field-slot-left">
+            <div
+              className={`combat-field-slot combat-field-slot-left ${
+                activeCombatTargetId === "enemy" ? "is-active" : ""
+              }`}
+            >
               <p>Target / Damage</p>
               <button
                 className={`combat-target-card combat-target-enemy ${
@@ -697,7 +704,7 @@ export function CombatScreen({
               )}
             </div>
             <div className="combat-confrontation-line" aria-hidden="true" />
-            <div className="combat-field-slot combat-field-slot-center">
+            <div className="combat-field-slot combat-field-slot-center is-current-turn">
               <p>This Turn</p>
               {latestPrayerFeedback ? (
                 <span className="combat-float-number combat-float-prayer">
@@ -711,7 +718,13 @@ export function CombatScreen({
                 </span>
               )}
             </div>
-            <div className="combat-field-slot combat-field-slot-right">
+            <div
+              className={`combat-field-slot combat-field-slot-right ${
+                activeStructures.length > 0 ? "has-structure-pressure" : ""
+              } ${
+                activeCombatTargetId !== "enemy" ? "is-active" : ""
+              }`}
+            >
               <p>Structure Pressure</p>
               {activeStructures.length > 0 ? (
                 <div className="combat-structure-list">
@@ -760,8 +773,8 @@ export function CombatScreen({
             }`}
           >
             <div className="combat-hand-header">
-              <p>Hand</p>
-              <span>{handCards.length} cards</span>
+              <p>Player Hand</p>
+              <span>{handCards.length} cards / click to play</span>
             </div>
             {isPlayerInputLocked && combat.status === "active" && (
               <div className="combat-hand-lock-caption" aria-live="polite">
@@ -833,14 +846,14 @@ export function CombatScreen({
               )}
               <div className="min-w-0">
                 <p className="text-[0.65rem] uppercase tracking-[0.24em] text-[var(--color-gold)]">
-                  Champion
+                  Champion / David
                 </p>
                 <h3 className="mt-1 truncate text-xl font-black text-[#fff3cf]">
                   {hero.shortName ?? hero.name}
                 </h3>
                 <Meter
                   current={combat.player.health}
-                  label="Player Health"
+                  label="David HP"
                   max={combat.player.maxHealth}
                   tone="player"
                 />
@@ -849,7 +862,7 @@ export function CombatScreen({
 
             <div className="combat-defense-bank" aria-label="Defense and Courage">
               <DefenseMetric
-                detail="Blocks damage"
+                detail="Protects HP"
                 helpText={getKeywordTooltip("Guard")}
                 isChanged={Boolean(latestGuardFeedback || latestHealingFeedback)}
                 impact={latestGuardImpact}
@@ -859,7 +872,7 @@ export function CombatScreen({
                 value={combat.player.guard}
               />
               <DefenseMetric
-                detail="Attack focus"
+                detail="Spent by attacks"
                 helpText={getKeywordTooltip("Courage")}
                 isChanged={Boolean(
                   latestResourceFeedback?.message.toLowerCase().includes("courage"),
@@ -880,7 +893,7 @@ export function CombatScreen({
               />
             </div>
 
-            <ResourceGroup className="combat-spendable-bank" title="Spend">
+            <ResourceGroup className="combat-spendable-bank" title="Spendable">
               {spendableResources.map((resource) => (
                 <ResourcePip
                   isChanged={Boolean(
@@ -901,7 +914,7 @@ export function CombatScreen({
               ))}
             </ResourceGroup>
 
-            <ResourceGroup className="combat-state-bank" title="State">
+            <ResourceGroup className="combat-state-bank" title="Harmful State">
               <ResourcePip
                 isChanged={Boolean(
                   latestResourceFeedback?.message.toLowerCase().includes("corruption"),
@@ -934,7 +947,7 @@ export function CombatScreen({
               )}
             </ResourceGroup>
 
-            <ResourceGroup className="combat-context-bank" title="Run">
+            <ResourceGroup className="combat-context-bank" title="Run Effects">
               {combat.memorials.length === 0 ? (
                 <StateChip
                   label="No Memorials"
@@ -974,27 +987,39 @@ export function CombatScreen({
         </section>
 
         <aside className="combat-command-rail" aria-label="Combat command rail">
-          <GamePanel className="combat-log-panel" scroll>
+          <GamePanel
+            className={`combat-log-panel ${
+              latestFeedback.length === 0 ? "combat-log-panel-empty" : ""
+            }`}
+            scroll
+          >
             <div className="combat-log-header">
               <p>Recent Battle Events</p>
               <span>Newest first</span>
             </div>
             <div className="combat-log-list">
-              {latestFeedback.map((item, index) => {
-                const impact = getFeedbackImpactIntensity(item);
+              {latestFeedback.length === 0 ? (
+                <div className="combat-log-empty-state">
+                  <p>Battle line waiting</p>
+                  <span>Play a card or end the turn to begin the record.</span>
+                </div>
+              ) : (
+                latestFeedback.map((item, index) => {
+                  const impact = getFeedbackImpactIntensity(item);
 
-                return (
-                  <p
-                    className={`combat-feedback-pop combat-log-entry ${
-                      index === 0 ? "combat-log-entry-latest" : ""
-                    } ${feedbackTone[item.kind]} combat-log-impact-${impact}`}
-                    key={item.id}
-                  >
-                    {index === 0 && <span>Latest</span>}
-                    {item.message}
-                  </p>
-                );
-              })}
+                  return (
+                    <p
+                      className={`combat-feedback-pop combat-log-entry ${
+                        index === 0 ? "combat-log-entry-latest" : ""
+                      } ${feedbackTone[item.kind]} combat-log-impact-${impact}`}
+                      key={item.id}
+                    >
+                      {index === 0 && <span>Latest</span>}
+                      {item.message}
+                    </p>
+                  );
+                })
+              )}
             </div>
           </GamePanel>
 
@@ -1006,9 +1031,7 @@ export function CombatScreen({
             </GamePanel>
 
             <GamePanel className="combat-actions-panel">
-              <p className="text-[0.65rem] uppercase tracking-[0.22em] text-[var(--color-gold)]">
-                Command
-              </p>
+              <p className="combat-command-kicker">Command</p>
               <PrimaryButton
                 disabled={isPlayerInputLocked}
                 onClick={requestEndTurn}
