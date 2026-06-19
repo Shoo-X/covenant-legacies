@@ -314,6 +314,147 @@ export const codexEntries: CodexLoreEntry[] = [
     },
   },
   {
+    id: "codex-guard-and-shepherd-care",
+    title: "Guard and Shepherd Care",
+    imagePath: getArtAssetPath("art-shepherds-guard"),
+    artworkTitle: "Shepherd's Guard",
+    sourceTier: "Scripture",
+    references: ["Psalm 23", "1 Samuel 17:34-37"],
+    theologyNote:
+      "Guard effects express shepherd care, vigilance, and protection rather than invulnerability or spellcasting.",
+    gameplayRole: "Defense",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "David's shepherd background includes protection from lion and bear, and Psalm 23 frames the Lord's care with shepherd imagery.",
+      whyItIsMysterious:
+        "A shepherd's work is ordinary and hidden, yet it forms courage before the public crisis.",
+      whyItMattersInGame:
+        "Guard cards teach the player to read enemy intent, preserve health, and build Courage through patient defense.",
+      conversationStarters: [
+        "Why should courage include protection before confrontation?",
+        "How does shepherd care shape David before the valley?",
+        "What does good defense teach a new player about trust and timing?",
+      ],
+      interpretiveTraditions:
+        "Shepherd imagery is often connected with care, guidance, and protection. The game keeps that imagery humble and practical.",
+      gameInterpretation:
+        "Staff and Sling, Guard the Flock, Cover Behind the Stones, and similar cards should feel steady rather than flashy.",
+    },
+  },
+  {
+    id: "codex-psalm-and-prayer",
+    title: "Psalm and Prayer",
+    imagePath: getArtAssetPath("art-psalm-of-courage"),
+    artworkTitle: "Psalm of Courage",
+    sourceTier: "Scripture",
+    references: ["Psalms", "1 Samuel 16:23", "Psalm 27", "Psalm 34"],
+    theologyNote:
+      "Psalm and Prayer cards are reverent dependence, worship, lament, and remembrance, not generic magic.",
+    gameplayRole: "Prayer",
+    representationMode: "Prayer",
+    sections: {
+      whatTheBibleSays:
+        "The Psalms give language for fear, trust, lament, deliverance, and worship. David is also associated with music and the harp in 1 Samuel.",
+      whyItIsMysterious:
+        "Prayer changes how the heart stands in danger without reducing the Lord's help to a controllable technique.",
+      whyItMattersInGame:
+        "Psalm and Prayer cards remove Fear, provide Guard, heal, draw, and support clean Courage timing.",
+      conversationStarters: [
+        "How can prayer be powerful without feeling like a spell?",
+        "Why do lament and worship both belong in a battle story?",
+        "What should Faith do mechanically in a reverent card battler?",
+      ],
+      interpretiveTraditions:
+        "Davidic psalm traditions shape worship and courage across Jewish and Christian reading.",
+      gameInterpretation:
+        "Prayer at the Brook, The Lord Delivers, and Psalm cards help David prepare and recover while keeping the focus on faithful dependence.",
+    },
+  },
+  {
+    id: "codex-clean-hands",
+    title: "Clean Hands",
+    sourceTier: "Scripture",
+    references: ["Psalm 24:3-4", "Psalm 51"],
+    theologyNote:
+      "Clean Hands language is about integrity, repentance, and covenant faithfulness, not moral perfection as a power trick.",
+    gameplayRole: "Support",
+    representationMode: "CovenantMemory",
+    sections: {
+      whatTheBibleSays:
+        "Psalm 24 asks who may ascend the hill of the Lord and speaks of clean hands and a pure heart. Psalm 51 gives language for mercy and cleansing.",
+      whyItIsMysterious:
+        "Purity in Scripture is relational and covenantal, not simply a resource meter.",
+      whyItMattersInGame:
+        "Clean Covenant play rewards low Corruption with stronger protection, healing, and card flow while forbidden choices remain costly.",
+      conversationStarters: [
+        "How can a game reward clean play without sounding self-righteous?",
+        "Why should cleansing feel like mercy rather than a loophole?",
+        "What makes corruption costly even when a card gives short-term power?",
+      ],
+      interpretiveTraditions:
+        "Clean hands and repentance have been read as worship, integrity, and return to God.",
+      gameInterpretation:
+        "Clean Hands, Mercy Remembered, Stand in the Promise, and related cards support runs that refuse forbidden shortcuts.",
+    },
+  },
+  {
+    id: "codex-philistine-pressure",
+    title: "Philistine Pressure",
+    sourceTier: "Biblical Inference",
+    references: ["1 Samuel 17:1-11", "1 Samuel 5", "1 Samuel 31"],
+    theologyNote:
+      "Philistine pressure is represented through battle lines, taunts, armor, idols, and intimidation, not as exotic or admirable power.",
+    gameplayRole: "Trial",
+    representationMode: "Enemy",
+    sections: {
+      whatTheBibleSays:
+        "1 Samuel 17 shows Israel and Philistia facing one another across the valley while Goliath issues his public challenge. Other Samuel passages show Philistine idol contexts and victory displays.",
+      whyItIsMysterious:
+        "Military pressure, public shame, false worship, and fear all work together before David enters the fight.",
+      whyItMattersInGame:
+        "The campaign uses raiders, idol standards, armor pressure, and Goliath's taunts to teach target priority and courage under intimidation.",
+      conversationStarters: [
+        "Why does public intimidation matter before battle begins?",
+        "How can idol pressure be shown as false confidence rather than power?",
+        "What should the player learn before facing Goliath?",
+      ],
+      interpretiveTraditions:
+        "Philistine opposition is often remembered through the battle line and the false confidence of the champion's challenge.",
+      gameInterpretation:
+        "Philistine enemies and structures pressure the player with Fear, Guard, and tactical targets while keeping the starter act anchored in 1 Samuel 17.",
+    },
+  },
+  {
+    id: "codex-testimony-before-battle",
+    title: "Testimony Before Battle",
+    imagePath: getArtAssetPath("art-shepherd-david"),
+    artworkTitle: "Shepherd David",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:32-37", "Psalm 18"],
+    theologyNote:
+      "Testimony remembers the Lord's deliverance and forms courage without turning David's past into self-exalting legend.",
+    gameplayRole: "Support",
+    representationMode: "CovenantMemory",
+    sections: {
+      whatTheBibleSays:
+        "David tells Saul how the Lord delivered him from lion and bear, then trusts that the Lord will deliver him from the Philistine.",
+      whyItIsMysterious:
+        "The remembered private deliverance becomes public courage at the moment of crisis.",
+      whyItMattersInGame:
+        "Testimony and Memory cards draw, remove Fear, build Courage, and prepare decisive turns.",
+      conversationStarters: [
+        "Why does David speak about past deliverance before the battle?",
+        "How can testimony strengthen courage without becoming pride?",
+        "What should memory do in a roguelike run?",
+      ],
+      interpretiveTraditions:
+        "Readers often see David's testimony as faithful remembrance that prepares him for a larger test.",
+      gameInterpretation:
+        "Remember the Lion, Testimony Before Saul, Memorial rewards, and covenant memory effects turn past deliverance into run identity.",
+    },
+  },
+  {
     id: "codex-speculative-watcher-layer",
     title: "Speculative Watcher Layer",
     sourceTier: "Speculative Fiction",

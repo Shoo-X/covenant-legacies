@@ -144,4 +144,49 @@ export const memorials: Memorial[] = [
       "The chain is deliberately double-edged: power gained from forbidden craft carries spiritual risk and is not a valid path to wisdom.",
     gameplayRole: "Memorial",
   },
+  {
+    id: "memorial-sling-cord",
+    name: "Sling Cord",
+    rarity: "Uncommon",
+    effectText: "Start each combat with Valley Aim in hand.",
+    effect: {
+      startCombatCardId: "card-valley-aim",
+    },
+    sourceTier: "Biblical Inference",
+    references: ["1 Samuel 17:40", "1 Samuel 17:49"],
+    theologyNote:
+      "The cord remembers practiced readiness with ordinary tools, not a blessed charm.",
+    gameplayRole: "Memorial",
+    representationMode: "Legacy",
+  },
+  {
+    id: "memorial-lions-memory",
+    name: "Lion's Memory",
+    rarity: "Uncommon",
+    effectText: "When below 50% health, attacks deal +2 damage.",
+    effect: {
+      lowHealthAttackDamage: 2,
+    },
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:34-37"],
+    theologyNote:
+      "The memory of the lion points to past deliverance forming present courage.",
+    gameplayRole: "Memorial",
+    representationMode: "CovenantMemory",
+  },
+  {
+    id: "memorial-valley-witness",
+    name: "Valley Witness",
+    rarity: "Common",
+    effectText: "The first time you remove Fear each combat, heal 3.",
+    effect: {
+      firstFearRemovalHeal: 3,
+    },
+    sourceTier: "Biblical Inference",
+    references: ["1 Samuel 17:32-37", "1 Samuel 17:45-47"],
+    theologyNote:
+      "Witness in the valley is testimony to the Lord's deliverance, not self-exalting fame.",
+    gameplayRole: "Memorial",
+    representationMode: "CovenantMemory",
+  },
 ];
