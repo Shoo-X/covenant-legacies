@@ -12,13 +12,13 @@ interface ResourceStripProps {
 
 export function ResourceStrip({ resources }: ResourceStripProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+    <div className="resource-strip">
       {resourceOrder.map((resource) => {
         const value = resources[resourceVisuals[resource].key];
 
         return (
           <div
-            className="rounded-md border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.04)] px-3 py-2"
+            className="resource-strip-tile"
             key={resource}
             title={getResourceBarTooltip(resource, value)}
           >

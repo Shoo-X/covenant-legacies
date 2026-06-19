@@ -22,6 +22,7 @@ import { MysteryEncounterScreen } from "@/game/screens/MysteryEncounterScreen";
 import { RestNodeScreen } from "@/game/screens/RestNodeScreen";
 import { RewardScreen } from "@/game/screens/RewardScreen";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { PillTag } from "@/components/UiPrimitives";
 import { applyMysteryChoice } from "@/game/mysteryEffects";
 import { chooseMemorialRewards, chooseRewardCards } from "@/game/rewards";
 import { applyRestChoice, type RestChoiceId } from "@/game/rest";
@@ -372,7 +373,8 @@ export function GameApp() {
           />
         ) : (
           <RunRequiredState
-            body={`Choose David before entering ${starterCampaign.campaignName}.`}
+            body={`Choose David before entering ${starterCampaign.campaignName}. David's path begins at the valley mouth.`}
+            context="The Valley of the Giant / 1 Samuel 17"
             cta="Choose Hero"
             onAction={() => setScreen("hero-select")}
             title="No active run"
@@ -506,11 +508,13 @@ function hasValidRunDeck(runDeck: StartingDeckCard[]) {
 
 function RunRequiredState({
   body,
+  context,
   cta,
   onAction,
   title,
 }: {
   body: string;
+  context?: string;
   cta: string;
   onAction: () => void;
   title: string;
@@ -521,6 +525,11 @@ function RunRequiredState({
         <p>{starterCampaign.campaignLabel}</p>
         <h2>{title}</h2>
         <span>{body}</span>
+        {context && (
+          <div className="demo-empty-context">
+            <PillTag tone="gold">{context}</PillTag>
+          </div>
+        )}
         <PrimaryButton onClick={onAction}>{cta}</PrimaryButton>
       </GamePanel>
     </div>

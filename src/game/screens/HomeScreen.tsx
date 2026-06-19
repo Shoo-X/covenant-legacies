@@ -66,6 +66,18 @@ export function HomeScreen({
                 Biblical Anchor: {starterCampaign.biblicalAnchor}
               </PillTag>
             </div>
+            <div className="home-demo-act">
+              <PillTag tone="gold">First Playable Demo Act</PillTag>
+              <p>
+                Learn Guard, Courage, Faith, rewards, corruption, and
+                Goliath&apos;s challenge in David&apos;s starter campaign.
+              </p>
+              <div className="home-demo-flow" aria-label="Demo act flow">
+                <span>Choose David</span>
+                <span>Enter the Valley</span>
+                <span>Face Goliath</span>
+              </div>
+            </div>
           </div>
 
           <div className="home-action-grid mt-6">
