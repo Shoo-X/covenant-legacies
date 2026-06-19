@@ -1,6 +1,12 @@
 import { cards } from "@/data/cards";
-import { GamePanel } from "@/components/GamePanel";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import {
+  ChoiceCard,
+  DecisionScreenFrame,
+  OutcomeStatGrid,
+  ScriptureReferencePanel,
+  StatusBadge,
+  TheologyNotePanel,
+} from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { getCorruptionThreshold } from "@/game/corruption";
 import { getRestChoices, type RestChoiceId } from "@/game/rest";
@@ -41,63 +47,98 @@ export function RestNodeScreen({
 
   return (
     <ScreenFrame>
-      <div className="rest-node-screen">
-        <GamePanel className="rest-node-intro">
-          <p>Rest / Upgrade</p>
-          <h2>The Brook of Stones</h2>
-          <span>
-            Take one careful mercy before Goliath&apos;s challenge: rest,
-            choose, remember, or pray.
-          </span>
-
-          <div className="rest-node-status">
-            <StatusTile label="Health" value={`${runHealth} / ${maxHealth}`} />
-            <StatusTile label="Upgrades" value={upgradedCardIds.length} />
-            <StatusTile
-              label="Corruption"
-              value={`${runResources.corruption} - ${corruptionThreshold.name}`}
+      <DecisionScreenFrame
+        aside={
+          <>
+            <OutcomeStatGrid
+              stats={[
+                { label: "Health", value: `${runHealth} / ${maxHealth}` },
+                { label: "Upgrades", value: upgradedCardIds.length },
+                {
+                  label: "Corruption",
+                  value: `${runResources.corruption} - ${corruptionThreshold.name}`,
+                },
+              ]}
             />
-          </div>
-        </GamePanel>
-
+            <div className="decision-note-panel decision-context-panel">
+              <p>Before Goliath</p>
+              <span>
+                Final preparation before the champion's challenge: heal,
+                strengthen Courage, remember deliverance, or pray cleanly.
+              </span>
+            </div>
+            <ScriptureReferencePanel>1 Samuel 17:40</ScriptureReferencePanel>
+            <TheologyNotePanel>
+              The brook is final preparation before the public battle: prayer,
+              memory, and chosen stones are framed as obedience, not magic.
+            </TheologyNotePanel>
+          </>
+        }
+        copy="Take one careful mercy before Goliath's challenge: rest, choose, remember, or pray."
+        eyebrow="Rest / Upgrade / Cleanse"
+        meta={<StatusBadge tone="gold">Scripture</StatusBadge>}
+        title="The Brook of Stones"
+        tone="sacred"
+      >
         <div className="rest-choice-grid">
           {choices.map((choice) => (
-            <GamePanel className="rest-choice-card" key={choice.id}>
-              <div>
-                <p>{choice.label}</p>
-                <h3>{choice.description}</h3>
-                <span>{choice.effectSummary}</span>
-                {choice.details && (
-                  <dl className="rest-choice-details">
-                    {choice.details.map((detail) => (
-                      <div key={detail.label}>
-                        <dt>{detail.label}</dt>
-                        <dd>{detail.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                )}
-              </div>
-              <PrimaryButton
-                disabled={choice.disabled}
-                onClick={() => onChoose(choice.id)}
-                tone={choice.id === "cleanse" ? "secondary" : "primary"}
-              >
-                {choice.label}
-              </PrimaryButton>
-            </GamePanel>
+            <ChoiceCard
+              actionLabel={choice.disabled ? "Unavailable" : choice.label}
+              disabled={choice.disabled}
+              eyebrow={getRestChoiceEyebrow(choice.id)}
+              key={choice.id}
+              onChoose={() => onChoose(choice.id)}
+              title={choice.label}
+              tone={choice.id === "cleanse" ? "sacred" : "default"}
+            >
+              <p>{choice.description}</p>
+              <strong>{choice.effectSummary}</strong>
+              {choice.disabled && (
+                <div className="decision-disabled-note">
+                  {getDisabledRestReason(choice.id)}
+                </div>
+              )}
+              {choice.details && (
+                <dl className="rest-choice-details">
+                  {choice.details.map((detail) => (
+                    <div key={detail.label}>
+                      <dt>{detail.label}</dt>
+                      <dd>{detail.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            </ChoiceCard>
           ))}
         </div>
-      </div>
+      </DecisionScreenFrame>
     </ScreenFrame>
   );
 }
 
-function StatusTile({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div>
-      <p>{label}</p>
-      <strong>{value}</strong>
-    </div>
-  );
+function getRestChoiceEyebrow(choiceId: RestChoiceId) {
+  const labels: Record<RestChoiceId, string> = {
+    rest: "Mercy",
+    upgrade: "Preparation",
+    remember: "Memory",
+    cleanse: "Prayer",
+  };
+
+  return labels[choiceId];
+}
+
+function getDisabledRestReason(choiceId: RestChoiceId) {
+  if (choiceId === "cleanse") {
+    return "Unavailable because there is no Fear or Corruption to cleanse.";
+  }
+
+  if (choiceId === "rest") {
+    return "Unavailable because health is already full.";
+  }
+
+  if (choiceId === "upgrade") {
+    return "Unavailable because no upgradeable Courage card remains.";
+  }
+
+  return "Unavailable for the current run state.";
 }

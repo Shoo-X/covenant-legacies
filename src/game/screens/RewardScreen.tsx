@@ -1,6 +1,11 @@
 import { CollectibleCard } from "@/components/CollectibleCard";
-import { GamePanel } from "@/components/GamePanel";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import {
+  DecisionScreenFrame,
+  getSourceTierTone,
+  RewardCardShell,
+  RewardFooterActions,
+  StatusBadge,
+} from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { starterCampaign } from "@/data/campaigns";
 import { heroes } from "@/data/heroes";
@@ -21,39 +26,48 @@ export function RewardScreen({
 
   return (
     <ScreenFrame>
-      <GamePanel className="reward-screen-panel">
-        <div className="reward-screen-heading">
-          <p>Victory Reward</p>
-          <h2>Choose one card for the road ahead.</h2>
-          <span>
+      <DecisionScreenFrame
+        copy={
+          <>
             Add a card to {heroName}&apos;s run deck, or skip to keep the deck
-            lean. After choosing, the road returns to {starterCampaign.campaignName}
-            with the next node available.
-          </span>
-        </div>
-
+            lean. After choosing, the road returns to{" "}
+            {starterCampaign.campaignName} with the next node available.
+          </>
+        }
+        eyebrow="Victory Reward"
+        title="Choose one card for the road ahead."
+      >
         <div className="reward-card-stage">
           {rewardCards.slice(0, 3).map((card) => (
-            <div className="reward-card-choice" key={card.id}>
+            <RewardCardShell
+              footer={
+                <>
+                  <StatusBadge tone={getSourceTierTone(card.sourceTier)}>
+                    {card.sourceTier}
+                  </StatusBadge>
+                  <StatusBadge
+                    tone={card.type.includes("Forbidden") ? "danger" : "muted"}
+                  >
+                    {card.rarity}
+                  </StatusBadge>
+                </>
+              }
+              key={card.id}
+              tone={card.type.includes("Forbidden") ? "danger" : "default"}
+            >
               <CollectibleCard
                 card={card}
                 onClick={() => onChooseCard(card.id)}
                 size="reward"
               />
-              <p>
-                {card.rarity} / {card.sourceTier}
-              </p>
-            </div>
+            </RewardCardShell>
           ))}
         </div>
 
-        <div className="reward-skip-row">
-          <span>Choose one card or skip. Either choice returns to the campaign map.</span>
-          <PrimaryButton onClick={onSkip} tone="secondary">
-            Skip Reward
-          </PrimaryButton>
-        </div>
-      </GamePanel>
+        <RewardFooterActions onSecondary={onSkip} secondaryLabel="Skip Reward">
+          Choose one card or skip. Either choice returns to the campaign map.
+        </RewardFooterActions>
+      </DecisionScreenFrame>
     </ScreenFrame>
   );
 }

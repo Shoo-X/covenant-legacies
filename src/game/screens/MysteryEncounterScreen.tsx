@@ -1,5 +1,13 @@
 import { cards } from "@/data/cards";
-import { GamePanel } from "@/components/GamePanel";
+import {
+  ChoiceCard,
+  DecisionScreenFrame,
+  getSourceTierTone,
+  OutcomeStatGrid,
+  ScriptureReferencePanel,
+  StatusBadge,
+  TheologyNotePanel,
+} from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { formatCardCost } from "@/game/cardText";
 import type { MysteryEncounter, MysteryEncounterChoice, ResourceState } from "@/types/game";
@@ -15,120 +23,102 @@ export function MysteryEncounterScreen({
   onChoose,
   runResources,
 }: MysteryEncounterScreenProps) {
+  const encounterLabel = getMysteryEncounterLabel(encounter.encounterType);
+  const isForbiddenEncounter = encounter.encounterType === "ForbiddenMysteryEncounter";
+
   return (
     <ScreenFrame>
-      <div className="grid h-full min-h-0 gap-3 xl:grid-cols-[0.48fr_0.52fr]">
-        <GamePanel className="flex min-h-0 flex-col p-4">
-          <div className="shrink-0">
-            <p className="mb-3 text-xs uppercase tracking-[0.28em] text-[var(--color-gold)]">
-              {encounter.encounterType} / {encounter.sourceTier}
-            </p>
-            <h2 className="text-3xl font-semibold leading-tight text-[#fff3cf] md:text-4xl">
-              {encounter.name}
-            </h2>
-            <p className="mt-3 text-sm uppercase tracking-[0.18em] text-[rgba(241,228,194,0.54)]">
-              {encounter.tone}
-            </p>
-          </div>
-
-        <div className="game-scroll mt-4 min-h-0 flex-1 rounded-md border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.04)] p-4">
-          <p className="text-lg leading-8 text-[rgba(255,243,207,0.86)]">
-            {encounter.scene}
-          </p>
+      <DecisionScreenFrame
+        aside={
+          <>
+            <OutcomeStatGrid
+              stats={[
+                { label: "Resolve", value: runResources.resolve },
+                { label: "Faith", value: runResources.faith },
+                { label: "Wisdom", value: runResources.wisdom },
+                { label: "Authority", value: runResources.authority },
+                { label: "Corruption", value: runResources.corruption },
+              ]}
+            />
+            <div className="decision-note-panel decision-context-panel">
+              <p>Preparation</p>
+              <span>{getMysteryContext(encounter.id)}</span>
+            </div>
+            <ScriptureReferencePanel>
+              {encounter.references.join("; ")}
+            </ScriptureReferencePanel>
+            <TheologyNotePanel>{encounter.theologyNote}</TheologyNotePanel>
+          </>
+        }
+        copy={encounter.tone}
+        eyebrow={
+          <>
+            {encounterLabel} / {encounter.sourceTier}
+          </>
+        }
+        meta={
+          <StatusBadge tone={getSourceTierTone(encounter.sourceTier)}>
+            {encounter.sourceTier}
+          </StatusBadge>
+        }
+        title={encounter.name}
+        tone={isForbiddenEncounter ? "danger" : "sacred"}
+      >
+        <div className="mystery-scene-panel">
+          <p>{encounter.scene}</p>
           {encounter.cautionNote && (
-            <p className="mt-4 rounded-md border border-[rgba(159,61,40,0.42)] bg-[rgba(159,61,40,0.12)] p-4 text-sm leading-6 text-[#ffd7c9]">
-              {encounter.cautionNote}
-            </p>
+            <div className="decision-warning-note">{encounter.cautionNote}</div>
           )}
         </div>
 
-        <div className="mt-4 grid shrink-0 grid-cols-5 gap-2">
-          <ResourceStat label="Resolve" value={runResources.resolve} />
-          <ResourceStat label="Faith" value={runResources.faith} />
-          <ResourceStat label="Wisdom" value={runResources.wisdom} />
-          <ResourceStat label="Authority" value={runResources.authority} />
-          <ResourceStat label="Corruption" value={runResources.corruption} />
-        </div>
-
-        <div className="mt-4 grid shrink-0 gap-3 rounded-md border border-[rgba(215,180,93,0.16)] bg-[rgba(255,255,255,0.035)] p-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.48)]">
-              References
-            </p>
-            <p className="mt-1 text-sm text-[rgba(241,228,194,0.74)]">
-              {encounter.references.join("; ")}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.48)]">
-              Theology Note
-            </p>
-            <p className="mt-1 text-sm leading-6 text-[rgba(241,228,194,0.74)]">
-              {encounter.theologyNote}
-            </p>
-          </div>
-        </div>
-        </GamePanel>
-
-        <GamePanel className="flex h-full min-h-0 flex-col p-4">
-          <p className="shrink-0 text-xs uppercase tracking-[0.22em] text-[var(--color-gold)]">
-            Choices
-          </p>
-        <div className="game-scroll mt-3 grid min-h-0 flex-1 gap-4 pr-1 lg:grid-cols-3 xl:grid-cols-1">
+        <div className="mystery-choice-grid">
           {encounter.choices.map((choice) => {
             const card = choice.addCardId
               ? cards.find((candidate) => candidate.id === choice.addCardId)
               : undefined;
 
             return (
-              <button
-                className="rounded-lg border border-[rgba(215,180,93,0.24)] bg-[rgba(8,7,5,0.38)] p-4 text-left transition hover:translate-y-[-2px] hover:border-[rgba(255,226,150,0.5)]"
+              <ChoiceCard
+                actionLabel="Choose"
+                eyebrow="Choice"
                 key={choice.id}
-                onClick={() => onChoose(choice)}
-                type="button"
+                onChoose={() => onChoose(choice)}
+                title={choice.label}
+                tone={isForbiddenEncounter ? "danger" : "sacred"}
               >
-                <p className="text-lg font-semibold text-[#fff3cf]">{choice.label}</p>
-                <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-                  {choice.description}
-                </p>
-                <p className="mt-4 text-sm leading-6 text-[var(--color-gold)]">
-                  {choice.effectSummary}
-                </p>
+                <p>{choice.description}</p>
+                <strong>{choice.effectSummary}</strong>
                 {card && (
-                  <div className="mt-4 rounded-md border border-[rgba(215,180,93,0.16)] bg-[rgba(255,255,255,0.04)] p-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-semibold text-[#fff3cf]">{card.name}</p>
-                      <span className="text-sm text-[var(--color-gold)]">
-                        {formatCardCost(card)}
-                      </span>
+                  <div className="choice-card-preview">
+                    <div>
+                      <p>{card.name}</p>
+                      <span>{formatCardCost(card)}</span>
                     </div>
-                    <p className="mt-2 text-sm leading-6 text-[rgba(241,228,194,0.66)]">
-                      {card.text}
-                    </p>
+                    <small>{card.text}</small>
                   </div>
                 )}
-              </button>
+              </ChoiceCard>
             );
           })}
         </div>
-        </GamePanel>
-      </div>
+      </DecisionScreenFrame>
     </ScreenFrame>
   );
 }
 
-interface ResourceStatProps {
-  label: string;
-  value: number;
+function getMysteryEncounterLabel(encounterType: MysteryEncounter["encounterType"]) {
+  const labels: Record<MysteryEncounter["encounterType"], string> = {
+    ForbiddenMysteryEncounter: "Forbidden Mystery Encounter",
+    MysteryEncounter: "Mystery Encounter",
+  };
+
+  return labels[encounterType];
 }
 
-function ResourceStat({ label, value }: ResourceStatProps) {
-  return (
-    <div className="rounded-md border border-[rgba(215,180,93,0.16)] bg-[rgba(255,255,255,0.04)] p-3">
-      <p className="text-xs uppercase tracking-[0.16em] text-[rgba(241,228,194,0.5)]">
-        {label}
-      </p>
-      <p className="mt-1 text-xl font-semibold text-[#fff3cf]">{value}</p>
-    </div>
-  );
+function getMysteryContext(encounterId: string) {
+  if (encounterId === "mystery-five-smooth-stones") {
+    return "Preparation before the battle line: choose carefully, pray, or hurry toward the field.";
+  }
+
+  return "A crossroad in the valley where the next step should be weighed before the run continues.";
 }

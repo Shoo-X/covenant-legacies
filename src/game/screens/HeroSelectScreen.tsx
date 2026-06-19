@@ -90,7 +90,7 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
 
             <div className="hero-starting-deck-panel">
               <PillTag tone="gold">Starting Deck</PillTag>
-              <ScrollPanel className="starting-deck-preview-grid">
+              <div className="starting-deck-preview-grid" aria-label="David starting deck">
                 {playableHero.startingDeck.map((deckCard) => {
                   const card = cardsById.get(deckCard.cardId);
 
@@ -105,7 +105,7 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
                     </div>
                   );
                 })}
-              </ScrollPanel>
+              </div>
             </div>
           </div>
         </ContentPanel>

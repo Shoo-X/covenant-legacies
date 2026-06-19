@@ -7,6 +7,10 @@ import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
 import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
+import {
+  ModalSummaryFrame,
+  OutcomeStatGrid,
+} from "@/components/DecisionPrimitives";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import {
@@ -1053,41 +1057,9 @@ export function CombatScreen({
         </aside>
 
         {combat.status !== "active" && (
-          <div className="combat-result-overlay">
-            <div className="combat-result-modal">
-              <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-gold)]">
-                {combat.status === "victory" ? "Victory" : "Defeat"}
-              </p>
-              <h2 className="mt-2 text-3xl font-black text-[#fff3cf]">
-                {combat.status === "victory"
-                  ? isBossEncounter
-                    ? `${enemy.name} has fallen. David's Legacy is complete.`
-                    : `${enemy.name} has fallen.`
-                  : "The champion has fallen."}
-              </h2>
-              {combat.status === "victory" && isBossEncounter && (
-                <p className="combat-result-note">
-                  The valley is answered: fear is broken, the Philistine
-                  challenge is ended, and the campaign road is complete.
-                </p>
-              )}
-              <div className="combat-result-metrics" aria-label="Combat summary">
-                <Stat label="Starting HP" value={combat.metrics.startingHealth} />
-                <Stat label="Ending HP" value={combat.metrics.endingHealth} />
-                <Stat label="Damage Taken" value={combat.metrics.damageReceived} />
-                <Stat label="Rounds" value={combat.metrics.roundsTaken} />
-                <Stat label="Corruption" value={combat.metrics.corruptionGained} />
-                <Stat label="Cards Played" value={combat.metrics.cardsPlayed} />
-              </div>
-              {(combat.metrics.notableCardName || combat.metrics.notableArchetype) && (
-                <p className="combat-result-note">
-                  Notable: {combat.metrics.notableCardName ?? "No card played"}
-                  {combat.metrics.notableArchetype
-                    ? ` / ${combat.metrics.notableArchetype}`
-                    : ""}
-                </p>
-              )}
-              <div className="mt-5">
+          <ModalSummaryFrame
+            actions={
+              <>
                 <PrimaryButton
                   onClick={() =>
                     combat.status === "victory"
@@ -1107,15 +1079,59 @@ export function CombatScreen({
                     : "Retry Battle From Start"}
                 </PrimaryButton>
                 {combat.status === "defeat" && (
-                  <div className="mt-3">
-                    <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
-                      Return to Map
-                    </PrimaryButton>
-                  </div>
+                  <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
+                    Return to Map
+                  </PrimaryButton>
                 )}
-              </div>
-            </div>
-          </div>
+              </>
+            }
+            eyebrow={
+              combat.status === "victory"
+                ? isBossEncounter
+                  ? "Campaign Complete"
+                  : "Victory"
+                : "Defeat"
+            }
+            title={
+              combat.status === "victory"
+                ? isBossEncounter
+                  ? `${enemy.name} has fallen. David's Legacy is complete.`
+                  : `${enemy.name} has fallen.`
+                : "The champion has fallen."
+            }
+            tone={
+              combat.status === "victory"
+                ? isBossEncounter
+                  ? "campaign"
+                  : "victory"
+                : "defeat"
+            }
+          >
+              {combat.status === "victory" && isBossEncounter && (
+                <p className="combat-result-note">
+                  The champion&apos;s voice is silenced; the road through the
+                  valley is complete.
+                </p>
+              )}
+              <OutcomeStatGrid
+                stats={[
+                  { label: "Starting HP", value: combat.metrics.startingHealth },
+                  { label: "Ending HP", value: combat.metrics.endingHealth },
+                  { label: "Damage Taken", value: combat.metrics.damageReceived },
+                  { label: "Rounds", value: combat.metrics.roundsTaken },
+                  { label: "Corruption", value: combat.metrics.corruptionGained },
+                  { label: "Cards Played", value: combat.metrics.cardsPlayed },
+                ]}
+              />
+              {(combat.metrics.notableCardName || combat.metrics.notableArchetype) && (
+                <p className="combat-result-note">
+                  Notable: {combat.metrics.notableCardName ?? "No card played"}
+                  {combat.metrics.notableArchetype
+                    ? ` / ${combat.metrics.notableArchetype}`
+                    : ""}
+                </p>
+              )}
+          </ModalSummaryFrame>
         )}
         {combat.phase === "BattleIntro" && !hasSeenEncounterIntro && (
           <EncounterIntroOverlay
