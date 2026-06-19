@@ -61,30 +61,31 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   "enemy-idol-priest": {
     maxHealth: 46,
     dangerLevel: "High",
-    tacticalIdentity: "Ritual and altar pressure",
-    definingMechanic: "Destroy or suppress the altar before the ritual completes.",
+    tacticalIdentity: "Idol-standard structure pressure",
+    definingMechanic:
+      "Break the Idol Standard before its battlefield pressure completes.",
     patterns: {
       default: [
         {
-          actionName: "Desecrating Chant",
+          actionName: "Standard Chant",
           damage: 6,
           intentType: "Debuff",
           statusesApplied: ["Weaken"],
           summary: "6 damage and Weaken",
         },
         {
-          actionName: "Empower Altar",
+          actionName: "Raise Idol Standard",
           intentType: "Ritual",
           mightChange: 2,
           requiresActiveAltar: true,
-          summary: "active altar: +2 Might",
+          summary: "active standard: +2 Might",
         },
         {
-          actionName: "Ritual Strike",
+          actionName: "Standard-Bound Strike",
           corruptionIfAltarActive: 1,
           damage: 14,
           intentType: "Special",
-          summary: "14 damage; +1 Corruption if altar remains",
+          summary: "14 damage; +1 Corruption if standard remains",
         },
       ],
     },
@@ -92,28 +93,60 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   "enemy-giant-blooded-brute": {
     maxHealth: 62,
     dangerLevel: "High",
-    tacticalIdentity: "Fear and heavy attacks",
-    definingMechanic: "Fear precedes a devastating blow.",
+    tacticalIdentity: "Shield protection and interception",
+    definingMechanic:
+      "The shield-bearer builds Guard, then turns defense into pressure.",
     patterns: {
       default: [
         {
-          actionName: "Menacing Roar",
-          intentType: "Debuff",
-          statusesApplied: ["Fear"],
-          summary: "Apply Fear",
+          actionName: "Raise the Great Shield",
+          guard: 14,
+          intentType: "Buff",
+          summary: "Gain 14 Guard",
         },
         {
-          actionName: "Crushing Blow",
-          damage: 18,
-          intentType: "Heavy Attack",
-          summary: "18 damage",
-        },
-        {
-          actionName: "Recovery Strike",
-          damage: 7,
+          actionName: "Shield Bash",
+          damage: 11,
           intentType: "Attack",
-          mightChange: -1,
-          summary: "7 damage; loses 1 Might",
+          statusesApplied: ["Weaken"],
+          summary: "11 damage and Weaken",
+        },
+        {
+          actionName: "Interpose",
+          damage: 8,
+          guard: 8,
+          intentType: "Buff",
+          summary: "Gain 8 Guard and deal 8",
+        },
+      ],
+    },
+  },
+  "enemy-gathite-armor-bearer": {
+    maxHealth: 58,
+    dangerLevel: "Moderate",
+    tacticalIdentity: "Armor and Guard pressure",
+    definingMechanic:
+      "High Guard punishes scattered attacks and rewards focused timing.",
+    patterns: {
+      default: [
+        {
+          actionName: "Brace in Bronze",
+          guard: 12,
+          intentType: "Buff",
+          summary: "Gain 12 Guard",
+        },
+        {
+          actionName: "Weighted Advance",
+          damage: 10,
+          guard: 6,
+          intentType: "Attack",
+          summary: "10 damage and gain 6 Guard",
+        },
+        {
+          actionName: "Punish Weak Blows",
+          damage: 14,
+          intentType: "Heavy Attack",
+          summary: "14 damage",
         },
       ],
     },
@@ -156,8 +189,9 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
   "enemy-giant-of-the-high-place": {
     maxHealth: 128,
     dangerLevel: "Boss",
-    tacticalIdentity: "Phases, altars, and Corruption punishment",
-    definingMechanic: "The high place escalates through Fear, altars, and Corruption.",
+    tacticalIdentity: "Fear, heavy attacks, and the giant challenge",
+    definingMechanic:
+      "Goliath's taunts and heavy strikes test Guard, Courage, and timing.",
     phaseThresholds: {
       phase2: 0.6,
       phase3: 0.3,
@@ -165,64 +199,63 @@ export const enemyCombatConfigs: Record<string, EnemyCombatConfig> = {
     patterns: {
       default: [
         {
-          actionName: "High-Place Strike",
+          actionName: "Champion's Challenge",
           damage: 12,
           intentType: "Attack",
           summary: "12 damage",
         },
         {
-          actionName: "Empower the High Place",
-          intentType: "Ritual",
+          actionName: "Taunt the Battle Line",
+          intentType: "Debuff",
+          statusesApplied: ["Fear"],
           mightChange: 1,
-          requiresActiveAltar: true,
-          summary: "active altar: +1 Might",
+          summary: "Apply Fear and gain 1 Might",
         },
         {
-          actionName: "Altar Crush",
-          corruptionIfAltarActive: 1,
+          actionName: "Spear Like a Weaver's Beam",
           damage: 15,
-          intentType: "Special",
-          summary: "15 damage; +1 Corruption if altar remains",
+          intentType: "Heavy Attack",
+          summary: "15 damage",
         },
       ],
       phase2: [
         {
-          actionName: "Giant's Terror",
+          actionName: "Goliath's Terror",
           damage: 10,
           intentType: "Debuff",
           statusesApplied: ["Fear"],
           summary: "10 damage and Fear",
         },
         {
-          actionName: "Crushing Blow",
+          actionName: "Bronze Spear Thrust",
           damage: 18,
           intentType: "Heavy Attack",
           summary: "18 damage",
         },
         {
-          actionName: "High-Place Strike",
-          corruptionIfAltarActive: 1,
+          actionName: "Defy the Ranks",
           damage: 14,
-          intentType: "Special",
-          summary: "14 damage; +1 Corruption if altar remains",
+          intentType: "Attack",
+          mightChange: 1,
+          summary: "14 damage; gains 1 Might",
         },
       ],
       phase3: [
         {
-          actionName: "Watcher-Blood Rage",
+          actionName: "Champion's Fury",
           intentType: "Buff",
           mightChange: 2,
           summary: "+2 Might",
         },
         {
-          actionName: "Shadow of the Watchers",
-          corruptionIfAltarActive: 1,
+          actionName: "Defiant Advance",
           damage: 16,
-          intentType: "Special",
-          summary: "16 damage; +1 Corruption if altar remains",
+          intentType: "Attack",
+          statusesApplied: ["Fear"],
+          summary: "16 damage and Fear",
         },
         {
-          actionName: "Crushing Blow",
+          actionName: "Champion's Crushing Blow",
           damage: 22,
           intentType: "Heavy Attack",
           summary: "22 damage",

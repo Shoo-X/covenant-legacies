@@ -1,4 +1,5 @@
 import { screens } from "@/game/navigation";
+import { starterCampaign } from "@/data/campaigns";
 import type { GameScreen } from "@/types/game";
 
 interface GameTopBarProps {
@@ -14,7 +15,7 @@ export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
           COVENANT: LEGACIES
         </p>
         <h1 className="text-base font-semibold leading-none text-[#fff3cf] md:text-lg">
-          War of the Watchers
+          {starterCampaign.campaignName}
         </h1>
       </button>
 

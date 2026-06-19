@@ -1,5 +1,6 @@
 import { CardArtwork } from "@/components/CardArtwork";
 import { cards, showcaseCardIds } from "@/data/cards";
+import { starterCampaign } from "@/data/campaigns";
 import { GamePanel } from "@/components/GamePanel";
 import { OrnamentalDivider } from "@/components/OrnamentalDivider";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -41,15 +42,15 @@ export function HomeScreen({
         <GamePanel className="flex flex-col justify-between p-6 md:p-8">
           <div>
             <p className="text-xs uppercase tracking-[0.34em] text-[var(--color-gold)]">
-              War of the Watchers
+              {starterCampaign.campaignLabel}
             </p>
             <h2 className="mt-3 max-w-3xl text-4xl font-black leading-[0.95] text-[#fff3cf] md:text-6xl">
-              Begin the first saga.
+              Begin David&apos;s first trial.
             </h2>
             <OrnamentalDivider />
             <p className="max-w-2xl text-lg leading-8 text-[rgba(241,228,194,0.76)]">
-              Choose a covenant bearer, enter The Valley of the Giant, and
-              carry the run through battle, reward, and return to the map.
+              Choose David, enter {starterCampaign.campaignName}, and learn the
+              starter path through battle, reward, and return to the map.
             </p>
           </div>
 
@@ -80,8 +81,11 @@ export function HomeScreen({
           <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-gold)]">
             Demo Path
           </p>
-          <h3>War of the Watchers</h3>
-          <span>The Valley of the Giant is the first campaign map.</span>
+          <h3>{starterCampaign.campaignName}</h3>
+          <span>
+            {starterCampaign.campaignSubtitle} / Biblical Anchor:{" "}
+            {starterCampaign.biblicalAnchor}
+          </span>
           <div className="home-role-list mt-5">
             <HomeRole label="Start Run" value="Hero Select / Campaign Map / Combat" />
             <HomeRole label="Collection" value="Card archive and future deck-building home" />

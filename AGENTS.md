@@ -4,8 +4,9 @@ This is a biblical supernatural roguelike deckbuilding card battler.
 
 Product naming:
 - Covenant: Legacies is the main game title.
-- War of the Watchers is the first playable saga/campaign, not the product name.
-- The Valley of the Giant remains the first campaign map.
+- The Valley of the Giant is David's starter/tutorial campaign, anchored in 1 Samuel 17.
+- David's Legacy is the preferred starter-campaign label.
+- War of the Watchers is a future speculative saga/campaign layer or optional background, not the main label for David's starter campaign.
 
 Tone:
 - Serious, reverent, ancient, mysterious, premium biblical epic.
@@ -15,7 +16,7 @@ Tone:
 - Biblical power should be represented through covenant, prayer, faith, authority, obedience, judgment, prophecy, worship, and divine intervention.
 
 Theology/lore:
-- Preserve sourceTier metadata: Scripture, Interpretive Tradition, Speculative Fiction.
+- Preserve sourceTier metadata: Scripture, Biblical Inference, Interpretive Tradition, Speculative Fiction.
 - Preserve references, theologyNote, and gameplayRole fields.
 - Do not present speculation as doctrine.
 - Forbidden Knowledge must feel dangerous/cautionary, not glamorous.

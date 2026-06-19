@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { starterCampaign } from "@/data/campaigns";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
 import { heroes } from "@/data/heroes";
@@ -551,8 +552,8 @@ export function CombatScreen({
                 <p>Boss Phase {combat.bossPhase}</p>
                 <span>
                   {combat.bossPhase >= 3
-                    ? "Shadow of the Watchers answers Corruption."
-                    : "Fear pressure rises from the high place."}
+                    ? "The champion presses the challenge."
+                    : "Fear pressure rises from the battle line."}
                 </span>
               </div>
             )}
@@ -741,6 +742,59 @@ export function CombatScreen({
           </div>
 
           <GamePanel
+            className={`combat-hand-tray ${
+              isPlayerInputLocked ? "combat-hand-locked" : ""
+            }`}
+          >
+            <div className="combat-hand-header">
+              <p>Hand</p>
+              <span>{handCards.length} cards</span>
+            </div>
+            {isPlayerInputLocked && combat.status === "active" && (
+              <div className="combat-hand-lock-caption" aria-live="polite">
+                {getInputLockLabel(combat.phase)}
+              </div>
+            )}
+            {selectedHandCard && (
+              <div className="combat-hand-inspector" aria-live="polite">
+                <CollectibleCard
+                  affordabilityNote={selectedHandAffordability?.missingSummary}
+                  as="article"
+                  card={selectedHandCard}
+                  costs={selectedHandAffordability?.costs}
+                  missingCosts={selectedHandAffordability?.missingCosts}
+                  size="inspect"
+                />
+              </div>
+            )}
+            <div className="combat-hand-scroll" aria-label="Card hand">
+              {handCards.map(({ instance, card }) => {
+                const affordability = getCardAffordability(combat, card);
+                const playable = affordability.canPay && !isPlayerInputLocked;
+
+                return (
+                  <CollectibleCard
+                    affordabilityNote={affordability.missingSummary}
+                    card={card}
+                    costs={affordability.costs}
+                    isPlayable={playable}
+                    isSelected={selectedCardId === instance.instanceId}
+                    key={instance.instanceId}
+                    missingCosts={affordability.missingCosts}
+                    onBlur={() => setSelectedCardId(undefined)}
+                    onFocus={() => setSelectedCardId(instance.instanceId)}
+                    onMouseEnter={() => setSelectedCardId(instance.instanceId)}
+                    onMouseLeave={() => setSelectedCardId(undefined)}
+                    onClick={() => playCard(instance.instanceId)}
+                    disabled={isPlayerInputLocked}
+                    size="hand"
+                  />
+                );
+              })}
+            </div>
+          </GamePanel>
+
+          <GamePanel
             className={`combat-player-zone ${
               latestGuardFeedback ? "combat-player-guard-pulse" : ""
             } ${latestHealingFeedback ? "combat-player-heal-pulse" : ""} ${
@@ -885,12 +939,12 @@ export function CombatScreen({
                 ))
               )}
               <StateChip
-                label={primaryStructure ? primaryStructure.name : "No Altar"}
+                label={primaryStructure ? primaryStructure.name : "No Structure"}
                 tone={primaryStructure ? "warning" : "muted"}
                 title={
                   primaryStructure
                     ? "A targetable enemy structure is active on the battlefield."
-                    : "No targetable altar or enemy structure is active."
+                    : "No targetable enemy structure is active."
                 }
               />
             </ResourceGroup>
@@ -903,59 +957,6 @@ export function CombatScreen({
                 }`}
               />
             )}
-          </GamePanel>
-
-          <GamePanel
-            className={`combat-hand-tray ${
-              isPlayerInputLocked ? "combat-hand-locked" : ""
-            }`}
-          >
-            <div className="combat-hand-header">
-              <p>Hand</p>
-              <span>{handCards.length} cards</span>
-            </div>
-            {isPlayerInputLocked && combat.status === "active" && (
-              <div className="combat-hand-lock-caption" aria-live="polite">
-                {getInputLockLabel(combat.phase)}
-              </div>
-            )}
-            {selectedHandCard && (
-              <div className="combat-hand-inspector" aria-live="polite">
-                <CollectibleCard
-                  affordabilityNote={selectedHandAffordability?.missingSummary}
-                  as="article"
-                  card={selectedHandCard}
-                  costs={selectedHandAffordability?.costs}
-                  missingCosts={selectedHandAffordability?.missingCosts}
-                  size="inspect"
-                />
-              </div>
-            )}
-            <div className="combat-hand-scroll" aria-label="Card hand">
-              {handCards.map(({ instance, card }) => {
-                const affordability = getCardAffordability(combat, card);
-                const playable = affordability.canPay && !isPlayerInputLocked;
-
-                return (
-                  <CollectibleCard
-                    affordabilityNote={affordability.missingSummary}
-                    card={card}
-                    costs={affordability.costs}
-                    isPlayable={playable}
-                    isSelected={selectedCardId === instance.instanceId}
-                    key={instance.instanceId}
-                    missingCosts={affordability.missingCosts}
-                    onBlur={() => setSelectedCardId(undefined)}
-                    onFocus={() => setSelectedCardId(instance.instanceId)}
-                    onMouseEnter={() => setSelectedCardId(instance.instanceId)}
-                    onMouseLeave={() => setSelectedCardId(undefined)}
-                    onClick={() => playCard(instance.instanceId)}
-                    disabled={isPlayerInputLocked}
-                    size="hand"
-                  />
-                );
-              })}
-            </div>
           </GamePanel>
         </section>
 
@@ -1335,7 +1336,7 @@ function EncounterIntroOverlay({
           )}
         </div>
         <div className="combat-intro-copy">
-          <p>Encounter</p>
+          <p>{starterCampaign.campaignName}</p>
           <h2>{enemy.name}</h2>
           <div className="combat-intro-traits">
             {enemy.traits.map((trait) => (
@@ -1351,6 +1352,10 @@ function EncounterIntroOverlay({
             <div>
               <dt>Defining Mechanic</dt>
               <dd>{definingMechanic}</dd>
+            </div>
+            <div>
+              <dt>Biblical Anchor</dt>
+              <dd>{starterCampaign.biblicalAnchor}</dd>
             </div>
           </dl>
           <PrimaryButton onClick={onEnterBattle}>Enter Battle</PrimaryButton>
@@ -2043,18 +2048,23 @@ function getKeywordTooltip(keyword: string) {
       "Courage: David's combat focus. Stacks up to 3 and is spent by attacks for bonus damage.",
     corruption:
       "Corruption: dangerous run pressure. It is a consequence to manage, not a normal resource.",
+    champion:
+      "Champion: named battlefield representative whose defeat carries covenant and morale weight.",
     demon: "Demon: enemy trait used by cards and effects that care about spiritual opposition.",
     empire: "Empire: enemy trait used by cards and effects that care about oppressive powers.",
     faith:
       "Faith: spendable resource for prayer, psalm, covenant, and deliverance cards.",
     fear: "Fear: harmful status that weakens attacks until removed.",
     giant: "Giant: enemy trait. David's sling and courage cards often gain bonuses against Giants.",
+    gath: "Gath: Philistine city connected with Goliath and later giant traditions.",
     guard: "Guard: blocks incoming damage first, then usually resets at the next turn.",
     human: "Human: enemy trait used by cards and encounter effects.",
     idol: "Idol: enemy trait tied to altar, structure, and false-worship pressure.",
     might: "Might: enemy power. Each Might usually increases enemy damage or pressure.",
     nephilim:
       "Nephilim: enemy trait. Anti-Giant and judgment effects often care about this threat.",
+    philistine:
+      "Philistine: enemy trait tied to the battle line opposing Israel in David's starter campaign.",
     oppressed:
       "Oppressed: high Corruption threshold. Enemy pressure becomes more dangerous.",
     resolve:

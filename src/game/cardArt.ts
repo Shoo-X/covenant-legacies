@@ -14,7 +14,7 @@ export const cardRarityFilters: Array<CardRarity | "All"> = [
 
 export const cardSetFilters: Array<CardSet | "All"> = [
   "All",
-  "War of the Watchers",
+  "David's Legacy",
   "Core Covenant",
 ];
 
@@ -29,6 +29,10 @@ const rarityRank: Record<CardRarity, number> = {
 };
 
 export function getCardSet(card: Card): CardSet {
+  if (card.cardSet === "War of the Watchers") {
+    return "David's Legacy";
+  }
+
   return card.cardSet ?? "Core Covenant";
 }
 

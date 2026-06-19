@@ -3,6 +3,7 @@
 import { CardArtwork } from "@/components/CardArtwork";
 import { CollectibleCard } from "@/components/CollectibleCard";
 import { PrimaryButton } from "@/components/PrimaryButton";
+import { getCardSet } from "@/game/cardArt";
 import type { Card } from "@/types/game";
 
 interface CardDetailModalProps {
@@ -22,7 +23,7 @@ export function CardDetailModal({ card, onClose }: CardDetailModalProps) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--color-gold)]">
-                {card.cardSet ?? "Core Covenant"}
+                {getCardSet(card)}
               </p>
               <h2>{card.name}</h2>
             </div>

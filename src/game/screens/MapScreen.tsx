@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { starterCampaign } from "@/data/campaigns";
 import { encounters } from "@/data/encounters";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
@@ -57,14 +58,17 @@ export function MapScreen({
         <GamePanel className="campaign-summary-panel">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              First Saga: War of the Watchers
+              <span>{starterCampaign.campaignLabel}</span>
+              <span className="campaign-anchor-label">
+                Biblical Anchor: {starterCampaign.biblicalAnchor}
+              </span>
             </p>
             <h2 className="mt-2 text-4xl font-black leading-tight text-[#fff3cf]">
-              The Valley of the Giant
+              {starterCampaign.campaignName}
             </h2>
             <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.68)]">
-              A fixed road of battles, mystery, elite trial, rest, and the high
-              place.
+              {starterCampaign.campaignSubtitle}: a beginner road of battles,
+              mystery, rest, and the high place built to teach David&apos;s deck.
             </p>
           </div>
 

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Covenant: Legacies | War of the Watchers",
+  title: "Covenant: Legacies | The Valley of the Giant",
   description:
-    "A biblical supernatural roguelike deckbuilding card battler. War of the Watchers is the first playable saga, and The Valley of the Giant is the first campaign map.",
+    "A biblical supernatural roguelike deckbuilding card battler. The Valley of the Giant is David's beginner starter campaign, anchored in 1 Samuel 17.",
 };
 
 export default function RootLayout({

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { cards } from "@/data/cards";
+import { starterCampaign } from "@/data/campaigns";
 import { enemies } from "@/data/enemies";
 import { encounters } from "@/data/encounters";
 import { heroes } from "@/data/heroes";
@@ -367,7 +368,7 @@ export function GameApp() {
           />
         ) : (
           <RunRequiredState
-            body="Choose a covenant bearer before entering The Valley of the Giant."
+            body={`Choose David before entering ${starterCampaign.campaignName}.`}
             cta="Choose Hero"
             onAction={() => setScreen("hero-select")}
             title="No active run"
@@ -391,7 +392,7 @@ export function GameApp() {
           <RunRequiredState
             body={
               runStarted
-                ? "Select an available encounter from The Valley of the Giant with a valid run deck before entering combat."
+                ? `Select an available encounter from ${starterCampaign.campaignName} with a valid run deck before entering combat.`
                 : "Start a run before entering combat."
             }
             cta={runStarted ? "Open Map" : "Choose Hero"}
@@ -425,7 +426,7 @@ export function GameApp() {
           />
         ) : (
           <RunRequiredState
-            body="Mystery encounters appear along The Valley of the Giant during a run."
+            body={`Mystery encounters appear along ${starterCampaign.campaignName} during a run.`}
             cta="Choose Hero"
             onAction={() => setScreen("hero-select")}
             title="No active run"
@@ -512,7 +513,7 @@ function RunRequiredState({
   return (
     <div className="grid h-full min-h-0 place-items-center p-4">
       <GamePanel className="demo-empty-state">
-        <p>War of the Watchers</p>
+        <p>{starterCampaign.campaignLabel}</p>
         <h2>{title}</h2>
         <span>{body}</span>
         <PrimaryButton onClick={onAction}>{cta}</PrimaryButton>

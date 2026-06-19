@@ -35,7 +35,9 @@ export function getEnemyIntentDetails(state: CombatState): EnemyIntentDetails {
   }
 
   if (step.corruptionIfAltarActive && hasActiveAltarPressure(state)) {
-    summaryParts.push(`+${step.corruptionIfAltarActive} Corruption if altar remains`);
+    summaryParts.push(
+      `+${step.corruptionIfAltarActive} Corruption if structure remains`,
+    );
   }
 
   return {
@@ -90,7 +92,7 @@ export function getEndTurnRiskAssessment(
   }
 
   if (altarWillTrigger) {
-    reasons.push("A corrupted altar is about to trigger.");
+    reasons.push("An enemy structure is about to trigger.");
   }
 
   if (majorStatusApplied.length > 0) {
@@ -142,10 +144,10 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
   if (step.requiresActiveAltar && !altarIsActive) {
     queue.push(
       createQueuedAction(state, "altar-broken", {
-        actionName: "Altar Broken",
+        actionName: "Structure Broken",
         intentType: "Special",
         logKind: "system",
-        logMessage: "The broken altar cannot empower the enemy.",
+        logMessage: "The broken structure cannot empower the enemy.",
         presentation: "status",
         target: "Self",
       }),
@@ -262,10 +264,10 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
   if (step.corruptionIfAltarActive && altarIsActive) {
     queue.push(
       createQueuedAction(state, "corruption", {
-        actionName: "Altar Corruption",
+        actionName: "Structure Corruption",
         intentType: "Special",
         logKind: "resource",
-        logMessage: `+${step.corruptionIfAltarActive} Corruption from the active altar.`,
+        logMessage: `+${step.corruptionIfAltarActive} Corruption from the active structure.`,
         presentation: "resource",
         resourceChanges: { corruption: step.corruptionIfAltarActive },
         target: "Player",
@@ -273,7 +275,11 @@ export function createEnemyActionQueue(state: CombatState): QueuedCombatAction[]
     );
   }
 
-  if (state.enemy.traits.includes("Boss") && state.bossPhase >= 3) {
+  if (
+    state.enemy.traits.includes("Boss") &&
+    state.bossPhase >= 3 &&
+    (state.enemy.traits.includes("Watcher") || state.enemy.traits.includes("Nephilim"))
+  ) {
     queue.push(
       createQueuedAction(state, "shadow", {
         actionName: "Shadow of the Watchers",

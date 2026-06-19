@@ -6,16 +6,16 @@ import type {
 
 export const corruptedAltarDefinition: EnemyStructureDefinition = {
   id: "structure-corrupted-altar",
-  name: "Corrupted Altar",
+  name: "Idol Standard",
   maxHealth: 18,
   traits: ["Idol", "Structure"],
   effectText:
     "At enemy turn end, gain 1 charge. At 3 charges, the enemy gains 1 Might and you gain 1 Corruption, then charges reset.",
   triggerAtCharge: 3,
-  sourceTier: "Speculative Fiction",
-  references: ["Original encounter", "Idolatry as broad biblical theme"],
+  sourceTier: "Biblical Inference",
+  references: ["1 Samuel 5", "1 Samuel 31:8-10"],
   theologyNote:
-    "The altar is framed as false worship pressure to resist and break, not as a source of usable power.",
+    "The idol standard is framed as false worship pressure to resist and break, not as a source of usable power.",
   gameplayRole: "Structure",
 };
 
@@ -92,10 +92,6 @@ function createStructureInstance(
 function getCorruptedAltarCount(enemyId: string) {
   if (enemyId === "enemy-idol-priest") {
     return 1;
-  }
-
-  if (enemyId === "enemy-giant-of-the-high-place") {
-    return 2;
   }
 
   return 0;

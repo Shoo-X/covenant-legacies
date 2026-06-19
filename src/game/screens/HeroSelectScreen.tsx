@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { cards } from "@/data/cards";
+import { starterCampaign } from "@/data/campaigns";
 import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
 import { GamePanel } from "@/components/GamePanel";
@@ -29,7 +30,8 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
             <h2>Select a covenant bearer.</h2>
             <p>
               Covenant: Legacies will follow biblical witnesses with distinct
-              playstyles. David begins unlocked for War of the Watchers.
+              playstyles. David begins unlocked for {starterCampaign.campaignName},
+              the beginner campaign anchored in {starterCampaign.biblicalAnchor}.
             </p>
           </div>
           <div className="hero-roster-rule">

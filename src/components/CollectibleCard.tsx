@@ -94,6 +94,10 @@ function getSourceAbbreviation(card: Card) {
     return "Trad.";
   }
 
+  if (card.sourceTier === "Biblical Inference") {
+    return "Infer.";
+  }
+
   if (card.sourceTier === "Speculative Fiction") {
     return "Spec.";
   }

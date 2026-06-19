@@ -3,6 +3,7 @@ import { OrnamentalDivider } from "@/components/OrnamentalDivider";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { cards, showcaseCardIds } from "@/data/cards";
+import { starterCampaign } from "@/data/campaigns";
 
 interface LandingPageProps {
   onOpenCodex: () => void;
@@ -21,7 +22,7 @@ export function LandingPage({ onOpenCodex, onStart }: LandingPageProps) {
         <section className="landing-title-screen">
           <div className="landing-copy-panel">
             <p className="mb-4 text-[0.68rem] uppercase tracking-[0.36em] text-[var(--color-gold)]">
-              First Saga: War of the Watchers
+              {starterCampaign.campaignSubtitle}
             </p>
             <h1 className="title-lockup landing-title">
               COVENANT:
@@ -34,8 +35,9 @@ export function LandingPage({ onOpenCodex, onStart }: LandingPageProps) {
               A Biblical Fantasy Trading Card Game
             </p>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[rgba(241,228,194,0.72)]">
-              Build your deck, guard the covenant, and enter an epic saga of
-              giants, deliverance, witness, and heavenly judgment.
+              Build David&apos;s starter deck, guard the covenant, and enter{" "}
+              {starterCampaign.campaignName} through the biblical anchor of{" "}
+              {starterCampaign.biblicalAnchor}.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <PrimaryButton onClick={onStart}>Start Run</PrimaryButton>

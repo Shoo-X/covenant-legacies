@@ -2,6 +2,7 @@ import { CollectibleCard } from "@/components/CollectibleCard";
 import { GamePanel } from "@/components/GamePanel";
 import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { starterCampaign } from "@/data/campaigns";
 import { heroes } from "@/data/heroes";
 import type { Card } from "@/types/game";
 
@@ -26,7 +27,7 @@ export function RewardScreen({
           <h2>Choose one card for the road ahead.</h2>
           <span>
             Add a card to {heroName}&apos;s run deck, or skip to keep the deck
-            lean. After choosing, the road returns to The Valley of the Giant
+            lean. After choosing, the road returns to {starterCampaign.campaignName}
             with the next node available.
           </span>
         </div>

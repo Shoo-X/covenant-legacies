@@ -101,6 +101,7 @@ export function createCombatState(
 
   if (
     enemy.traits.includes("Boss") &&
+    (enemy.traits.includes("Watcher") || enemy.traits.includes("Nephilim")) &&
     isCorruptionAtLeast(runResources.corruption, "Marked")
   ) {
     initialFeedback.push({

@@ -190,7 +190,7 @@ const shepherdKingActOneCards: Card[] = [
     archetypeTags: ["Courage", "Psalm"],
     synergyNotes: "A defensive Courage prayer that refunds momentum in giant fights.",
     strategyNotes:
-      "Strong into the first saga's main threats because it clears Fear and prepares attacks.",
+      "Strong into David's starter campaign because it clears Fear and prepares anti-Giant attacks.",
     upgradedVersion:
       "Remove Fear. Gain 7 Guard. If the enemy is Giant or Nephilim, gain 1 Resolve and draw 1 card.",
     upgradeText:
@@ -1137,7 +1137,7 @@ export const cards: Card[] = [
             type: "BonusAgainstTrait",
             amount: 12,
             traits: ["Giant", "Nephilim"],
-            message: "David stands against the giant-blooded foe.",
+            message: "David stands against the giant foe.",
           },
         ],
       },
@@ -1320,7 +1320,7 @@ export const cards: Card[] = [
             type: "BonusAgainstTrait",
             amount: 3,
             traits: ["Giant", "Nephilim"],
-            message: "Sling Stone strikes a giant-blooded foe.",
+            message: "Sling Stone strikes a giant foe.",
           },
         ],
       },

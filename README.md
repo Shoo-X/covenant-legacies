@@ -1,6 +1,6 @@
 # Covenant: Legacies
 
-Covenant: Legacies is a biblical supernatural roguelike deckbuilding card battler. War of the Watchers is the first playable saga/campaign.
+Covenant: Legacies is a biblical supernatural roguelike deckbuilding card battler. The Valley of the Giant is the current David starter campaign, anchored in 1 Samuel 17.
 
 The tone target is serious, reverent, ancient, mysterious, and premium. This is not Bible trivia, Sunday school clipart, or occult fantasy. The project uses biblical themes as inspiration while remaining original IP.
 
@@ -13,7 +13,8 @@ This build is a coherent playable demo shell. It includes:
 - A collectible-card presentation system and route-style campaign map foundation
 - State-based navigation between Home, Hero Select, Campaign Map, Combat, Reward, Mystery Encounter, Memorial Reward, Collection, Gallery, and Codex
 - David, Shepherd of Bethlehem as the starter hero, plus starter deck, card rewards, mystery encounters, enemies, and memorials
-- War of the Watchers as the first saga, with The Valley of the Giant as the first campaign map
+- The Valley of the Giant as David's beginner tutorial campaign and current starter path
+- War of the Watchers preserved as a future speculative saga layer and optional background, not the main label for David's starter campaign
 - Collection as the card archive and future deck-building home
 - Gallery as the showcase art and concept-art viewer
 - Codex as the scripture, lore, theology-note, source-tier, and reference record
@@ -68,7 +69,8 @@ Cards, enemies, and encounters are structured to support:
 The supported source tiers are:
 
 - Scripture
+- Biblical Inference
 - Interpretive Tradition
 - Speculative Fiction
 
-These fields are intended to keep future design work clear about what is directly biblical, what comes from interpretive history, and what is original speculative fiction.
+These fields are intended to keep future design work clear about what is directly biblical, what is carefully inferred from biblical context, what comes from interpretive history, and what is original speculative fiction.

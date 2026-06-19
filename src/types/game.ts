@@ -1,5 +1,6 @@
 export type SourceTier =
   | "Scripture"
+  | "Biblical Inference"
   | "Interpretive Tradition"
   | "Speculative Fiction";
 
@@ -54,10 +55,13 @@ export type EnemyTrait =
   | "Demon"
   | "Empire"
   | "False Prophet"
+  | "Champion"
+  | "Gath"
   | "Human"
   | "Idol"
   | "Giant"
   | "Nephilim"
+  | "Philistine"
   | "Principality"
   | "Spirit"
   | "Structure"
@@ -116,7 +120,7 @@ export type CardRarity =
   | "Mythic Legendary"
   | "Mystery";
 
-export type CardSet = "War of the Watchers" | "Core Covenant";
+export type CardSet = "David's Legacy" | "War of the Watchers" | "Core Covenant";
 
 export interface CardArtMetadata {
   artAssetId?: string;
@@ -345,6 +349,8 @@ export interface MysteryEncounter extends SourceBackedContent {
 export interface CodexSectionSet {
   whatTheBibleSays: string;
   whyItIsMysterious: string;
+  whyItMattersInGame?: string;
+  conversationStarters?: string[];
   interpretiveTraditions: string;
   gameInterpretation: string;
 }

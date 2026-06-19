@@ -87,8 +87,23 @@ const entries: CodexEntry[] = [
     name: entry.title,
     category: "Codex",
     details: [
-      { label: "What the Bible Says", value: entry.sections.whatTheBibleSays },
-      { label: "Why It Is Mysterious", value: entry.sections.whyItIsMysterious },
+      { label: "What Scripture Says", value: entry.sections.whatTheBibleSays },
+      {
+        label: entry.sections.whyItMattersInGame
+          ? "Why It Matters in the Game"
+          : "Why It Is Mysterious",
+        value:
+          entry.sections.whyItMattersInGame ??
+          entry.sections.whyItIsMysterious,
+      },
+      ...(entry.sections.conversationStarters?.length
+        ? [
+            {
+              label: "Conversation Starters",
+              value: entry.sections.conversationStarters.join(" "),
+            },
+          ]
+        : []),
       {
         label: "Interpretive Traditions",
         value: entry.sections.interpretiveTraditions,

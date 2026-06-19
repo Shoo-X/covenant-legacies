@@ -3,6 +3,203 @@ import { getArtAssetPath } from "@/data/artAssets";
 
 export const codexEntries: CodexLoreEntry[] = [
   {
+    id: "codex-davids-legacy",
+    title: "David's Legacy",
+    imagePath: getArtAssetPath("art-david-goliath-portrait"),
+    artworkTitle: "David vs Goliath",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17", "1 Samuel 16", "Psalms"],
+    theologyNote:
+      "The starter campaign presents David as the young shepherd whose courage is grounded in trust in the Lord before kingship.",
+    gameplayRole: "Beginner Hero",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "1 Samuel 17 centers David's trust in the Lord as he faces Goliath. The story emphasizes covenant confidence, courage, and the Lord's deliverance rather than human spectacle.",
+      whyItIsMysterious:
+        "David is still young and outwardly unimpressive, yet his faith and memory of the Lord's past deliverance shape his courage in the valley.",
+      interpretiveTraditions:
+        "David and Goliath is often read as a defining courage story, but Covenant: Legacies keeps the focus on faithful trust before royal glory.",
+      gameInterpretation:
+        "The Valley of the Giant is David's beginner campaign. Watcher and Nephilim material may appear as speculative background, but the starter path teaches David's biblical story and core mechanics first.",
+    },
+  },
+  {
+    id: "codex-valley-of-elah",
+    title: "Valley of Elah",
+    imagePath: getArtAssetPath("art-david-goliath-landscape"),
+    artworkTitle: "David and Goliath",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:1-3", "1 Samuel 17:40", "1 Samuel 17:48-50"],
+    theologyNote:
+      "The starter campaign is anchored in the Valley of Elah as the biblical setting where David's covenant courage is tested before Israel and Philistia.",
+    gameplayRole: "Map Node",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "1 Samuel 17 places the Philistines at Socoh in Judah, camped between Socoh and Azekah at Ephes-dammim. Israel and the Philistines stand on opposing hills with the valley between them.",
+      whyItIsMysterious:
+        "The valley is ordinary geography made spiritually weighty by fear, taunts, battle lines, and David's trust in the Lord.",
+      whyItMattersInGame:
+        "The Valley of the Giant is the player's first road because it naturally teaches enemy intent, fear pressure, guard timing, and courageous response.",
+      conversationStarters: [
+        "What makes an ordinary valley become a place of covenant testing?",
+        "Why does David's courage begin before the stone is thrown?",
+        "How should the game show battle lines without reducing the story to spectacle?",
+      ],
+      interpretiveTraditions:
+        "Readers often remember the valley as the stage for courage against impossible odds. Covenant: Legacies keeps that memory tied to trust in the Lord rather than personal bravado.",
+      gameInterpretation:
+        "The map uses the valley as a beginner campaign path. The visible conflict is Israel versus Philistia, while optional speculative pressure remains secondary and clearly marked.",
+    },
+  },
+  {
+    id: "codex-gath",
+    title: "Gath",
+    imagePath: getArtAssetPath("art-david-goliath-portrait"),
+    artworkTitle: "David vs Goliath",
+    sourceTier: "Biblical Inference",
+    references: ["1 Samuel 17:4", "Joshua 11:21-22", "2 Samuel 21:15-22"],
+    theologyNote:
+      "Gath is treated as a biblical place tied to Goliath and later giant traditions, while the game avoids claiming more than Scripture states.",
+    gameplayRole: "Anti-Giant",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "Goliath is introduced as a champion from Gath. Joshua says Anakim remained in Gaza, Gath, and Ashdod, and 2 Samuel later names giant warriors connected with Gath and the descendants of Rapha.",
+      whyItIsMysterious:
+        "Scripture gives several threads around Gath, giants, and later conflicts, but it does not provide a complete genealogy for Goliath.",
+      whyItMattersInGame:
+        "Gath gives the campaign its giant-shadow context without making speculative ancestry a doctrine or a required reading of 1 Samuel 17.",
+      conversationStarters: [
+        "What can be responsibly inferred from Gath's giant associations?",
+        "Where should the game stop before speculation sounds like certainty?",
+        "How can a place carry memory across multiple biblical stories?",
+      ],
+      interpretiveTraditions:
+        "Interpreters often connect Gath with lingering giant traditions. Covenant: Legacies treats that connection as a careful inference, not a settled claim about Goliath's origin.",
+      gameInterpretation:
+        "Gath shapes anti-Giant mechanics and atmosphere. The game can imagine a giant legacy around the region while keeping direct Nephilim or Watcher descent in the speculative layer.",
+    },
+  },
+  {
+    id: "codex-giants-in-scripture",
+    title: "Giants in Scripture",
+    imagePath: getArtAssetPath("art-david-goliath-landscape"),
+    artworkTitle: "David and Goliath",
+    sourceTier: "Biblical Inference",
+    references: [
+      "Genesis 6:1-4",
+      "Joshua 11:21-22",
+      "1 Samuel 17",
+      "2 Samuel 21:15-22",
+    ],
+    theologyNote:
+      "The game distinguishes the Nephilim, Anakim, Rapha traditions, and Goliath rather than flattening them into one speculative claim.",
+    gameplayRole: "Anti-Giant",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "Genesis mentions the Nephilim in a mysterious pre-flood context. Joshua names Anakim in the land, including remnants in Gath. 1 Samuel presents Goliath as a Philistine champion from Gath, and 2 Samuel recalls later giant warriors from Gath.",
+      whyItIsMysterious:
+        "The biblical texts mention several giant-related groups and figures without explaining every relationship between them.",
+      whyItMattersInGame:
+        "The campaign uses giant pressure as a gameplay problem: fear, intimidation, heavy attacks, and the need for patient covenant courage.",
+      conversationStarters: [
+        "Why is it important not to merge every giant reference into one theory?",
+        "How does fear make a giant feel larger before any blow lands?",
+        "What should anti-Giant gameplay teach about David's trust?",
+      ],
+      interpretiveTraditions:
+        "Later readers have proposed many connections among these passages. The codex keeps those possibilities under inference or speculation rather than labeling them as Scripture's direct claim.",
+      gameInterpretation:
+        "Goliath is not stated to be Nephilim or Watcher-descended. The game may use giant legacy as atmosphere, but David's starter campaign stays rooted in 1 Samuel 17.",
+    },
+  },
+  {
+    id: "codex-dagon-philistine-idols",
+    title: "Dagon and Philistine Idols",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 5", "1 Samuel 31:8-10"],
+    theologyNote:
+      "Philistine idol imagery is used as a warning about false worship, fear, and misplaced victory, not as glamorous occult power.",
+    gameplayRole: "Trial",
+    representationMode: "ForbiddenWarning",
+    sections: {
+      whatTheBibleSays:
+        "1 Samuel 5 recounts the ark in the house of Dagon and the humiliation of the idol. 1 Samuel 31 describes Philistine victory displays connected with idol temples after Saul's death.",
+      whyItIsMysterious:
+        "The texts show visible military conflict entangled with worship, shame, and claims about which power rules.",
+      whyItMattersInGame:
+        "Idol-standard encounters give the campaign a tactical question: strike the enemy, or break the false structure empowering the fight.",
+      conversationStarters: [
+        "How can the game show idolatry as false confidence rather than exotic power?",
+        "Why do public trophies and temples matter after battle?",
+        "What makes an idol-standard pressure mechanic theologically cautionary?",
+      ],
+      interpretiveTraditions:
+        "Biblical interpretation often reads these idol scenes as confrontations between the Lord's holiness and human-made claims to power.",
+      gameInterpretation:
+        "Idol Standards and their keepers are gameplay abstractions for false worship pressure. They are enemy structures to resist or break, not sources of wisdom for the player.",
+    },
+  },
+  {
+    id: "codex-davids-courage",
+    title: "David's Courage",
+    imagePath: getArtAssetPath("art-shepherd-david"),
+    artworkTitle: "Shepherd David",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:32-37", "1 Samuel 17:45-47", "Psalms"],
+    theologyNote:
+      "David's courage is presented as trust in the Lord, remembered deliverance, and covenant confidence before kingship.",
+    gameplayRole: "Beginner Hero",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "David remembers the Lord's deliverance from lion and bear, rejects fear before Goliath, and declares that the battle belongs to the Lord.",
+      whyItIsMysterious:
+        "David's confidence is not grounded in size, armor, or status. The shepherd boy sees the confrontation through covenant trust.",
+      whyItMattersInGame:
+        "David's beginner deck teaches the player to read intent, guard heavy blows, remove Fear, build Courage, and strike at the right moment.",
+      conversationStarters: [
+        "What is the difference between courage and self-confidence?",
+        "Why does remembered deliverance matter in a new crisis?",
+        "How should a beginner hero feel humble but not weak?",
+      ],
+      interpretiveTraditions:
+        "David's courage is often celebrated as heroic faith. Covenant: Legacies avoids making him already complete as king in the starter campaign.",
+      gameInterpretation:
+        "Courage stacks, Fear removal, and anti-Giant attacks express David's early shepherd identity: watchful, prayerful, and decisive under pressure.",
+    },
+  },
+  {
+    id: "codex-speculative-watcher-layer",
+    title: "Speculative Watcher Layer",
+    sourceTier: "Speculative Fiction",
+    references: ["Genesis 6:1-4", "2 Peter 2:4", "Jude 6"],
+    theologyNote:
+      "Watcher material is clearly marked as speculative background for later saga development, not as the controlling explanation of David's biblical story.",
+    gameplayRole: "Corruption",
+    representationMode: "SpeculativeEnemy",
+    sections: {
+      whatTheBibleSays:
+        "Genesis 6:1-4 is brief and mysterious. Later New Testament passages warn about rebellious angels, but these texts do not explain Goliath in 1 Samuel 17.",
+      whyItIsMysterious:
+        "The passages leave many questions unanswered, which makes them easy to overstate if speculation is not clearly labeled.",
+      whyItMattersInGame:
+        "The speculative layer gives future campaigns a way to explore spiritual pressure, corruption, forbidden knowledge, and giant legacy without rewriting the starter story.",
+      conversationStarters: [
+        "What should remain mysterious because Scripture leaves it mysterious?",
+        "How can speculative fantasy support reflection without becoming doctrine?",
+        "Why should forbidden knowledge feel costly rather than attractive?",
+      ],
+      interpretiveTraditions:
+        "Jewish and Christian traditions have explored Watcher themes in many ways. Covenant: Legacies uses them as fictionally framed pressure, always secondary to Scripture-labeled material.",
+      gameInterpretation:
+        "War of the Watchers remains a future speculative saga layer. In The Valley of the Giant, Watcher pressure may appear as background or codex material, not the main campaign identity.",
+    },
+  },
+  {
     id: "codex-throne-room-vision",
     title: "Throne Room Vision",
     imagePath: getArtAssetPath("art-throne-room-vision"),

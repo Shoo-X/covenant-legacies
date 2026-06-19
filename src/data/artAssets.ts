@@ -19,7 +19,7 @@ export interface ArtAsset {
   generationTool: string;
   generatedForProject: boolean;
   usageStatus: ArtAssetUsageStatus;
-  saga: "War of the Watchers";
+  saga: "David's Legacy" | "War of the Watchers";
   relatedCards: string[];
   relatedScreens: string[];
   tags: string[];
@@ -32,7 +32,7 @@ const openAiConceptDefaults = {
   generationTool: "ChatGPT / OpenAI image generation",
   generatedForProject: true,
   usageStatus: "prototype-concept",
-  saga: "War of the Watchers",
+  saga: "David's Legacy",
 } satisfies Pick<
   ArtAsset,
   | "sourceType"
@@ -379,9 +379,9 @@ export const artAssets: ArtAsset[] = [
     objectPosition: "50% 44%",
     relatedCards: [],
     relatedScreens: ["Gallery", "Campaign Map", "Home"],
-    tags: ["valley", "campaign map", "giant", "wilderness", "war of the watchers"],
+    tags: ["valley", "campaign map", "giant", "wilderness", "david"],
     notes:
-      "Campaign vista concept for The Valley of the Giant, the first War of the Watchers map.",
+      "Campaign vista concept for The Valley of the Giant, David's starter campaign anchored in 1 Samuel 17.",
     theologicalSensitivity: "low",
   },
 ];

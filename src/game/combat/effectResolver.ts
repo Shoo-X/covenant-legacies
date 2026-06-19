@@ -539,7 +539,7 @@ function dealStructureDamage(
     nextState = appendFeedback(
       syncDestroyedStructureFlag(nextState),
       "system",
-      "The corrupted altar is broken.",
+      `The ${structure.name.toLowerCase()} is broken.`,
     );
   }
 
@@ -561,7 +561,7 @@ function destroyTargetStructure(
         destroyedAltarOrStructure: true,
       },
       "system",
-      `${label ?? "Altar or structure"} suppressed.`,
+      `${label ?? "Enemy structure"} suppressed.`,
     );
   }
 
@@ -575,7 +575,7 @@ function destroyTargetStructure(
       ),
     }),
     "system",
-    "The corrupted altar is broken.",
+    `The ${structure.name.toLowerCase()} is broken.`,
   );
 }
 
@@ -610,7 +610,14 @@ function getBossPhaseMessages(
   }
 
   if (nextBossPhase >= 3) {
-    return ["Phase 3: Shadow of the Watchers gathers. The Giant gains 1 Might."];
+    if (
+      state.enemy.traits.includes("Watcher") ||
+      state.enemy.traits.includes("Nephilim")
+    ) {
+      return ["Phase 3: Shadow of the Watchers gathers. The enemy gains 1 Might."];
+    }
+
+    return ["Phase 3: Goliath presses the challenge. Guard the heavy blow."];
   }
 
   if (nextBossPhase >= 2) {

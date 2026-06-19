@@ -46,7 +46,7 @@ const thresholds: CorruptionThreshold[] = [
     name: "Marked",
     rangeLabel: "10+",
     rank: 4,
-    summary: "Bosses gain Shadow of the Watchers pressure.",
+    summary: "Speculative Watcher or Nephilim bosses gain Shadow pressure.",
     tone: "marked",
   },
 ];
