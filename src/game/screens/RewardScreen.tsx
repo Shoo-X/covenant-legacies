@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect } from "react";
+import { useAudio } from "@/audio/useAudio";
 import { CollectibleCard } from "@/components/CollectibleCard";
 import {
   DecisionScreenFrame,
@@ -22,7 +26,12 @@ export function RewardScreen({
   onSkip,
   rewardCards,
 }: RewardScreenProps) {
+  const { playSound } = useAudio();
   const heroName = heroes[0].shortName ?? heroes[0].name;
+
+  useEffect(() => {
+    playSound("campaign.nodeReward");
+  }, [playSound]);
 
   return (
     <ScreenFrame>

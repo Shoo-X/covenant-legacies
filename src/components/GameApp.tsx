@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { useAudio } from "@/audio/useAudio";
 import { cards } from "@/data/cards";
 import { starterCampaign } from "@/data/campaigns";
 import { enemies } from "@/data/enemies";
@@ -41,6 +42,7 @@ const baseRewardPoolCardIds = cards
   .map((card) => card.id);
 
 export function GameApp() {
+  const { playSound } = useAudio();
   const [screen, setScreen] = useState<GameScreen>("home");
   const [runStarted, setRunStarted] = useState(false);
   const [selectedEncounterId, setSelectedEncounterId] = useState(encounters[0].id);
@@ -117,6 +119,7 @@ export function GameApp() {
   function startEncounter(encounter: Encounter) {
     setSelectedEncounterId(encounter.id);
     setActiveCombatEncounterId(undefined);
+    playSound(getCampaignNodeAudioEvent(encounter));
 
     if (encounter.nodeType === "Rest / Upgrade") {
       setScreen("rest");
@@ -248,6 +251,7 @@ export function GameApp() {
   }
 
   function addRewardCard(cardId: string) {
+    playSound("card.play");
     addCardToRunDeck(cardId);
     setRewardCards([]);
     setScreen("map");
@@ -271,6 +275,7 @@ export function GameApp() {
       choiceId,
       new Map(cards.map((card) => [card.id, card])),
     );
+    playSound(getRestChoiceAudioEvent(choiceId));
 
     setRunHealth(resolution.state.runHealth);
     setRunDeck(resolution.state.runDeck);
@@ -298,6 +303,7 @@ export function GameApp() {
       },
       choice,
     );
+    playSound("ui.confirm");
 
     setRunDeck(resolution.state.runDeck);
     setRunResources(resolution.state.runResources);
@@ -323,6 +329,7 @@ export function GameApp() {
   }
 
   function addMemorialReward(memorialId: string) {
+    playSound("ui.confirm");
     const nextMemorialIds = runMemorialIds.includes(memorialId)
       ? runMemorialIds
       : [...runMemorialIds, memorialId];
@@ -491,6 +498,38 @@ export function GameApp() {
       )}
     </AppShell>
   );
+}
+
+function getCampaignNodeAudioEvent(encounter: Encounter) {
+  if (encounter.nodeType === "Rest / Upgrade") {
+    return "campaign.nodeRest" as const;
+  }
+
+  if (encounter.mysteryEncounterIds?.length) {
+    return "campaign.nodeMystery" as const;
+  }
+
+  if (encounter.nodeType === "Boss") {
+    return "campaign.giantStomp" as const;
+  }
+
+  if (encounter.enemyIds.length > 0) {
+    return "campaign.nodeBattle" as const;
+  }
+
+  return "campaign.nodeSelect" as const;
+}
+
+function getRestChoiceAudioEvent(choiceId: RestChoiceId) {
+  if (choiceId === "upgrade" || choiceId === "remember") {
+    return "campaign.nodeUpgrade" as const;
+  }
+
+  if (choiceId === "cleanse") {
+    return "campaign.nodeCleanse" as const;
+  }
+
+  return "campaign.nodeRest" as const;
 }
 
 function hasValidCombatEnemy(encounter: Encounter) {

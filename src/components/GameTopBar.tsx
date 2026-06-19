@@ -5,9 +5,14 @@ import type { GameScreen } from "@/types/game";
 interface GameTopBarProps {
   currentScreen: GameScreen;
   onNavigate: (screen: GameScreen) => void;
+  onOpenSettings?: () => void;
 }
 
-export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
+export function GameTopBar({
+  currentScreen,
+  onNavigate,
+  onOpenSettings,
+}: GameTopBarProps) {
   return (
     <header className="game-topbar top-nav">
       <button className="top-nav-brand" onClick={() => onNavigate("home")} type="button">
@@ -34,6 +39,17 @@ export function GameTopBar({ currentScreen, onNavigate }: GameTopBarProps) {
           );
         })}
       </nav>
+
+      {onOpenSettings && (
+        <button
+          aria-label="Open game settings"
+          className="top-nav-settings-button"
+          onClick={onOpenSettings}
+          type="button"
+        >
+          Settings
+        </button>
+      )}
     </header>
   );
 }

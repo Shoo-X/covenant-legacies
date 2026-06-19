@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useAudio } from "@/audio/useAudio";
+import type { SoundEventName } from "@/audio/soundEvents";
 import { starterCampaign } from "@/data/campaigns";
 import { cards } from "@/data/cards";
 import { enemies } from "@/data/enemies";
@@ -114,6 +116,7 @@ export function CombatScreen({
   startingFaithBonus,
   upgradedCardIds,
 }: CombatScreenProps) {
+  const { playSound } = useAudio();
   const hero = heroes[0];
   const enemy =
     enemies.find((candidate) => candidate.id === encounter.enemyIds[0]) ?? enemies[0];
@@ -126,6 +129,9 @@ export function CombatScreen({
     [combatCards],
   );
   const cueIdRef = useRef(0);
+  const lastActiveActionIdRef = useRef<string | undefined>(undefined);
+  const lastDrawFeedbackIdRef = useRef<number | undefined>(undefined);
+  const lastStatusAudioRef = useRef<string | undefined>(undefined);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [selectedCombatTargetId, setSelectedCombatTargetId] =
     useState<CombatTargetId>("enemy");
@@ -227,6 +233,8 @@ export function CombatScreen({
   function enterBattle() {
     setHasSeenEncounterIntro(true);
     storeEncounterIntro(enemy.id);
+    playSound("combat.battleStart");
+    playSound("combat.enemyIntent");
     dispatch({ type: "advance-presentation" });
   }
 
@@ -263,6 +271,7 @@ export function CombatScreen({
 
       if (!affordability.canPay) {
         setSelectedCardId(instanceId);
+        playSound("ui.disabled");
         dispatch({
           type: "play-card",
           instanceId,
@@ -272,6 +281,8 @@ export function CombatScreen({
       }
 
       cueIdRef.current += 1;
+      playSound("card.play");
+      playSound(getCardPlayAudioEvent(card));
       setPlayedCue({
         cardName: card.name,
         effectLabel: getCardCueLabel(card),
@@ -310,6 +321,7 @@ export function CombatScreen({
 
   const latestFeedback = [...combat.feedback].slice(-8).reverse();
   const feedbackByNewest = [...combat.feedback].reverse();
+  const latestDrawFeedback = feedbackByNewest.find((item) => item.kind === "draw");
   const latestEnemyDamageFeedback = feedbackByNewest.find(
     (item) => item.kind === "damage" && item.message.includes("enemy health"),
   );
@@ -380,6 +392,48 @@ export function CombatScreen({
     .filter((item) => item.kind === "damage" || item.kind === "guard")
     .slice(-3)
     .reverse();
+  const combatSummaryStats = {
+    startingHealth: combat.metrics.startingHealth,
+    endingHealth:
+      combat.status === "active" ? combat.metrics.endingHealth : combat.player.health,
+    damageReceived: combat.metrics.damageReceived,
+    roundsTaken:
+      combat.status === "active"
+        ? combat.metrics.roundsTaken
+        : Math.max(combat.metrics.roundsTaken, combat.turn),
+    corruptionGained: combat.metrics.corruptionGained,
+    cardsPlayed: combat.metrics.cardsPlayed,
+  };
+
+  useEffect(() => {
+    if (!latestDrawFeedback || lastDrawFeedbackIdRef.current === latestDrawFeedback.id) {
+      return;
+    }
+
+    lastDrawFeedbackIdRef.current = latestDrawFeedback.id;
+    playSound("card.draw");
+  }, [latestDrawFeedback, playSound]);
+
+  useEffect(() => {
+    if (
+      !combat.activeAction ||
+      lastActiveActionIdRef.current === combat.activeAction.id
+    ) {
+      return;
+    }
+
+    lastActiveActionIdRef.current = combat.activeAction.id;
+    playSound(getCombatActionAudioEvent(combat.activeAction));
+  }, [combat.activeAction, playSound]);
+
+  useEffect(() => {
+    if (combat.status === "active" || lastStatusAudioRef.current === combat.status) {
+      return;
+    }
+
+    lastStatusAudioRef.current = combat.status;
+    playSound(combat.status === "victory" ? "combat.victory" : "combat.defeat");
+  }, [combat.status, playSound]);
 
   return (
     <ScreenFrame>
@@ -1011,7 +1065,9 @@ export function CombatScreen({
                     <p
                       className={`combat-feedback-pop combat-log-entry ${
                         index === 0 ? "combat-log-entry-latest" : ""
-                      } ${feedbackTone[item.kind]} combat-log-impact-${impact}`}
+                      } ${feedbackTone[item.kind]} ${getFeedbackCategoryClass(
+                        item,
+                      )} combat-log-impact-${impact}`}
                       key={item.id}
                     >
                       {index === 0 && <span>Latest</span>}
@@ -1138,12 +1194,12 @@ export function CombatScreen({
               )}
               <OutcomeStatGrid
                 stats={[
-                  { label: "Starting HP", value: combat.metrics.startingHealth },
-                  { label: "Ending HP", value: combat.metrics.endingHealth },
-                  { label: "Damage Taken", value: combat.metrics.damageReceived },
-                  { label: "Rounds", value: combat.metrics.roundsTaken },
-                  { label: "Corruption", value: combat.metrics.corruptionGained },
-                  { label: "Cards Played", value: combat.metrics.cardsPlayed },
+                  { label: "Starting HP", value: combatSummaryStats.startingHealth },
+                  { label: "Ending HP", value: combatSummaryStats.endingHealth },
+                  { label: "Damage Taken", value: combatSummaryStats.damageReceived },
+                  { label: "Rounds", value: combatSummaryStats.roundsTaken },
+                  { label: "Corruption", value: combatSummaryStats.corruptionGained },
+                  { label: "Cards Played", value: combatSummaryStats.cardsPlayed },
                 ]}
               />
               {(combat.metrics.notableCardName || combat.metrics.notableArchetype) && (
@@ -1688,6 +1744,111 @@ function getFeedbackImpactIntensity(feedback: CombatFeedback): CombatImpactInten
   return "minor";
 }
 
+function getFeedbackCategoryClass(feedback: CombatFeedback) {
+  const message = feedback.message.toLowerCase();
+
+  if (
+    message.includes("enemy defeated") ||
+    message.includes("hero has fallen") ||
+    message.includes("campaign")
+  ) {
+    return "combat-log-kind-outcome";
+  }
+
+  if (
+    message.includes("corruption") ||
+    message.includes("fear") ||
+    message.includes("weaken") ||
+    message.includes("oppressed") ||
+    message.includes("forbidden")
+  ) {
+    return "combat-log-kind-corruption";
+  }
+
+  if (message.includes("courage")) {
+    return "combat-log-kind-courage";
+  }
+
+  if (
+    feedback.kind === "guard" ||
+    message.includes("blocked") ||
+    message.includes("guard")
+  ) {
+    return "combat-log-kind-guard";
+  }
+
+  if (
+    feedback.kind === "damage" ||
+    message.includes("damage") ||
+    message.includes("health")
+  ) {
+    return "combat-log-kind-damage";
+  }
+
+  if (feedback.kind === "resource" || feedback.kind === "draw") {
+    return "combat-log-kind-resource";
+  }
+
+  return "combat-log-kind-system";
+}
+
+function getCardPlayAudioEvent(card: Card): SoundEventName {
+  const cardName = card.name.toLowerCase();
+
+  if (card.type.includes("Attack")) {
+    return cardName.includes("sling") || cardName.includes("stone")
+      ? "combat.attack.sling"
+      : "combat.attack.light";
+  }
+
+  if (card.type.includes("Guard")) {
+    return "combat.block";
+  }
+
+  if (
+    card.type.includes("Prayer") ||
+    card.type.includes("Psalm") ||
+    card.type.includes("Covenant") ||
+    card.type.includes("Intervention")
+  ) {
+    return "combat.blessing";
+  }
+
+  if (card.type.includes("Forbidden")) {
+    return "combat.damage";
+  }
+
+  return "card.play";
+}
+
+function getCombatActionAudioEvent(action: QueuedCombatAction): SoundEventName {
+  if (action.intentType === "Heavy Attack" || (action.damage ?? 0) >= 12) {
+    return "combat.attack.heavy";
+  }
+
+  if (action.damage || action.hpDamage) {
+    return "combat.attack.light";
+  }
+
+  if (action.blockedValue || action.guardValue || action.presentation === "block") {
+    return "combat.block";
+  }
+
+  if (action.presentation === "damage") {
+    return "combat.damage";
+  }
+
+  if (action.presentation === "status" || action.intentType === "Debuff") {
+    return "combat.enemyIntent";
+  }
+
+  if (action.presentation === "buff") {
+    return "combat.blessing";
+  }
+
+  return "combat.enemyIntent";
+}
+
 function getImpactSoundHook(
   action: QueuedCombatAction,
   intensity: CombatImpactIntensity,
@@ -1896,14 +2057,14 @@ function getInputLockLabel(phase: CombatPhase) {
 
 function getCommandLockLabel(phase: CombatPhase) {
   if (phase === "EnemyTurnStart" || phase === "EnemyActing") {
-    return "Enemy Acting";
+    return "Resolving Enemy Action";
   }
 
   if (phase === "PlayerTurnStart" || phase === "RoundCleanup") {
-    return "Ready Soon";
+    return "Preparing Next Turn";
   }
 
-  return "Resolving";
+  return "Resolving...";
 }
 
 function formatCombatPhase(phase: CombatPhase) {

@@ -630,7 +630,7 @@ function getBossPhaseMessages(
       state.enemy.traits.includes("Watcher") ||
       state.enemy.traits.includes("Nephilim")
     ) {
-      return ["Phase 3: Shadow of the Watchers gathers. The enemy gains 1 Might."];
+      return ["Phase 3: Forbidden pressure gathers. The enemy gains 1 Might."];
     }
 
     return [

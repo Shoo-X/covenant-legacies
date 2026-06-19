@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAudio } from "@/audio/useAudio";
 import { getArtAsset } from "@/data/artAssets";
 import { starterCampaign } from "@/data/campaigns";
 import { codexEntries } from "@/data/codexEntries";
@@ -62,6 +63,7 @@ export function MapScreen({
   runResources,
   upgradedCardIds,
 }: MapScreenProps) {
+  const { playSound } = useAudio();
   const playableHero = heroes[0];
   const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
   const deckSize = runDeck.reduce((total, entry) => total + entry.quantity, 0);
@@ -85,6 +87,18 @@ export function MapScreen({
   );
   const selectedCompleted = completedEncounterIds.includes(selectedEncounter.id);
   const selectedCodexLinks = getCodexLinkLabels(selectedEncounter.codexEntryIds);
+
+  useEffect(() => {
+    playSound("campaign.mapOpen");
+  }, [playSound]);
+
+  function selectEncounter(encounterId: string, shouldPlaySound = false) {
+    setSelectedEncounterId(encounterId);
+
+    if (shouldPlaySound) {
+      playSound("campaign.nodeSelect");
+    }
+  }
 
   return (
     <ScreenFrame>
@@ -237,9 +251,9 @@ export function MapScreen({
                     isSelected ? "is-selected" : ""
                   } ${isCurrent ? "is-current" : ""}`}
                   key={encounter.id}
-                  onClick={() => setSelectedEncounterId(encounter.id)}
-                  onFocus={() => setSelectedEncounterId(encounter.id)}
-                  onMouseEnter={() => setSelectedEncounterId(encounter.id)}
+                  onClick={() => selectEncounter(encounter.id, true)}
+                  onFocus={() => selectEncounter(encounter.id)}
+                  onMouseEnter={() => selectEncounter(encounter.id)}
                   style={{
                     left: `${point.x}%`,
                     top: `${point.y}%`,

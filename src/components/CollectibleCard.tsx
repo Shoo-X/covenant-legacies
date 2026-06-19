@@ -1,9 +1,12 @@
+"use client";
+
 import { CardArtwork } from "@/components/CardArtwork";
 import {
   ResourceConsequenceBadge,
   ResourceCostDisplay,
 } from "@/components/ResourceBadge";
 import { getCardCorruptionGain } from "@/game/cardCosts";
+import { useAudio } from "@/audio/useAudio";
 import Image from "next/image";
 import type { Card, ResourceCost } from "@/types/game";
 
@@ -129,6 +132,7 @@ export function CollectibleCard({
   onMouseLeave,
   size = "reward",
 }: CollectibleCardProps) {
+  const { playSound } = useAudio();
   const tone = getCardTone(card);
   const artSymbol = getArtSymbol(card);
   const rarityClass = getRarityClass(card);
@@ -240,6 +244,10 @@ export function CollectibleCard({
       {displaySize === "reward" && <span className="tcg-card-choose">Choose Card</span>}
     </div>
   );
+  const handleMouseEnter = () => {
+    playSound("card.hover");
+    onMouseEnter?.();
+  };
 
   if (!isInteractive) {
     return (
@@ -257,7 +265,7 @@ export function CollectibleCard({
       onBlur={onBlur}
       onClick={isPlayable ? onClick : undefined}
       onFocus={onFocus}
-      onMouseEnter={onMouseEnter}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={onMouseLeave}
       title={affordabilityNote ? `${affordabilityNote} ${card.text}` : card.text}
       type="button"

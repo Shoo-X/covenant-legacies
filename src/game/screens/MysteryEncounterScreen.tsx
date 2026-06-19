@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect } from "react";
+import { useAudio } from "@/audio/useAudio";
 import { cards } from "@/data/cards";
 import {
   ChoiceCard,
@@ -23,8 +27,13 @@ export function MysteryEncounterScreen({
   onChoose,
   runResources,
 }: MysteryEncounterScreenProps) {
+  const { playSound } = useAudio();
   const encounterLabel = getMysteryEncounterLabel(encounter.encounterType);
   const isForbiddenEncounter = encounter.encounterType === "ForbiddenMysteryEncounter";
+
+  useEffect(() => {
+    playSound("campaign.nodeMystery");
+  }, [playSound]);
 
   return (
     <ScreenFrame>

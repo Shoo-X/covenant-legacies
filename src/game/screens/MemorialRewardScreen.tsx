@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect } from "react";
+import { useAudio } from "@/audio/useAudio";
 import {
   ChoiceCard,
   DecisionScreenFrame,
@@ -19,6 +23,12 @@ export function MemorialRewardScreen({
   onChooseMemorial,
   onSkip,
 }: MemorialRewardScreenProps) {
+  const { playSound } = useAudio();
+
+  useEffect(() => {
+    playSound("campaign.nodeReward");
+  }, [playSound]);
+
   return (
     <ScreenFrame>
       <DecisionScreenFrame
