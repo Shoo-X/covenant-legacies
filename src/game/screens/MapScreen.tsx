@@ -1,14 +1,29 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
+import { getArtAsset } from "@/data/artAssets";
 import { starterCampaign } from "@/data/campaigns";
 import { codexEntries } from "@/data/codexEntries";
 import { encounters } from "@/data/encounters";
-import { GamePanel } from "@/components/GamePanel";
-import { PrimaryButton } from "@/components/PrimaryButton";
+import { heroes } from "@/data/heroes";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  ContentPanel,
+  DetailPanel,
+  InfoPanel,
+  PillTag,
+  PrimaryButton,
+  ScrollPanel,
+  StatChip,
+} from "@/components/UiPrimitives";
 import { getCorruptionThreshold } from "@/game/corruption";
-import type { Encounter, Memorial, ResourceState } from "@/types/game";
+import type {
+  Encounter,
+  Memorial,
+  ResourceState,
+  StartingDeckCard,
+} from "@/types/game";
 
 interface MapScreenProps {
   completedEncounterIds: string[];
@@ -16,11 +31,24 @@ interface MapScreenProps {
   maxRunHealth: number;
   onStartEncounter: (encounter: Encounter) => void;
   revealedMapNodeCount: number;
+  runDeck: StartingDeckCard[];
   runHealth: number;
   runMemorials: Memorial[];
   runResources: ResourceState;
   upgradedCardIds: string[];
 }
+
+const routePoints = [
+  { x: 11, y: 68 },
+  { x: 27, y: 50 },
+  { x: 43, y: 66 },
+  { x: 59, y: 40 },
+  { x: 74, y: 58 },
+  { x: 89, y: 29 },
+];
+
+const valleyArt = getArtAsset("art-valley-of-the-giant");
+const giantArt = getArtAsset("art-giant-of-high-place");
 
 export function MapScreen({
   completedEncounterIds,
@@ -28,12 +56,16 @@ export function MapScreen({
   maxRunHealth,
   onStartEncounter,
   revealedMapNodeCount,
+  runDeck,
   runHealth,
   runMemorials,
   runResources,
   upgradedCardIds,
 }: MapScreenProps) {
+  const playableHero = heroes[0];
   const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
+  const deckSize = runDeck.reduce((total, entry) => total + entry.quantity, 0);
+  const completedCount = completedEncounterIds.length;
   const nextEnterableEncounter = useMemo(
     () => getNextEnterableEncounter(completedEncounterIds) ?? encounters[0],
     [completedEncounterIds],
@@ -57,33 +89,59 @@ export function MapScreen({
   return (
     <ScreenFrame>
       <div className="campaign-map-screen">
-        <GamePanel className="campaign-summary-panel">
+        <header className="campaign-map-header">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              <span>{starterCampaign.campaignLabel}</span>
-              <span className="campaign-anchor-label">
-                Biblical Anchor: {starterCampaign.biblicalAnchor}
-              </span>
-            </p>
-            <h2 className="mt-2 text-4xl font-black leading-tight text-[#fff3cf]">
-              {starterCampaign.campaignName}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.68)]">
-              {starterCampaign.campaignSubtitle}: a beginner road of battles,
-              mystery, rest, and the high place built to teach David&apos;s deck.
-            </p>
+            <p>Covenant: Legacies</p>
+            <h2>{starterCampaign.campaignName}</h2>
+            <span>
+              {starterCampaign.campaignLabel} / Biblical Anchor:{" "}
+              {starterCampaign.biblicalAnchor}
+            </span>
+          </div>
+          <div className="campaign-header-stats" aria-label="Current run state">
+            <RunStat label="HP" value={`${runHealth}/${maxRunHealth}`} />
+            <RunStat
+              label="Corruption"
+              value={`${runResources.corruption} ${corruptionThreshold.name}`}
+            />
+            <RunStat label="Renown" value={`${completedCount}/${encounters.length}`} />
+          </div>
+        </header>
+
+        <InfoPanel className="campaign-summary-panel">
+          <div className="campaign-david-card">
+            <div className="campaign-david-portrait">
+              {playableHero.imagePath && (
+                <Image
+                  alt={playableHero.artworkTitle ?? playableHero.name}
+                  className="campaign-david-image"
+                  fill
+                  sizes="220px"
+                  src={playableHero.imagePath}
+                  style={{ objectPosition: playableHero.imageObjectPosition }}
+                />
+              )}
+            </div>
+            <div>
+              <p>Current Hero</p>
+              <h3>{playableHero.name}</h3>
+              <span>{playableHero.roleSubtitle ?? heroDisplayName}</span>
+            </div>
           </div>
 
           <div className="campaign-run-stats">
-            <RunStat label="Champion" value={heroDisplayName} />
             <RunStat label="Health" value={`${runHealth} / ${maxRunHealth}`} />
+            <RunStat label="Deck" value={`${deckSize} cards`} />
             <RunStat label="Faith" value={runResources.faith} />
-            <RunStat label="Authority" value={runResources.authority} />
-            <RunStat
-              label="Corruption"
-              value={`${runResources.corruption} - ${corruptionThreshold.name}`}
-            />
             <RunStat label="Upgrades" value={upgradedCardIds.length} />
+          </div>
+
+          <div className="campaign-mechanic-card">
+            <PillTag tone="sacred">Courage Mechanic</PillTag>
+            <span>
+              Guard cleanly, read enemy intent, then spend Courage through
+              David&apos;s attacks for a decisive sling turn.
+            </span>
           </div>
 
           <p className={`campaign-corruption-note corruption-note-${corruptionThreshold.tone}`}>
@@ -97,7 +155,7 @@ export function MapScreen({
           )}
 
           <div className="campaign-memorials">
-            <p>Memorials</p>
+            <p>Legacy Marks</p>
             {runMemorials.length === 0 ? (
               <span>No Memorials raised yet.</span>
             ) : (
@@ -106,81 +164,147 @@ export function MapScreen({
               ))
             )}
           </div>
-        </GamePanel>
+        </InfoPanel>
 
-        <GamePanel className="campaign-route-panel">
+        <ContentPanel className="campaign-route-panel" variant="sacred">
+          {valleyArt?.path && (
+            <Image
+              alt={valleyArt.title}
+              className="campaign-route-image"
+              fill
+              priority
+              sizes="(max-width: 1200px) 60vw, 900px"
+              src={valleyArt.path}
+              style={{ objectPosition: valleyArt.objectPosition }}
+            />
+          )}
+          {giantArt?.path && (
+            <Image
+              alt="Distant giant silhouette"
+              className="campaign-route-giant"
+              height={260}
+              src={giantArt.path}
+              width={190}
+            />
+          )}
           <div className="campaign-route-art" aria-hidden="true" />
-          <div className="campaign-route-line" aria-hidden="true" />
+          <div className="campaign-valley-ridge campaign-valley-ridge-left" aria-hidden="true" />
+          <div className="campaign-valley-ridge campaign-valley-ridge-right" aria-hidden="true" />
+          <div className="campaign-battle-line campaign-battle-line-israel" aria-hidden="true" />
+          <div className="campaign-battle-line campaign-battle-line-philistia" aria-hidden="true" />
+          <div className="campaign-brook" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <svg
+            aria-hidden="true"
+            className="campaign-route-path"
+            preserveAspectRatio="none"
+            viewBox="0 0 100 100"
+          >
+            <path
+              className="campaign-route-path-carve"
+              d="M 11 68 C 17 62, 22 54, 27 50 S 37 58, 43 66 S 54 48, 59 40 S 69 51, 74 58 S 84 38, 89 29"
+            />
+            <path
+              className="campaign-route-path-glow"
+              d="M 11 68 C 17 62, 22 54, 27 50 S 37 58, 43 66 S 54 48, 59 40 S 69 51, 74 58 S 84 38, 89 29"
+            />
+            <path
+              className="campaign-route-path-light"
+              d="M 11 68 C 17 62, 22 54, 27 50 S 37 58, 43 66 S 54 48, 59 40 S 69 51, 74 58 S 84 38, 89 29"
+            />
+          </svg>
           <div className="campaign-node-layer">
             {encounters.map((encounter, index) => {
+              const point = routePoints[index] ?? routePoints[routePoints.length - 1];
               const isCompleted = completedEncounterIds.includes(encounter.id);
               const isSelected = selectedEncounter.id === encounter.id;
               const canEnter = canEnterEncounter(encounter, completedEncounterIds);
-              const state = isCompleted ? "completed" : canEnter ? "available" : "locked";
+              const isCurrent = nextEnterableEncounter.id === encounter.id;
+              const state = isCompleted
+                ? "completed"
+                : canEnter
+                  ? "available"
+                  : "locked";
+              const visual = getNodeVisual(encounter);
 
               return (
                 <button
-                  className={`campaign-route-node campaign-route-node-${state} ${
+                  aria-label={`${encounter.name}, ${encounter.nodeType}, ${stateLabel(state, isCurrent)}`}
+                  className={`campaign-route-node campaign-route-node-${state} campaign-node-${visual.kind} ${
                     isSelected ? "is-selected" : ""
-                  }`}
+                  } ${isCurrent ? "is-current" : ""}`}
                   key={encounter.id}
                   onClick={() => setSelectedEncounterId(encounter.id)}
+                  onFocus={() => setSelectedEncounterId(encounter.id)}
+                  onMouseEnter={() => setSelectedEncounterId(encounter.id)}
                   style={{
-                    left: `${8 + index * 16.5}%`,
-                    top: `${index % 2 === 0 ? 34 : 58}%`,
+                    left: `${point.x}%`,
+                    top: `${point.y}%`,
                   }}
+                  title={getNodeStatusText(state, isCurrent)}
                   type="button"
                 >
-                  <span>{index + 1}</span>
-                  <strong>{encounter.nodeType}</strong>
+                  <span className="campaign-route-node-number">{index + 1}</span>
+                  <i className="campaign-route-node-icon" aria-hidden="true" />
+                  <strong>{encounter.name}</strong>
+                  <em>{stateLabel(state, isCurrent)}</em>
                 </button>
               );
             })}
           </div>
-        </GamePanel>
+        </ContentPanel>
 
-        <GamePanel className="campaign-detail-panel">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-gold)]">
-            Selected Node
-          </p>
-          <h3 className="mt-2 text-2xl font-black leading-tight text-[#fff3cf]">
-            {selectedEncounter.name}
-          </h3>
-          <p className="mt-2 text-sm text-[rgba(241,228,194,0.64)]">
-            {selectedEncounter.region} / {selectedEncounter.difficulty}
+        <DetailPanel className="campaign-detail-panel">
+          <p className="campaign-detail-kicker">Selected Node</p>
+          <h3>{selectedEncounter.name}</h3>
+          <p className="campaign-detail-meta">
+            {selectedEncounter.nodeType} / {selectedEncounter.difficulty}
           </p>
 
           <div className="campaign-detail-state">
-            <span>{selectedEncounter.nodeType}</span>
-            <span>
+            <PillTag tone="gold">{selectedEncounter.nodeType}</PillTag>
+            <PillTag tone={selectedCanEnter ? "sacred" : "muted"}>
               {selectedCompleted
                 ? "Completed"
                 : selectedCanEnter
-                  ? "Available"
-                  : "Locked"}
-            </span>
+                  ? "Current step"
+                  : "Future step"}
+            </PillTag>
           </div>
 
-          <p className="campaign-detail-reward">
-            Reward: {selectedEncounter.rewardPreview}
-          </p>
-
-          <div className="campaign-detail-scroll game-scroll">
+          <ScrollPanel className="campaign-detail-scroll">
             {selectedEncounter.description && (
-              <div className="campaign-detail-note">
-                <p>Encounter Intro</p>
+              <div className="campaign-detail-note campaign-detail-note-primary">
+                <p>Valley Chronicle</p>
                 <span>{selectedEncounter.description}</span>
+              </div>
+            )}
+            <div className="campaign-detail-note">
+              <p>Scripture</p>
+              <span>{selectedEncounter.references.join("; ")}</span>
+            </div>
+            <div className="campaign-detail-note">
+              <p>Tactical Purpose</p>
+              <span>{getNodePurpose(selectedEncounter)}</span>
+            </div>
+            {!selectedCompleted && !selectedCanEnter && (
+              <div className="campaign-detail-note campaign-detail-note-locked">
+                <p>Locked</p>
+                <span>Locked until the previous node is complete.</span>
               </div>
             )}
             {selectedEncounter.conversationStarter && (
               <div className="campaign-detail-note">
-                <p>Bible Conversation Starter</p>
+                <p>Conversation Starter</p>
                 <span>{selectedEncounter.conversationStarter}</span>
               </div>
             )}
             <div className="campaign-detail-note">
-              <p>References</p>
-              <span>{selectedEncounter.references.join("; ")}</span>
+              <p>Reward</p>
+              <span>{selectedEncounter.rewardPreview}</span>
             </div>
             {selectedCodexLinks.length > 0 && (
               <div className="campaign-detail-note">
@@ -188,26 +312,20 @@ export function MapScreen({
                 <span>{selectedCodexLinks.join("; ")}</span>
               </div>
             )}
-          </div>
+            <div className="campaign-detail-note">
+              <p>Theology Note</p>
+              <span>{selectedEncounter.theologyNote}</span>
+            </div>
+          </ScrollPanel>
 
           <PrimaryButton
             disabled={!selectedCanEnter}
             onClick={() => onStartEncounter(selectedEncounter)}
             tone={selectedEncounter.nodeType === "Boss" ? "danger" : "primary"}
           >
-            {selectedCompleted
-              ? "Completed"
-              : selectedCanEnter
-                ? selectedEncounter.mysteryEncounterIds?.length
-                  ? "Enter Mystery"
-                  : selectedEncounter.nodeType === "Rest / Upgrade"
-                    ? "Rest / Upgrade"
-                    : "Enter Trial"
-                : hasEncounterAction(selectedEncounter)
-                  ? "Locked"
-                  : "Coming Soon"}
+            {getNodeActionLabel(selectedEncounter, selectedCanEnter, selectedCompleted)}
           </PrimaryButton>
-        </GamePanel>
+        </DetailPanel>
       </div>
     </ScreenFrame>
   );
@@ -259,16 +377,112 @@ function getCodexLinkLabels(codexEntryIds?: string[]) {
   });
 }
 
+function getNodeVisual(encounter: Encounter) {
+  if (encounter.nodeType === "Boss") {
+    return { kind: "boss" };
+  }
+
+  if (encounter.nodeType === "Elite") {
+    return { kind: "elite" };
+  }
+
+  if (encounter.nodeType === "Rest / Upgrade") {
+    return { kind: "rest" };
+  }
+
+  if (encounter.nodeType === "Mystery Encounter") {
+    return { kind: "mystery" };
+  }
+
+  if (encounter.id.includes("idol")) {
+    return { kind: "structure" };
+  }
+
+  return { kind: "battle" };
+}
+
+function getNodePurpose(encounter: Encounter) {
+  const purposes: Record<string, string> = {
+    "encounter-valley-battle-1":
+      "Teach Guard, Courage, and physical pressure at the valley mouth.",
+    "encounter-valley-battle-2":
+      "Teach targetable structure pressure through the Idol Standard.",
+    "encounter-valley-mystery":
+      "Prepare David through upgrade, Faith, Fear removal, and Resolve.",
+    "encounter-valley-elite":
+      "Test the run before Goliath with armor, Guard, and elite danger.",
+    "encounter-valley-rest":
+      "Offer final healing, Courage preparation, remembrance, or cleansing.",
+    "encounter-valley-boss":
+      "Final test of Courage, Fear removal, Guard planning, and clean play.",
+  };
+
+  return purposes[encounter.id] ?? encounter.gameplayRole;
+}
+
+function getNodeActionLabel(
+  encounter: Encounter,
+  canEnter: boolean,
+  completed: boolean,
+) {
+  if (completed) {
+    return "Completed";
+  }
+
+  if (!canEnter) {
+    return hasEncounterAction(encounter) ? "Locked" : "Coming Soon";
+  }
+
+  if (encounter.nodeType === "Boss") {
+    return "Face Goliath";
+  }
+
+  if (encounter.nodeType === "Mystery Encounter") {
+    return "Enter Scripture Encounter";
+  }
+
+  if (encounter.nodeType === "Rest / Upgrade") {
+    return "Rest by the Brook";
+  }
+
+  return "Begin Encounter";
+}
+
+function stateLabel(
+  state: "available" | "completed" | "locked",
+  isCurrent: boolean,
+) {
+  if (state === "completed") {
+    return "Completed";
+  }
+
+  if (isCurrent) {
+    return "Current";
+  }
+
+  return state === "available" ? "Open" : "Future step";
+}
+
+function getNodeStatusText(
+  state: "available" | "completed" | "locked",
+  isCurrent: boolean,
+) {
+  if (state === "completed") {
+    return "Completed";
+  }
+
+  if (isCurrent) {
+    return "Current node. Begin this encounter to continue.";
+  }
+
+  return "Locked until previous node is complete.";
+}
+
 interface RunStatProps {
   label: string;
   value: number | string;
 }
 
 function RunStat({ label, value }: RunStatProps) {
-  return (
-    <div className="campaign-run-stat">
-      <p>{label}</p>
-      <strong>{value}</strong>
-    </div>
-  );
+  return <StatChip className="campaign-run-stat" label={label} value={value} />;
 }

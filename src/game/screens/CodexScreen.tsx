@@ -5,8 +5,17 @@ import { encounters } from "@/data/encounters";
 import { enemies } from "@/data/enemies";
 import { memorials } from "@/data/memorials";
 import { mysteryEncounters } from "@/data/mysteryEncounters";
-import { GamePanel } from "@/components/GamePanel";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  ContentPanel,
+  DetailPanel,
+  EmptyState,
+  PageHeader,
+  PageLayout,
+  PillTag,
+  ScrollPanel,
+  StatusBadge,
+} from "@/components/UiPrimitives";
 import { formatCardCost } from "@/game/cardText";
 import type { Memorial, SourceBackedContent } from "@/types/game";
 
@@ -158,103 +167,119 @@ export function CodexScreen({
 
   return (
     <ScreenFrame>
-      <div className="grid h-full min-h-0 gap-3 xl:grid-cols-[0.34fr_0.66fr]">
-        <GamePanel className="flex min-h-0 flex-col justify-between p-5">
+      <PageLayout className="codex-screen" variant="archive">
+        <DetailPanel className="codex-summary-panel">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              Codex
-            </p>
-            <h2 className="mt-2 text-3xl font-black leading-tight text-[#fff3cf] md:text-5xl">
-              Scripture and lore record.
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-              Source tiers, references, theology notes, and conversation
-              starters remain visibly distinct.
-            </p>
-          </div>
-
-      {runMemorials.length > 0 && (
-        <div className="mt-4 rounded-lg border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.04)] p-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-gold)]">
-            Raised Memorials
-          </p>
-          <p className="mt-2 text-sm leading-6 text-[rgba(241,228,194,0.72)]">
-            {runMemorials.map((memorial) => memorial.name).join("; ")}
-          </p>
-        </div>
-      )}
-        </GamePanel>
-
-        <GamePanel className="flex h-full min-h-0 flex-col p-4">
-          <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
-            <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-gold)]">
-              Archive
-            </p>
-            <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.48)]">
-              {visibleEntries.length} Entries
-            </p>
-          </div>
-          <div className="game-scroll min-h-0 flex-1 pr-1">
-      <div className="grid gap-4 lg:grid-cols-2">
-        {visibleEntries.map((entry) => (
-          <article
-            className="rounded-lg border border-[rgba(215,180,93,0.18)] bg-[rgba(255,255,255,0.045)] p-5"
-            key={`${entry.category}-${entry.id}`}
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-[var(--color-gold)]">
-                  {entry.category} / {entry.sourceTier}
-                </p>
-                <h3 className="mt-1 text-2xl font-semibold text-[#fff3cf]">
-                  {entry.name}
-                </h3>
-              </div>
-              <span className="rounded-md border border-[rgba(215,180,93,0.22)] px-3 py-2 text-sm text-[rgba(241,228,194,0.72)]">
-                {entry.gameplayRole}
-              </span>
+            <PageHeader
+              copy="Source tiers, references, theology notes, and conversation starters remain visibly distinct."
+              eyebrow="Codex"
+              title="Scripture and lore record."
+            />
+            <div className="codex-tier-list">
+              {["Scripture", "Biblical Inference", "Interpretive Tradition", "Speculative Fiction"].map(
+                (tier) => (
+                  <StatusBadge key={tier} tone={getSourceTierTone(tier)}>
+                    {tier}
+                  </StatusBadge>
+                ),
+              )}
             </div>
-            <p className="mt-4 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-              {entry.theologyNote}
+          </div>
+
+          <div className="codex-memorial-panel">
+            <PillTag tone="gold">Raised Memorials</PillTag>
+            <p>
+              {runMemorials.length > 0
+                ? runMemorials.map((memorial) => memorial.name).join("; ")
+                : "No Memorials raised in this run yet."}
             </p>
-            {entry.category === "Codex" && entry.imagePath && (
-              <div className="codex-entry-art" aria-label={entry.artworkTitle ?? entry.name}>
-                <Image
-                  alt={entry.artworkTitle ?? entry.name}
-                  className="card-artwork-image"
-                  fill
-                  sizes="(max-width: 900px) 90vw, 300px"
-                  src={entry.imagePath}
-                />
-                <div className="card-artwork-vignette" aria-hidden="true" />
+          </div>
+        </DetailPanel>
+
+        <ContentPanel className="codex-archive-panel">
+          <div className="codex-archive-header">
+            <PillTag tone="gold">Archive</PillTag>
+            <PillTag>{visibleEntries.length} Entries</PillTag>
+          </div>
+
+          <ScrollPanel className="codex-entry-scroll">
+            {visibleEntries.length === 0 ? (
+              <EmptyState
+                body="No codex entries are visible for this run state."
+                title="No Entries"
+              />
+            ) : (
+              <div className="codex-entry-grid">
+                {visibleEntries.map((entry) => (
+                  <article
+                    className="codex-entry-card"
+                    key={`${entry.category}-${entry.id}`}
+                  >
+                    <div className="codex-entry-heading">
+                      <div>
+                        <div className="codex-entry-tags">
+                          <PillTag tone="gold">{entry.category}</PillTag>
+                          <StatusBadge tone={getSourceTierTone(entry.sourceTier)}>
+                            {entry.sourceTier}
+                          </StatusBadge>
+                        </div>
+                        <h3>{entry.name}</h3>
+                      </div>
+                      <PillTag>{entry.gameplayRole}</PillTag>
+                    </div>
+                    <p className="codex-theology-note">{entry.theologyNote}</p>
+                    {entry.category === "Codex" && entry.imagePath && (
+                      <div
+                        className="codex-entry-art"
+                        aria-label={entry.artworkTitle ?? entry.name}
+                      >
+                        <Image
+                          alt={entry.artworkTitle ?? entry.name}
+                          className="card-artwork-image"
+                          fill
+                          sizes="(max-width: 900px) 90vw, 300px"
+                          src={entry.imagePath}
+                        />
+                        <div className="card-artwork-vignette" aria-hidden="true" />
+                      </div>
+                    )}
+                    <div className="codex-detail-list">
+                      {entry.details.map((detail) => (
+                        <div key={detail.label}>
+                          <p>{detail.label}</p>
+                          <span>{detail.value}</span>
+                        </div>
+                      ))}
+                      <div>
+                        <p>References</p>
+                        <span>{entry.references.join("; ")}</span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
-            <div className="mt-4 grid gap-3">
-              {entry.details.map((detail) => (
-                <div key={detail.label}>
-                  <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.48)]">
-                    {detail.label}
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-[rgba(241,228,194,0.7)]">
-                    {detail.value}
-                  </p>
-                </div>
-              ))}
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.48)]">
-                  References
-                </p>
-                <p className="mt-1 text-sm text-[rgba(241,228,194,0.7)]">
-                  {entry.references.join("; ")}
-                </p>
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
-          </div>
-        </GamePanel>
-      </div>
+          </ScrollPanel>
+        </ContentPanel>
+      </PageLayout>
     </ScreenFrame>
   );
+}
+
+function getSourceTierTone(
+  sourceTier: string,
+): "gold" | "sacred" | "danger" | "muted" {
+  if (sourceTier === "Scripture") {
+    return "gold";
+  }
+
+  if (sourceTier === "Biblical Inference") {
+    return "sacred";
+  }
+
+  if (sourceTier === "Speculative Fiction") {
+    return "danger";
+  }
+
+  return "muted";
 }

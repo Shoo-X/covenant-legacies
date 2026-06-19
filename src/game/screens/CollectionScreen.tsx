@@ -3,9 +3,16 @@
 import { useMemo, useState } from "react";
 import { CardDetailModal } from "@/components/CardDetailModal";
 import { CollectibleCard } from "@/components/CollectibleCard";
-import { GamePanel } from "@/components/GamePanel";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  DetailPanel,
+  EmptyState,
+  PageHeader,
+  PageLayout,
+  PrimaryButton,
+  ScrollPanel,
+  SecondaryButton,
+} from "@/components/UiPrimitives";
 import { cards } from "@/data/cards";
 import {
   cardRarityFilters,
@@ -63,12 +70,13 @@ export function CollectionScreen({
 
   return (
     <ScreenFrame>
-      <div className="collection-screen">
-        <GamePanel className="collection-toolbar">
-          <div className="collection-title-block">
-            <p>Card Archive</p>
-            <h2>Collection</h2>
-          </div>
+      <PageLayout className="collection-screen" variant="archive">
+        <DetailPanel className="collection-toolbar">
+          <PageHeader
+            copy="Browse the playable card archive, inspect source-backed details, and shape the current run deck."
+            eyebrow="Card Archive"
+            title="Collection"
+          />
 
           <div className="collection-mode-toggle" role="tablist" aria-label="Collection mode">
             <button
@@ -108,39 +116,46 @@ export function CollectionScreen({
             options={cardSetFilters}
             onChange={setCardSet}
           />
-        </GamePanel>
+        </DetailPanel>
 
-        <GamePanel className="collection-card-stage game-scroll">
-          <div className="collection-card-grid">
-            {filteredCards.map((card) => (
-              <div
-                className={`collection-card-cell ${
-                  isShowcaseCard(card) ? "is-showcase-card" : ""
-                }`}
-                key={card.id}
-              >
-                <CollectibleCard
-                  card={card}
-                  onClick={() => setSelectedCard(card)}
-                  size="collection"
-                />
-                {mode === "deck" && (
-                  <div className="collection-deck-actions">
-                    <button onClick={() => onRemoveFromDeck(card.id)} type="button">
-                      -
-                    </button>
-                    <span>{deckCounts.get(card.id) ?? 0}</span>
-                    <button onClick={() => onAddToDeck(card.id)} type="button">
-                      +
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </GamePanel>
+        <ScrollPanel className="collection-card-stage">
+          {filteredCards.length === 0 ? (
+            <EmptyState
+              body="No cards match the current archive filters."
+              title="No Cards Found"
+            />
+          ) : (
+            <div className="collection-card-grid">
+              {filteredCards.map((card) => (
+                <div
+                  className={`collection-card-cell ${
+                    isShowcaseCard(card) ? "is-showcase-card" : ""
+                  }`}
+                  key={card.id}
+                >
+                  <CollectibleCard
+                    card={card}
+                    onClick={() => setSelectedCard(card)}
+                    size="collection"
+                  />
+                  {mode === "deck" && (
+                    <div className="collection-deck-actions">
+                      <button onClick={() => onRemoveFromDeck(card.id)} type="button">
+                        -
+                      </button>
+                      <span>{deckCounts.get(card.id) ?? 0}</span>
+                      <button onClick={() => onAddToDeck(card.id)} type="button">
+                        +
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollPanel>
 
-        <GamePanel className="collection-deck-panel">
+        <DetailPanel className="collection-deck-panel">
           <p className="collection-panel-eyebrow">
             {mode === "deck" ? "Current Run Deck" : "Card Viewer"}
           </p>
@@ -172,14 +187,13 @@ export function CollectionScreen({
               <PrimaryButton
                 disabled={!filteredCards[0]}
                 onClick={() => filteredCards[0] && setSelectedCard(filteredCards[0])}
-                tone="secondary"
               >
                 View First Card
               </PrimaryButton>
             </>
           )}
-        </GamePanel>
-      </div>
+        </DetailPanel>
+      </PageLayout>
 
       {selectedCard && (
         <CardDetailModal card={selectedCard} onClose={() => setSelectedCard(undefined)} />
@@ -206,14 +220,13 @@ function FilterRail<T extends string>({
       <span>{label}</span>
       <div>
         {options.map((option) => (
-          <button
+          <SecondaryButton
             className={option === active ? "is-active" : ""}
             key={option}
             onClick={() => onChange(option)}
-            type="button"
           >
             {option}
-          </button>
+          </SecondaryButton>
         ))}
       </div>
     </div>

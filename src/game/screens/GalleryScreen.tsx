@@ -3,9 +3,16 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { CardArtwork } from "@/components/CardArtwork";
-import { GamePanel } from "@/components/GamePanel";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  DetailPanel,
+  EmptyState,
+  PageHeader,
+  PageLayout,
+  PillTag,
+  SecondaryButton,
+  ScrollPanel,
+} from "@/components/UiPrimitives";
 import { artAssets, getArtAssetByPath, type ArtAsset } from "@/data/artAssets";
 import { cards } from "@/data/cards";
 import {
@@ -88,16 +95,13 @@ export function GalleryScreen() {
 
   return (
     <ScreenFrame>
-      <div className="gallery-screen">
-        <GamePanel className="gallery-header-panel">
-          <div>
-            <p>Showcase Art</p>
-            <h2>Gallery</h2>
-            <span>
-              Artwork and concept pieces for Covenant: Legacies, separate from
-              deck-building and codex records.
-            </span>
-          </div>
+      <PageLayout className="gallery-screen" variant="archive">
+        <DetailPanel className="gallery-header-panel">
+          <PageHeader
+            copy="Artwork and concept pieces for Covenant: Legacies, separate from deck-building and codex records."
+            eyebrow="Showcase Art"
+            title="Gallery"
+          />
 
           <div className="gallery-controls">
             <SelectRail
@@ -119,35 +123,44 @@ export function GalleryScreen() {
               options={cardSetFilters}
             />
           </div>
-        </GamePanel>
+        </DetailPanel>
 
-        <div className="gallery-grid game-scroll">
-          {galleryEntries.map((entry) => (
-            <button
-              className={getGalleryTileClassName(entry)}
-              key={entry.id}
-              onClick={() => setExpandedEntry(entry)}
-              title={entry.title}
-              type="button"
-            >
-              {entry.kind === "card" ? (
-                <CardArtwork card={entry.card} variant="gallery" />
-              ) : (
-                <GalleryAssetArtwork asset={entry.asset} variant="gallery" />
-              )}
-              <span>{entry.eyebrow}</span>
-              <strong>{entry.title}</strong>
-              <small>{entry.saga}</small>
-              <em>{entry.description}</em>
-              <div className="gallery-tile-tags" aria-label="Gallery tags">
-                {entry.tags.slice(0, 3).map((tag) => (
-                  <b key={tag}>{tag}</b>
-                ))}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+        <ScrollPanel className="gallery-grid">
+          {galleryEntries.length === 0 ? (
+            <EmptyState
+              body="No artwork matches the current gallery filters."
+              title="No Gallery Entries"
+            />
+          ) : (
+            galleryEntries.map((entry) => (
+              <button
+                className={getGalleryTileClassName(entry)}
+                key={entry.id}
+                onClick={() => setExpandedEntry(entry)}
+                title={entry.title}
+                type="button"
+              >
+                {entry.kind === "card" ? (
+                  <CardArtwork card={entry.card} variant="gallery" />
+                ) : (
+                  <GalleryAssetArtwork asset={entry.asset} variant="gallery" />
+                )}
+                <span>{entry.eyebrow}</span>
+                <strong>{entry.title}</strong>
+                <small>{entry.saga}</small>
+                <em>{entry.description}</em>
+                <div className="gallery-tile-tags" aria-label="Gallery tags">
+                  {entry.tags.slice(0, 3).map((tag) => (
+                    <PillTag key={tag} tone="sacred">
+                      {tag}
+                    </PillTag>
+                  ))}
+                </div>
+              </button>
+            ))
+          )}
+        </ScrollPanel>
+      </PageLayout>
 
       {expandedEntry && (
         <div className="gallery-fullscreen" role="dialog" aria-modal="true">
@@ -162,22 +175,22 @@ export function GalleryScreen() {
               />
             )}
           </div>
-          <GamePanel className="gallery-fullscreen-copy game-scroll">
+          <DetailPanel className="gallery-fullscreen-copy" scroll>
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p>{expandedEntry.eyebrow}</p>
                 <h2>{expandedEntry.title}</h2>
               </div>
-              <PrimaryButton onClick={() => setExpandedEntry(undefined)} tone="secondary">
+              <SecondaryButton onClick={() => setExpandedEntry(undefined)}>
                 Close
-              </PrimaryButton>
+              </SecondaryButton>
             </div>
             {expandedEntry.kind === "card" ? (
               <CardGalleryDetails card={expandedEntry.card} />
             ) : (
               <AssetGalleryDetails asset={expandedEntry.asset} />
             )}
-          </GamePanel>
+          </DetailPanel>
         </div>
       )}
     </ScreenFrame>
@@ -212,10 +225,10 @@ function toAssetGalleryEntry(asset: ArtAsset): GalleryEntry {
 
 function getGalleryTileClassName(entry: GalleryEntry) {
   if (entry.kind === "card") {
-    return `gallery-art-tile gallery-art-${entry.card.rarity.toLowerCase().replaceAll(" ", "-")}`;
+    return `gallery-art-tile ui-card-frame gallery-art-${entry.card.rarity.toLowerCase().replaceAll(" ", "-")}`;
   }
 
-  return `gallery-art-tile gallery-art-concept gallery-art-sensitivity-${entry.asset.theologicalSensitivity}`;
+  return `gallery-art-tile ui-card-frame gallery-art-concept gallery-art-sensitivity-${entry.asset.theologicalSensitivity}`;
 }
 
 function GalleryAssetArtwork({

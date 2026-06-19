@@ -364,6 +364,7 @@ export function GameApp() {
             maxRunHealth={heroes[0].maxHealth}
             onStartEncounter={startEncounter}
             revealedMapNodeCount={revealedMapNodeCount}
+            runDeck={runDeck}
             runHealth={runHealth}
             runMemorials={getRunMemorials()}
             runResources={runResources}

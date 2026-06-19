@@ -3,11 +3,21 @@ import { cards } from "@/data/cards";
 import { starterCampaign } from "@/data/campaigns";
 import { heroes } from "@/data/heroes";
 import { CollectibleCard } from "@/components/CollectibleCard";
-import { GamePanel } from "@/components/GamePanel";
 import { PlaceholderArt } from "@/components/PlaceholderArt";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { ResourceStrip } from "@/components/ResourceStrip";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  ContentPanel,
+  DetailPanel,
+  InfoPanel,
+  PageHeader,
+  PageLayout,
+  PillTag,
+  PrimaryButton,
+  ScrollPanel,
+  StatChip,
+  StatusBadge,
+} from "@/components/UiPrimitives";
 import type { Hero } from "@/types/game";
 
 interface HeroSelectScreenProps {
@@ -21,21 +31,24 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
 
   return (
     <ScreenFrame>
-      <div className="hero-roster-screen">
-        <GamePanel className="hero-roster-intro">
+      <PageLayout className="hero-roster-screen" variant="choice">
+        <InfoPanel className="hero-roster-intro">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-gold)]">
-              Playable Heroes
-            </p>
-            <h2>Select a covenant bearer.</h2>
-            <p>
-              Covenant: Legacies will follow biblical witnesses with distinct
-              playstyles. David begins unlocked for {starterCampaign.campaignName},
-              the beginner campaign anchored in {starterCampaign.biblicalAnchor}.
-            </p>
+            <PageHeader
+              copy={
+                <>
+                  Covenant: Legacies will follow biblical witnesses with
+                  distinct playstyles. David begins unlocked for{" "}
+                  {starterCampaign.campaignName}, the beginner campaign anchored
+                  in {starterCampaign.biblicalAnchor}.
+                </>
+              }
+              eyebrow="Playable Heroes"
+              title="Select a covenant bearer."
+            />
           </div>
           <div className="hero-roster-rule">
-            <p>Biblical Identity</p>
+            <PillTag tone="gold">Biblical Identity</PillTag>
             <span>
               Power is framed through covenant, prayer, testimony, judgment,
               obedience, and divine intervention, never player-controlled magic.
@@ -44,16 +57,16 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
           <PrimaryButton onClick={onStartRun}>
             Begin With {playableHero.shortName ?? playableHero.name}
           </PrimaryButton>
-        </GamePanel>
+        </InfoPanel>
 
-        <article className="hero-feature-panel">
+        <ContentPanel className="hero-feature-panel" variant="sacred">
           <div className="hero-art-panel">
             <HeroPortrait hero={playableHero} tone="gold" />
           </div>
           <div className="hero-feature-copy">
             <div>
-              <p className="hero-status-chip">Unlocked Starter</p>
-              <p className="text-sm uppercase tracking-[0.22em] text-[var(--color-gold)]">
+              <StatusBadge tone="sacred">Unlocked Starter</StatusBadge>
+              <p className="hero-feature-kicker">
                 {playableHero.roleSubtitle ?? playableHero.epithet}
               </p>
               <h3>{playableHero.canonicalName ?? playableHero.name}</h3>
@@ -68,7 +81,7 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
             <HeroTraitGrid hero={playableHero} />
 
             <div className="hero-passive-panel">
-              <p>Signature Mechanic</p>
+              <PillTag tone="gold">Signature Mechanic</PillTag>
               <strong>{playableHero.passiveName ?? playableHero.passive.name}</strong>
               <span>{playableHero.passiveText ?? playableHero.passive.text}</span>
             </div>
@@ -76,8 +89,8 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
             <ResourceStrip resources={playableHero.resourceState} />
 
             <div className="hero-starting-deck-panel">
-              <p>Starting Deck</p>
-              <div className="starting-deck-preview-grid game-scroll">
+              <PillTag tone="gold">Starting Deck</PillTag>
+              <ScrollPanel className="starting-deck-preview-grid">
                 {playableHero.startingDeck.map((deckCard) => {
                   const card = cardsById.get(deckCard.cardId);
 
@@ -92,23 +105,23 @@ export function HeroSelectScreen({ onStartRun }: HeroSelectScreenProps) {
                     </div>
                   );
                 })}
-              </div>
+              </ScrollPanel>
             </div>
           </div>
-        </article>
+        </ContentPanel>
 
-        <GamePanel className="hero-preview-rail">
+        <DetailPanel className="hero-preview-rail">
           <div className="hero-preview-header">
             <p>Coming Heroes</p>
             <span>{previewHeroes.length} previews</span>
           </div>
-          <div className="hero-preview-list game-scroll">
+          <ScrollPanel className="hero-preview-list">
             {previewHeroes.map((hero) => (
               <HeroPreviewCard hero={hero} key={hero.id} />
             ))}
-          </div>
-        </GamePanel>
-      </div>
+          </ScrollPanel>
+        </DetailPanel>
+      </PageLayout>
     </ScreenFrame>
   );
 }
@@ -139,10 +152,12 @@ function HeroPreviewCard({ hero }: { hero: Hero }) {
             <p>{hero.roleSubtitle}</p>
             <h3>{hero.canonicalName ?? hero.name}</h3>
           </div>
-          <span>{formatUnlockState(hero.unlockState)}</span>
+          <StatusBadge tone="muted">{formatUnlockState(hero.unlockState)}</StatusBadge>
         </div>
         <div className="hero-preview-tags">
-          {hero.playstyleTags?.slice(0, 4).map((tag) => <span key={tag}>{tag}</span>)}
+          {hero.playstyleTags?.slice(0, 4).map((tag) => (
+            <PillTag key={tag}>{tag}</PillTag>
+          ))}
         </div>
         <p className="hero-preview-mechanic">{hero.signatureMechanic}</p>
         <div className="hero-preview-lists">
@@ -197,12 +212,7 @@ function HeroMiniArt({ hero }: { hero: Hero }) {
 }
 
 function Fact({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p>{label}</p>
-      <strong>{value}</strong>
-    </div>
-  );
+  return <StatChip label={label} value={value} />;
 }
 
 function MiniList({

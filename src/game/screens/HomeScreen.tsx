@@ -1,10 +1,18 @@
 import { CardArtwork } from "@/components/CardArtwork";
 import { cards, showcaseCardIds } from "@/data/cards";
 import { starterCampaign } from "@/data/campaigns";
-import { GamePanel } from "@/components/GamePanel";
-import { OrnamentalDivider } from "@/components/OrnamentalDivider";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import {
+  ContentPanel,
+  Divider,
+  InfoPanel,
+  PageHeader,
+  PageLayout,
+  PillTag,
+  PrimaryButton,
+  SecondaryButton,
+  TertiaryButton,
+} from "@/components/UiPrimitives";
 import type { GameScreen } from "@/types/game";
 
 interface HomeScreenProps {
@@ -27,8 +35,8 @@ export function HomeScreen({
 
   return (
     <ScreenFrame>
-      <div className="home-screen-grid">
-        <GamePanel className="home-identity-panel">
+      <PageLayout className="home-screen-grid" variant="home">
+        <ContentPanel className="home-identity-panel" variant="sacred">
           {featuredCard && (
             <CardArtwork card={featuredCard} priority variant="keyArt" />
           )}
@@ -37,50 +45,50 @@ export function HomeScreen({
             <h2>COVENANT: LEGACIES</h2>
             <span>A Biblical Fantasy Trading Card Game</span>
           </div>
-        </GamePanel>
+        </ContentPanel>
 
-        <GamePanel className="flex flex-col justify-between p-6 md:p-8">
+        <ContentPanel className="home-primary-panel">
           <div>
-            <p className="text-xs uppercase tracking-[0.34em] text-[var(--color-gold)]">
-              {starterCampaign.campaignLabel}
-            </p>
-            <h2 className="mt-3 max-w-3xl text-4xl font-black leading-[0.95] text-[#fff3cf] md:text-6xl">
-              Begin David&apos;s first trial.
-            </h2>
-            <OrnamentalDivider />
-            <p className="max-w-2xl text-lg leading-8 text-[rgba(241,228,194,0.76)]">
-              Choose David, enter {starterCampaign.campaignName}, and learn the
-              starter path through battle, reward, and return to the map.
-            </p>
+            <PageHeader
+              copy={
+                <>
+                  Choose David, enter {starterCampaign.campaignName}, and learn
+                  the starter path through battle, reward, and return to the map.
+                </>
+              }
+              eyebrow={starterCampaign.campaignLabel}
+              title="Begin David's first trial."
+            />
+            <Divider />
+            <div className="home-demo-tags">
+              <PillTag tone="gold">{starterCampaign.campaignName}</PillTag>
+              <PillTag tone="sacred">
+                Biblical Anchor: {starterCampaign.biblicalAnchor}
+              </PillTag>
+            </div>
           </div>
 
           <div className="home-action-grid mt-6">
             <PrimaryButton onClick={onStartRun}>
               Start Run
             </PrimaryButton>
-            <PrimaryButton
-              disabled={!hasRun}
-              onClick={onContinueRun}
-              tone="secondary"
-            >
+            <SecondaryButton disabled={!hasRun} onClick={onContinueRun}>
               Continue
-            </PrimaryButton>
-            <PrimaryButton onClick={() => onNavigate("collection")} tone="secondary">
+            </SecondaryButton>
+            <SecondaryButton onClick={() => onNavigate("collection")}>
               Collection
-            </PrimaryButton>
-            <PrimaryButton onClick={() => onNavigate("gallery")} tone="secondary">
+            </SecondaryButton>
+            <TertiaryButton onClick={() => onNavigate("gallery")}>
               Gallery
-            </PrimaryButton>
-            <PrimaryButton onClick={() => onNavigate("codex")} tone="secondary">
+            </TertiaryButton>
+            <TertiaryButton onClick={() => onNavigate("codex")}>
               Codex
-            </PrimaryButton>
+            </TertiaryButton>
           </div>
-        </GamePanel>
+        </ContentPanel>
 
-        <GamePanel className="home-flow-panel p-5">
-          <p className="text-xs uppercase tracking-[0.24em] text-[var(--color-gold)]">
-            Demo Path
-          </p>
+        <InfoPanel className="home-flow-panel">
+          <p className="ui-kicker">Demo Path</p>
           <h3>{starterCampaign.campaignName}</h3>
           <span>
             {starterCampaign.campaignSubtitle} / Biblical Anchor:{" "}
@@ -92,19 +100,17 @@ export function HomeScreen({
             <HomeRole label="Gallery" value="Showcase art and concept pieces" />
             <HomeRole label="Codex" value="Scripture, lore, theology notes, and references" />
           </div>
-        </GamePanel>
-      </div>
+        </InfoPanel>
+      </PageLayout>
     </ScreenFrame>
   );
 }
 
 function HomeRole({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-[rgba(215,180,93,0.16)] bg-[rgba(255,255,255,0.04)] p-4">
-      <p className="text-xs uppercase tracking-[0.18em] text-[rgba(241,228,194,0.5)]">
-        {label}
-      </p>
-      <p className="mt-2 text-sm leading-6 text-[rgba(241,228,194,0.76)]">{value}</p>
+    <div className="home-role-card">
+      <PillTag>{label}</PillTag>
+      <p>{value}</p>
     </div>
   );
 }
