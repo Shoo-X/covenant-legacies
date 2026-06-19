@@ -108,7 +108,11 @@ export const artAssets: ArtAsset[] = [
       "/art/incoming/david-goliath-portrait.png",
     ],
     objectPosition: "44% 32%",
-    relatedCards: ["card-david-vs-goliath", "card-giant-toppler"],
+    relatedCards: [
+      "card-david-vs-goliath",
+      "card-giant-toppler",
+      "card-defy-the-giant",
+    ],
     relatedScreens: ["Home", "Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["david", "goliath", "giant", "courage", "valley", "covenant"],
     notes:
@@ -251,7 +255,12 @@ export const artAssets: ArtAsset[] = [
     path: "/art/heroes/shepherd-david.png",
     additionalPaths: ["/art/incoming/shepard-david.png"],
     objectPosition: "48% 26%",
-    relatedCards: ["card-sling-stone", "card-shepherds-guard"],
+    relatedCards: [
+      "card-sling-stone",
+      "card-shepherds-guard",
+      "card-lion-and-bear",
+      "card-watchful-shepherd",
+    ],
     relatedScreens: ["Gallery", "Hero Select"],
     tags: ["david", "shepherd", "harp", "sling", "courage", "covenant", "giant"],
     notes:
@@ -265,7 +274,7 @@ export const artAssets: ArtAsset[] = [
     path: "/art/cards/sling-stone.png",
     additionalPaths: ["/art/incoming/sling-stone.png"],
     objectPosition: "52% 42%",
-    relatedCards: ["card-sling-stone"],
+    relatedCards: ["card-sling-stone", "card-valley-sling"],
     relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["david", "sling", "stone", "courage", "valley"],
     notes:
@@ -279,7 +288,11 @@ export const artAssets: ArtAsset[] = [
     path: "/art/cards/smooth-stone.png",
     additionalPaths: ["/art/incoming/smooth-stone.png"],
     objectPosition: "54% 48%",
-    relatedCards: ["card-smooth-stone", "card-stone-of-defiance"],
+    relatedCards: [
+      "card-smooth-stone",
+      "card-stone-of-defiance",
+      "card-five-smooth-stones",
+    ],
     relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["david", "stones", "preparedness", "courage", "valley"],
     notes:
@@ -307,7 +320,7 @@ export const artAssets: ArtAsset[] = [
     path: "/art/cards/psalm-of-courage.png",
     additionalPaths: ["/art/incoming/pslam-of-courage.png"],
     objectPosition: "48% 48%",
-    relatedCards: ["card-psalm-of-courage"],
+    relatedCards: ["card-psalm-of-courage", "card-worship-before-war"],
     relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["psalm", "harp", "scroll", "worship", "courage"],
     notes:
@@ -321,7 +334,11 @@ export const artAssets: ArtAsset[] = [
     path: "/art/cards/harp-of-watchfulness.png",
     additionalPaths: ["/art/incoming/harp-of-watchfulness.png"],
     objectPosition: "45% 48%",
-    relatedCards: ["card-harp-of-watchfulness"],
+    relatedCards: [
+      "card-harp-of-watchfulness",
+      "card-harp-before-battle",
+      "card-strings-of-courage",
+    ],
     relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
     tags: ["harp", "watchfulness", "psalm", "night", "prayer"],
     notes:
@@ -349,11 +366,11 @@ export const artAssets: ArtAsset[] = [
     path: "/art/enemies/giant-of-high-place.png",
     additionalPaths: ["/art/incoming/giant-of-high-place.png"],
     objectPosition: "52% 28%",
-    relatedCards: ["card-giant-toppler"],
+    relatedCards: ["card-giant-toppler", "card-david-vs-goliath"],
     relatedScreens: ["Gallery", "Combat", "Codex"],
     tags: ["giant", "high place", "boss", "judgment", "valley"],
     notes:
-      "Boss-scale enemy concept for original speculative high-place opposition; keep framed as idolatrous tyranny rather than glamour.",
+      "Boss-scale giant/champion concept for Goliath and high-place pressure; keep framed as Philistine champion and giant-legacy atmosphere rather than glamorized tyranny.",
     theologicalSensitivity: "moderate",
   },
   {

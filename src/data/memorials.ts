@@ -125,7 +125,7 @@ export const memorials: Memorial[] = [
     sourceTier: "Speculative Fiction",
     references: ["Idolatry as broad biblical theme"],
     theologyNote:
-      "The fragment is useful but dangerous, making compromise mechanically costly.",
+      "The fragment is tempting but dangerous, making compromise mechanically costly rather than wise.",
     gameplayRole: "Memorial",
   },
   {
@@ -141,7 +141,7 @@ export const memorials: Memorial[] = [
     sourceTier: "Speculative Fiction",
     references: ["Genesis 6:1-4 as interpretive inspiration"],
     theologyNote:
-      "The chain is deliberately double-edged: power gained from forbidden craft carries spiritual risk.",
+      "The chain is deliberately double-edged: power gained from forbidden craft carries spiritual risk and is not a valid path to wisdom.",
     gameplayRole: "Memorial",
   },
 ];

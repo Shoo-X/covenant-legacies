@@ -173,6 +173,147 @@ export const codexEntries: CodexLoreEntry[] = [
     },
   },
   {
+    id: "codex-goliath-of-gath",
+    title: "Goliath of Gath",
+    imagePath: getArtAssetPath("art-giant-of-high-place"),
+    artworkTitle: "Giant of the High Place",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17", "Joshua 11:21-22", "2 Samuel 21:15-22"],
+    theologyNote:
+      "Goliath is presented as the Philistine champion from Gath. Related giant traditions give context, but the game does not claim he is Nephilim or Watcher-descended.",
+    gameplayRole: "Boss",
+    representationMode: "Enemy",
+    sections: {
+      whatTheBibleSays:
+        "1 Samuel 17 names Goliath as a champion from Gath who defies Israel and is met by David in the valley. Joshua and 2 Samuel provide related Gath and giant-legacy context without explaining Goliath's ancestry in detail.",
+      whyItIsMysterious:
+        "Goliath's size, armor, public challenge, and connection to Gath make him memorable, but Scripture keeps the focus on the Lord's deliverance rather than satisfying curiosity about origins.",
+      whyItMattersInGame:
+        "As the first campaign boss, Goliath tests Guard planning, Fear removal, Courage timing, and careful play under heavy pressure.",
+      conversationStarters: [
+        "Why does the text spend so much time describing Goliath's challenge before David answers?",
+        "How can giant-legacy context deepen the scene without becoming a doctrine?",
+        "What makes fear part of the battle before the first attack lands?",
+      ],
+      interpretiveTraditions:
+        "Readers often connect Goliath with wider giant traditions around Gath. Covenant: Legacies treats those connections as contextual inference, not as a direct claim of Nephilim descent.",
+      gameInterpretation:
+        "Goliath of Gath is the climactic enemy of David's starter campaign. The boss should feel enormous and intimidating while remaining rooted in 1 Samuel 17.",
+    },
+  },
+  {
+    id: "codex-five-smooth-stones",
+    title: "Five Smooth Stones",
+    imagePath: getArtAssetPath("art-smooth-stone"),
+    artworkTitle: "Smooth Stone",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:40"],
+    theologyNote:
+      "The stones are prepared obedience before the Lord, not sacred objects, charms, or magical weapons.",
+    gameplayRole: "Tactic",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "Before facing Goliath, David chooses five smooth stones from the brook and carries them with his sling.",
+      whyItIsMysterious:
+        "The detail is humble and ordinary, yet the story lingers on it because David prepares without adopting Saul's armor or trusting in spectacle.",
+      whyItMattersInGame:
+        "Smooth Stone choices teach preparation, upgrades, Faith, Courage, and small decisions that matter before the public battle.",
+      conversationStarters: [
+        "Why does David prepare with ordinary stones instead of royal armor?",
+        "How can preparation be faithful without treating objects as charms?",
+        "What makes a small choice matter before a giant challenge?",
+      ],
+      interpretiveTraditions:
+        "The stones are often remembered as symbols of faith and readiness. The game keeps them ordinary, concrete, and tied to obedience.",
+      gameInterpretation:
+        "Five Smooth Stones is a Scripture encounter and card theme that helps the player prepare without glamorizing the stones as holy artifacts.",
+    },
+  },
+  {
+    id: "codex-fear-and-faith",
+    title: "Fear and Faith",
+    sourceTier: "Biblical Inference",
+    references: ["1 Samuel 17:11", "1 Samuel 17:24", "1 Samuel 17:32-37"],
+    theologyNote:
+      "Fear is treated as real pressure answered by trust, memory, obedience, and worship, not by pretending danger is harmless.",
+    gameplayRole: "Trial",
+    representationMode: "Prayer",
+    sections: {
+      whatTheBibleSays:
+        "Israel is dismayed and afraid before Goliath, while David remembers the Lord's past deliverance and refuses to let fear define the battle.",
+      whyItIsMysterious:
+        "The same threat is visible to everyone, yet David interprets it through covenant trust while others are paralyzed.",
+      whyItMattersInGame:
+        "Fear slows the player down, while Faith and Courage cards help David recover, guard well, and answer the enemy's pressure.",
+      conversationStarters: [
+        "What is the difference between courage and pretending not to be afraid?",
+        "Why does remembered deliverance matter when a new threat appears?",
+        "How should a game make fear costly without making faith feel automatic?",
+      ],
+      interpretiveTraditions:
+        "David's courage is often taught as trust under pressure. Covenant: Legacies keeps that courage humble, watchful, and dependent on the Lord.",
+      gameInterpretation:
+        "Fear and Corruption are harmful states. Faith, Psalms, and covenant remembrance provide clean ways to recover without turning prayer into spellcasting.",
+    },
+  },
+  {
+    id: "codex-memorials-remembrance",
+    title: "Memorials and Remembrance",
+    sourceTier: "Scripture",
+    references: ["Joshua 4", "Psalm 77", "1 Samuel 17:34-37"],
+    theologyNote:
+      "Memorials are reminders of deliverance and testimony, not magical relics or controllable spiritual technology.",
+    gameplayRole: "Memorial",
+    representationMode: "CovenantMemory",
+    sections: {
+      whatTheBibleSays:
+        "Scripture repeatedly calls God's people to remember the Lord's works. Joshua's stones, psalmic remembrance, and David's memory of lion and bear all form courage for future obedience.",
+      whyItIsMysterious:
+        "Memory is not merely information; it shapes what a person trusts when fear returns.",
+      whyItMattersInGame:
+        "Memorial rewards act as passive run modifiers that help the player carry lessons from earlier victories into later trials.",
+      conversationStarters: [
+        "Why do remembered works of deliverance strengthen later obedience?",
+        "How can a memorial be powerful without becoming a magical object?",
+        "What should a run relic teach about testimony and dependence?",
+      ],
+      interpretiveTraditions:
+        "Christian and Jewish traditions often treat remembrance as worship, testimony, formation, and warning.",
+      gameInterpretation:
+        "Memorials are meaningful run remembrances. Their effects should feel like testimony shaping the run, not like occult artifacts.",
+    },
+  },
+  {
+    id: "codex-battle-belongs-to-the-lord",
+    title: "The Battle Belongs to the Lord",
+    imagePath: getArtAssetPath("art-david-goliath-portrait"),
+    artworkTitle: "David vs Goliath",
+    sourceTier: "Scripture",
+    references: ["1 Samuel 17:45-47"],
+    theologyNote:
+      "David's declaration centers the Lord's deliverance rather than David's fame, technique, or weapon.",
+    gameplayRole: "Anti-Giant",
+    representationMode: "Legacy",
+    sections: {
+      whatTheBibleSays:
+        "David tells Goliath that he comes in the name of the Lord of hosts and that the battle belongs to the Lord.",
+      whyItIsMysterious:
+        "The declaration reframes a public military challenge as a testimony to God's deliverance before Israel and the nations.",
+      whyItMattersInGame:
+        "The final boss should reward clean Courage, Guard, Faith, and Fear-removal timing so victory feels like faithful play rather than brute force.",
+      conversationStarters: [
+        "What changes when David says the battle belongs to the Lord?",
+        "How can victory feel climactic without making David self-exalting?",
+        "Why should clean Courage and Psalm play feel rewarded against Goliath?",
+      ],
+      interpretiveTraditions:
+        "The phrase is often remembered as the heart of the David and Goliath story. The game keeps it reverent and avoids turning it into a catchphrase detached from trust.",
+      gameInterpretation:
+        "Boss-phase text, victory copy, and anti-Giant cards should point back to covenant courage and divine deliverance.",
+    },
+  },
+  {
     id: "codex-speculative-watcher-layer",
     title: "Speculative Watcher Layer",
     sourceTier: "Speculative Fiction",

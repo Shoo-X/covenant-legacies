@@ -10,7 +10,11 @@ export const encounters: Encounter[] = [
       "The armies have taken their places on opposite slopes, and Philistine raiders test the valley mouth before the champion's voice dominates the field.",
     conversationStarter:
       "Why does 1 Samuel 17 begin by showing the armies facing one another before David appears?",
-    codexEntryIds: ["codex-valley-of-elah", "codex-davids-courage"],
+    codexEntryIds: [
+      "codex-valley-of-elah",
+      "codex-davids-courage",
+      "codex-fear-and-faith",
+    ],
     enemyIds: ["enemy-corrupted-raider"],
     rewardPreview: "Choose 1 of 3 cards after learning Guard, Courage, and pressure.",
     difficulty: "Low",
@@ -48,7 +52,11 @@ export const encounters: Encounter[] = [
       "At the brook, David chooses what he will carry into the valley: not Saul's armor, but prepared obedience, prayer, and haste toward the battle.",
     conversationStarter:
       "Why does the text linger on David choosing five smooth stones from the brook?",
-    codexEntryIds: ["codex-valley-of-elah", "codex-davids-courage"],
+    codexEntryIds: [
+      "codex-valley-of-elah",
+      "codex-five-smooth-stones",
+      "codex-davids-courage",
+    ],
     enemyIds: [],
     mysteryEncounterIds: ["mystery-five-smooth-stones"],
     rewardPreview: "Prepare with an upgrade, Faith, Fear removal, or Resolve.",
@@ -95,7 +103,12 @@ export const encounters: Encounter[] = [
       "The brook becomes the last quiet place before Goliath: rest, choose carefully, remember former deliverance, or pray against fear and corruption.",
     conversationStarter:
       "What does David's memory of the lion and bear teach before the public battle?",
-    codexEntryIds: ["codex-valley-of-elah", "codex-davids-courage"],
+    codexEntryIds: [
+      "codex-valley-of-elah",
+      "codex-five-smooth-stones",
+      "codex-memorials-remembrance",
+      "codex-davids-courage",
+    ],
     enemyIds: [],
     rewardPreview:
       "Rest, upgrade a Courage card, add Lion and Bear, remove Fear, or cleanse Corruption.",
@@ -116,9 +129,11 @@ export const encounters: Encounter[] = [
     conversationStarter:
       "What does David mean when he says the battle belongs to the Lord?",
     codexEntryIds: [
+      "codex-goliath-of-gath",
       "codex-gath",
       "codex-giants-in-scripture",
       "codex-davids-courage",
+      "codex-battle-belongs-to-the-lord",
     ],
     enemyIds: ["enemy-giant-of-the-high-place"],
     rewardPreview: "Campaign victory for David's Legacy.",
