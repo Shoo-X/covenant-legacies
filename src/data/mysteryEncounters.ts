@@ -42,9 +42,9 @@ export const mysteryEncounters: MysteryEncounter[] = [
         label: "Hurry to the Battle",
         description:
           "Rise from the brook and run toward the battle line before fear settles in.",
-        effectSummary: "Gain 1 Resolve for the next combat.",
+        effectSummary: "Gain 2 Resolve for the next combat.",
         resourceChanges: {
-          resolve: 1,
+          resolve: 2,
         },
       },
     ],

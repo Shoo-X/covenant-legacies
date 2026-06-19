@@ -26,6 +26,17 @@ const rarityWeights = {
   Mystery: 3,
 } satisfies Record<Card["rarity"], number>;
 
+const davidStarterDeckCardIds = new Set([
+  "card-sling-stone",
+  "card-shepherds-guard",
+  "card-psalm-of-courage",
+  "card-smooth-stone",
+  "card-watchful-shepherd",
+  "card-stone-of-defiance",
+]);
+
+const davidStarterFriendlyResources = new Set(["Resolve", "Faith"]);
+
 export function chooseRewardCards(
   cards: Card[],
   count: number,
@@ -54,6 +65,25 @@ export function chooseRewardCards(
       excludedCardIds.add(nextPick.id);
     }
   };
+
+  if (isDavidStarterRewardRun(runDeck)) {
+    addPick(
+      cards.filter((card) => isDavidDirectPressureReward(card)),
+      (card) => getDavidStarterRewardWeight(card, profile, "direct"),
+    );
+
+    addPick(
+      cards.filter((card) => isDavidDefenseOrFaithReward(card)),
+      (card) => getDavidStarterRewardWeight(card, profile, "support"),
+    );
+
+    addPick(
+      cards.filter((card) => isDavidWildcardReward(card)),
+      (card) =>
+        getDavidStarterRewardWeight(card, profile, "wildcard") +
+        (isForbiddenCard(card) ? forbiddenBias * 2 : 0),
+    );
+  }
 
   if (strongestTag) {
     addPick(
@@ -262,4 +292,91 @@ function shuffleMemorials(memorials: Memorial[], random: () => number) {
   }
 
   return pool;
+}
+
+function isDavidStarterRewardRun(runDeck: StartingDeckCard[]) {
+  const deckIds = new Set(runDeck.map((entry) => entry.cardId));
+
+  return (
+    deckIds.has("card-sling-stone") &&
+    deckIds.has("card-shepherds-guard") &&
+    [...deckIds].some((cardId) => davidStarterDeckCardIds.has(cardId))
+  );
+}
+
+function isDavidDirectPressureReward(card: Card) {
+  return (
+    isStarterAccessible(card) &&
+    hasArchetype(card, "Courage") &&
+    (card.type.includes("Attack") ||
+      card.gameplayRole.includes("Anti-Giant") ||
+      card.id === "card-five-smooth-stones" ||
+      card.id === "card-smooth-stone" ||
+      card.id === "card-stone-of-defiance")
+  );
+}
+
+function isDavidDefenseOrFaithReward(card: Card) {
+  return (
+    isStarterAccessible(card) &&
+    (hasAnyArchetype(card, ["Psalm", "Covenant", "Courage"]) ||
+      isSupportCard(card)) &&
+    (card.gameplayRole.includes("Defense") ||
+      card.gameplayRole.includes("Support") ||
+      card.gameplayRole.includes("Prayer") ||
+      card.type.includes("Guard") ||
+      card.type.includes("Psalm") ||
+      card.type.includes("Prayer") ||
+      card.type.includes("Covenant"))
+  );
+}
+
+function isDavidWildcardReward(card: Card) {
+  return (
+    isStarterAccessible(card) ||
+    isForbiddenCard(card) ||
+    card.id === "card-david-vs-goliath"
+  );
+}
+
+function isStarterAccessible(card: Card) {
+  return !card.cost.some(
+    (cost) =>
+      cost.amount > 0 &&
+      cost.resource !== undefined &&
+      !davidStarterFriendlyResources.has(cost.resource),
+  );
+}
+
+function getDavidStarterRewardWeight(
+  card: Card,
+  profile: DeckArchetypeProfile,
+  lane: "direct" | "support" | "wildcard",
+) {
+  const totalCost = card.cost.reduce((total, cost) => total + cost.amount, 0);
+  const unsupportedCostPenalty = isStarterAccessible(card) ? 0 : 6;
+  const expensivePenalty = Math.max(0, totalCost - 2) * 1.35;
+  const forbiddenPenalty = isForbiddenCard(card) ? 3 : 0;
+  const laneBonus =
+    lane === "direct"
+      ? hasArchetype(card, "Courage")
+        ? 3
+        : 0
+      : lane === "support"
+        ? isSupportCard(card)
+          ? 3
+          : 0
+        : card.id === "card-david-vs-goliath"
+          ? 2
+          : 0;
+
+  return (
+    7 +
+    laneBonus +
+    Math.min(getRarityWeight(card), 1.85) +
+    getDeckTagPressure(card, profile) -
+    unsupportedCostPenalty -
+    expensivePenalty -
+    forbiddenPenalty
+  );
 }

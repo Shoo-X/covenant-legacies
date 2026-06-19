@@ -1343,7 +1343,7 @@ export const cards: Card[] = [
     id: "card-shepherds-guard",
     name: "Shepherd's Guard",
     cost: [{ amount: 1, resource: "Resolve" }],
-    text: "Gain 5 Guard.",
+    text: "Gain 6 Guard.",
     type: "Guard",
     rarity: "Common",
     archetypeTags: ["Courage", "Psalm"],
@@ -1351,8 +1351,8 @@ export const cards: Card[] = [
       "Basic defense that helps David fully block attacks and earn Courage from Heart of Courage.",
     strategyNotes:
       "Use this when the enemy is preparing a heavy attack. A full block protects health and builds Courage for the next strike.",
-    upgradedVersion: "Gain 8 Guard.",
-    effects: [{ type: "GainGuard", amount: 5, source: "Shepherd's Guard" }],
+    upgradedVersion: "Gain 9 Guard.",
+    effects: [{ type: "GainGuard", amount: 6, source: "Shepherd's Guard" }],
     imagePath: artAssetPath("art-shepherds-guard", "/art/cards/shepherds-guard.png"),
     imageObjectPosition: "50% 43%",
     artworkTitle: "Shepherd's Guard",
@@ -1371,7 +1371,7 @@ export const cards: Card[] = [
     id: "card-psalm-of-courage",
     name: "Psalm of Courage",
     cost: [{ amount: 1, resource: "Faith" }],
-    text: "Gain 4 Guard. Draw 1 card. Remove Fear. Gain 1 Courage.",
+    text: "Gain 5 Guard. Draw 1 card. Remove Fear. Gain 1 Courage.",
     type: "Prayer/Song",
     rarity: "Common",
     archetypeTags: ["Psalm", "Courage"],
@@ -1380,9 +1380,9 @@ export const cards: Card[] = [
     strategyNotes:
       "Use Psalm of Courage to clear Fear before an attack turn, replace itself, and raise Courage for Sling Stone.",
     upgradedVersion:
-      "Gain 6 Guard. Draw 1 card. Remove Fear. If Fear was removed, gain 1 Faith.",
+      "Gain 7 Guard. Draw 1 card. Remove Fear. Gain 1 Courage. If Fear was removed, gain 1 Faith.",
     effects: [
-      { type: "GainGuard", amount: 4, source: "Psalm of Courage" },
+      { type: "GainGuard", amount: 5, source: "Psalm of Courage" },
       { type: "DrawCards", amount: 1 },
       { type: "RemoveStatus", status: "Fear", target: "Player" },
       { type: "GainCourage", amount: 1, source: "Psalm of Courage" },
@@ -1432,7 +1432,7 @@ export const cards: Card[] = [
     id: "card-watchful-shepherd",
     name: "Watchful Shepherd",
     cost: [],
-    text: "Reveal enemy intent. Gain 3 Guard.",
+    text: "Reveal enemy intent. Gain 4 Guard.",
     type: "Tactic/Courage",
     rarity: "Common",
     archetypeTags: ["Courage", "Psalm"],
@@ -1440,10 +1440,10 @@ export const cards: Card[] = [
       "Beginner planning tool that makes enemy intent readable before David commits resources.",
     strategyNotes:
       "Start here when unsure. Read the enemy intent, then decide whether to Guard, remove Fear, or prepare a Courage attack.",
-    upgradedVersion: "Reveal enemy intent. Gain 5 Guard. Gain 1 Courage.",
+    upgradedVersion: "Reveal enemy intent. Gain 6 Guard. Gain 1 Courage.",
     effects: [
       { type: "RevealIntent" },
-      { type: "GainGuard", amount: 3, source: "Watchful Shepherd" },
+      { type: "GainGuard", amount: 4, source: "Watchful Shepherd" },
     ],
     imagePath: artAssetPath("art-shepherds-guard", "/art/cards/shepherds-guard.png"),
     imageObjectPosition: "50% 43%",
@@ -1700,7 +1700,7 @@ export const cards: Card[] = [
     synergyNotes: "Sets up Sling Stone and other Courage attacks.",
     strategyNotes:
       "Use this after Fear appears, then strike while Courage and the attack bonus are still ready.",
-    upgradedVersion: "Remove Fear. Your next attack deals +6 damage.",
+    upgradedVersion: "Remove Fear. Your next attack deals +7 damage.",
     combatEffect: { removeFear: true, nextAttackBonus: 4 },
     imagePath: artAssetPath("art-smooth-stone", "/art/cards/smooth-stone.png"),
     imageObjectPosition: "54% 48%",

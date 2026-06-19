@@ -28,9 +28,9 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
     note: "Heavenly authority stands under the command of God.",
   },
   "card-sling-stone": { damage: 8, antiGiantDamage: 5 },
-  "card-shepherds-guard": { guard: 8 },
+  "card-shepherds-guard": { guard: 9 },
   "card-psalm-of-courage": {
-    guard: 6,
+    guard: 7,
     draw: 1,
     removeFear: true,
     gainFaith: 1,
@@ -64,7 +64,7 @@ const upgradedEffectsByCardId: Record<string, CardCombatEffect> = {
   "card-giant-toppler": { damage: 11, antiGiantDamage: 8 },
   "card-courage-before-the-host": { removeFear: true, guard: 7, draw: 1 },
   "card-shepherds-stand": { guard: 10, gainResolve: 1 },
-  "card-stone-of-defiance": { removeFear: true, nextAttackBonus: 6 },
+  "card-stone-of-defiance": { removeFear: true, nextAttackBonus: 7 },
   "card-harp-of-watchfulness": { guard: 5, draw: 1 },
   "card-song-in-the-night": { heal: 6, draw: 1 },
   "card-waters-of-rest": { heal: 8, removeFear: true },
@@ -146,10 +146,10 @@ const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
     },
   ],
   "card-shepherds-guard": [
-    { type: "GainGuard", amount: 8, source: "Shepherd's Guard" },
+    { type: "GainGuard", amount: 9, source: "Shepherd's Guard" },
   ],
   "card-psalm-of-courage": [
-    { type: "GainGuard", amount: 6, source: "Psalm of Courage" },
+    { type: "GainGuard", amount: 7, source: "Psalm of Courage" },
     { type: "DrawCards", amount: 1 },
     {
       type: "TriggerIfStatusPresent",
@@ -163,7 +163,7 @@ const upgradedStructuredEffectsByCardId: Record<string, CardEffect[]> = {
   "card-smooth-stone": [{ type: "ModifyNextAttack", amount: 5 }],
   "card-watchful-shepherd": [
     { type: "RevealIntent" },
-    { type: "GainGuard", amount: 5, source: "Watchful Shepherd" },
+    { type: "GainGuard", amount: 6, source: "Watchful Shepherd" },
     { type: "GainCourage", amount: 1, source: "Watchful Shepherd" },
   ],
   "card-forbidden-watcher-diagram": [

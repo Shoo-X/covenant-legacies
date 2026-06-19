@@ -61,9 +61,9 @@ export const memorials: Memorial[] = [
     id: "memorial-shepherds-staff",
     name: "Shepherd's Staff",
     rarity: "Common",
-    effectText: "Gain 2 Guard at the start of each turn.",
+    effectText: "Gain 3 Guard at the start of each turn.",
     effect: {
-      startTurnGuard: 2,
+      startTurnGuard: 3,
     },
     sourceTier: "Scripture",
     references: ["Psalm 23"],
@@ -103,9 +103,9 @@ export const memorials: Memorial[] = [
     id: "memorial-oil-of-gladness",
     name: "Oil of Gladness",
     rarity: "Uncommon",
-    effectText: "The first time you remove Fear each combat, heal 4.",
+    effectText: "The first time you remove Fear each combat, heal 5.",
     effect: {
-      firstFearRemovalHeal: 4,
+      firstFearRemovalHeal: 5,
     },
     sourceTier: "Scripture",
     references: ["Psalm 45:7", "Isaiah 61:3"],

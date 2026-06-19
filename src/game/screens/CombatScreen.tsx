@@ -45,6 +45,7 @@ import type {
   CombatFeedback,
   CombatFeedbackKind,
   CombatPhase,
+  CombatState,
   CombatStructureState,
   CombatTargetId,
   QueuedCombatAction,
@@ -106,6 +107,15 @@ interface PlayedCue {
   tone: CombatCueTone;
 }
 
+interface CombatSummaryStats {
+  cardsPlayed: number;
+  corruptionGained: number;
+  damageReceived: number;
+  endingHealth: number;
+  roundsTaken: number;
+  startingHealth: number;
+}
+
 export function CombatScreen({
   encounter,
   onNavigate,
@@ -132,11 +142,14 @@ export function CombatScreen({
   const cueIdRef = useRef(0);
   const lastActiveActionIdRef = useRef<string | undefined>(undefined);
   const lastDrawFeedbackIdRef = useRef<number | undefined>(undefined);
+  const playedCardsThisBattleRef = useRef(0);
   const lastStatusAudioRef = useRef<string | undefined>(undefined);
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [selectedCombatTargetId, setSelectedCombatTargetId] =
     useState<CombatTargetId>("enemy");
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
+  const [terminalSummaryStats, setTerminalSummaryStats] =
+    useState<CombatSummaryStats>();
   const [isEndTurnWarningOpen, setIsEndTurnWarningOpen] = useState(false);
   const [hasSeenEncounterIntro, setHasSeenEncounterIntro] = useState(() =>
     hasStoredEncounterIntro(enemy.id),
@@ -197,6 +210,16 @@ export function CombatScreen({
         random: Math.random,
       }),
     );
+  }
+
+  function retryBattleFromStart() {
+    playedCardsThisBattleRef.current = 0;
+    setTerminalSummaryStats(undefined);
+    setSelectedCardId(undefined);
+    setSelectedCombatTargetId("enemy");
+    setPlayedCue(undefined);
+    setIsEndTurnWarningOpen(false);
+    dispatch({ type: "restart" });
   }
 
   useEffect(() => {
@@ -281,6 +304,7 @@ export function CombatScreen({
         return;
       }
 
+      playedCardsThisBattleRef.current += 1;
       cueIdRef.current += 1;
       playSound("card.play");
       playSound(getCardPlayAudioEvent(card));
@@ -394,17 +418,21 @@ export function CombatScreen({
     .slice(-3)
     .reverse();
   const combatSummaryStats = {
-    startingHealth: combat.metrics.startingHealth,
-    endingHealth:
-      combat.status === "active" ? combat.metrics.endingHealth : combat.player.health,
-    damageReceived: combat.metrics.damageReceived,
-    roundsTaken:
-      combat.status === "active"
-        ? combat.metrics.roundsTaken
-        : Math.max(combat.metrics.roundsTaken, combat.turn),
-    corruptionGained: combat.metrics.corruptionGained,
-    cardsPlayed: combat.metrics.cardsPlayed,
+    ...(terminalSummaryStats ?? getCombatSummaryStats(combat)),
+    cardsPlayed: Math.max(
+      terminalSummaryStats?.cardsPlayed ?? 0,
+      combat.metrics.cardsPlayed,
+      playedCardsThisBattleRef.current,
+    ),
   };
+
+  useEffect(() => {
+    if (combat.status === "active") {
+      return;
+    }
+
+    setTerminalSummaryStats((current) => current ?? getCombatSummaryStats(combat));
+  }, [combat]);
 
   useEffect(() => {
     if (!latestDrawFeedback || lastDrawFeedbackIdRef.current === latestDrawFeedback.id) {
@@ -1157,7 +1185,7 @@ export function CombatScreen({
                           combat.player.health,
                           combat.resources,
                         )
-                      : dispatch({ type: "restart" })
+                      : retryBattleFromStart()
                   }
                   tone={combat.status === "victory" ? "primary" : "danger"}
                 >
@@ -1269,6 +1297,21 @@ function Meter({ current, label, max, tone }: MeterProps) {
       </div>
     </div>
   );
+}
+
+function getCombatSummaryStats(combat: CombatState): CombatSummaryStats {
+  return {
+    startingHealth: combat.metrics.startingHealth,
+    endingHealth:
+      combat.status === "active" ? combat.metrics.endingHealth : combat.player.health,
+    damageReceived: combat.metrics.damageReceived,
+    roundsTaken:
+      combat.status === "active"
+        ? combat.metrics.roundsTaken
+        : Math.max(combat.metrics.roundsTaken, combat.turn),
+    corruptionGained: combat.metrics.corruptionGained,
+    cardsPlayed: combat.metrics.cardsPlayed,
+  };
 }
 
 interface StatProps {

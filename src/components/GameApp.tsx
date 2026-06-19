@@ -165,6 +165,7 @@ export function GameApp() {
     if (finalResources) {
       setRunResources((current) => ({
         ...current,
+        resolve: heroes[0].resourceState.resolve,
         corruption: finalResources.corruption,
       }));
     }

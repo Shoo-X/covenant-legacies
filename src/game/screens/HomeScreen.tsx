@@ -99,7 +99,7 @@ export function HomeScreen({
           </div>
         </ContentPanel>
 
-        <InfoPanel className="home-flow-panel" scroll>
+        <InfoPanel className="home-flow-panel">
           <p className="ui-kicker">Demo Path</p>
           <h3>{starterCampaign.campaignName}</h3>
           <span>

@@ -7,11 +7,11 @@ import type {
 export const corruptedAltarDefinition: EnemyStructureDefinition = {
   id: "structure-corrupted-altar",
   name: "Idol Standard",
-  maxHealth: 18,
+  maxHealth: 16,
   traits: ["Idol", "Structure"],
   effectText:
-    "At enemy turn end, gain 1 charge. At 3 charges, the enemy gains 1 Might and you gain 1 Corruption, then charges reset.",
-  triggerAtCharge: 3,
+    "At enemy turn end, gain 1 charge. At 4 charges, the enemy gains 1 Might and you gain 1 Corruption, then charges reset.",
+  triggerAtCharge: 4,
   sourceTier: "Biblical Inference",
   references: ["1 Samuel 5", "1 Samuel 31:8-10"],
   theologyNote:

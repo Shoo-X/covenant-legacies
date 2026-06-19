@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { defaultAudioSettings } from "@/audio/audioManager";
 import { useAudio } from "@/audio/useAudio";
 import { Divider, PillTag } from "@/components/UiPrimitives";
 
@@ -33,6 +35,7 @@ function AudioSlider({ label, onChange, value }: AudioSliderProps) {
 }
 
 export function AudioSettingsPanel() {
+  const [hasMounted, setHasMounted] = useState(false);
   const {
     setMasterVolume,
     setMusicVolume,
@@ -40,6 +43,11 @@ export function AudioSettingsPanel() {
     settings,
     toggleMute,
   } = useAudio();
+  const displaySettings = hasMounted ? settings : defaultAudioSettings;
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   return (
     <section className="audio-settings-panel" aria-label="Audio settings">
@@ -49,11 +57,11 @@ export function AudioSettingsPanel() {
           <h3>Sound Settings</h3>
         </div>
         <button
-          className={`audio-mute-toggle ${settings.muted ? "is-muted" : ""}`}
+          className={`audio-mute-toggle ${displaySettings.muted ? "is-muted" : ""}`}
           onClick={toggleMute}
           type="button"
         >
-          {settings.muted ? "Muted" : "Sound On"}
+          {displaySettings.muted ? "Muted" : "Sound On"}
         </button>
       </div>
       <p>
@@ -65,13 +73,17 @@ export function AudioSettingsPanel() {
         <AudioSlider
           label="Master"
           onChange={setMasterVolume}
-          value={settings.masterVolume}
+          value={displaySettings.masterVolume}
         />
-        <AudioSlider label="SFX" onChange={setSfxVolume} value={settings.sfxVolume} />
+        <AudioSlider
+          label="SFX"
+          onChange={setSfxVolume}
+          value={displaySettings.sfxVolume}
+        />
         <AudioSlider
           label="Music"
           onChange={setMusicVolume}
-          value={settings.musicVolume}
+          value={displaySettings.musicVolume}
         />
       </div>
       <div className="audio-settings-tags">

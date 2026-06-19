@@ -133,7 +133,7 @@ export function createCombatState(
       might: oppressedMight,
     },
     resources: {
-      resolve: turnStartResources.resolve,
+      resolve: Math.max(runResources.resolve, turnStartResources.resolve),
       faith: Math.max(runResources.faith, turnStartResources.faith),
       wisdom: runResources.wisdom,
       authority: runResources.authority,

@@ -31,7 +31,8 @@ export interface RestResolution {
   state: RestRunState;
 }
 
-const restHealAmount = 18;
+const restHealAmount = 24;
+const corruptionCleanseAmount = 2;
 const lionAndBearCardId = "card-lion-and-bear";
 
 export function getRestChoices(
@@ -93,14 +94,14 @@ export function getRestChoices(
       label: "Pray in the Valley",
       description: state.hasFear
         ? "Remove Fear before Goliath's challenge."
-        : "Cleanse 1 Corruption before Goliath's challenge.",
+        : `Cleanse up to ${corruptionCleanseAmount} Corruption before Goliath's challenge.`,
       disabled: !state.hasFear && state.runResources.corruption <= 0,
       effectSummary:
         state.hasFear
           ? "Remove Fear."
           : state.runResources.corruption <= 0
             ? "There is no Fear or Corruption to cleanse."
-            : "Remove 1 Corruption.",
+            : `Remove up to ${corruptionCleanseAmount} Corruption.`,
     },
   ];
 }
@@ -144,13 +145,16 @@ export function applyRestChoice(
       };
     }
 
-    const nextCorruption = Math.max(0, state.runResources.corruption - 1);
+    const nextCorruption = Math.max(
+      0,
+      state.runResources.corruption - corruptionCleanseAmount,
+    );
 
     return {
       message:
         nextCorruption === state.runResources.corruption
           ? "There was no Corruption to cleanse."
-          : "Removed 1 Corruption.",
+          : `Removed ${state.runResources.corruption - nextCorruption} Corruption.`,
       state: {
         ...state,
         runResources: {

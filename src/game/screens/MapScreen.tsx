@@ -298,7 +298,12 @@ export function MapScreen({
               title={campaignComplete ? "Campaign Complete" : "First Run Guide"}
               tone={selectedEncounter.nodeType === "Boss" ? "danger" : "default"}
             >
-              {getMapTutorialHint(selectedEncounter, selectedCanEnter, selectedCompleted)}
+              {getMapTutorialHint(
+                selectedEncounter,
+                selectedCanEnter,
+                selectedCompleted,
+                campaignComplete,
+              )}
             </TutorialHint>
             {selectedEncounter.description && (
               <div className="campaign-detail-note campaign-detail-note-primary">
@@ -448,7 +453,12 @@ function getMapTutorialHint(
   encounter: Encounter,
   canEnter: boolean,
   completed: boolean,
+  campaignComplete: boolean,
 ) {
+  if (campaignComplete) {
+    return "David's Legacy is complete. The Valley of the Giant has been cleared.";
+  }
+
   if (completed) {
     return "This step is complete. Select the next current node to continue David's path through the valley.";
   }
