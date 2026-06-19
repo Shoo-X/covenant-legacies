@@ -10,6 +10,7 @@ import {
   TheologyNotePanel,
 } from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { TutorialHint } from "@/components/TutorialHint";
 import type { Memorial } from "@/types/game";
 
 interface MemorialRewardScreenProps {
@@ -36,6 +37,10 @@ export function MemorialRewardScreen({
         eyebrow="Memorial Reward"
         title="Raise a remembrance for the road ahead."
       >
+        <TutorialHint>
+          Memorials are passive run modifiers. They are not played from the hand;
+          once raised, their effect can shape later battles.
+        </TutorialHint>
         <div className="memorial-choice-grid">
           {memorialRewards.map((memorial) => (
             <ChoiceCard

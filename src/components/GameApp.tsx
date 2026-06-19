@@ -119,6 +119,12 @@ export function GameApp() {
   function startEncounter(encounter: Encounter) {
     setSelectedEncounterId(encounter.id);
     setActiveCombatEncounterId(undefined);
+
+    if (!canStartEncounter(encounter, completedEncounterIds)) {
+      playSound("ui.disabled");
+      return;
+    }
+
     playSound(getCampaignNodeAudioEvent(encounter));
 
     if (encounter.nodeType === "Rest / Upgrade") {
@@ -530,6 +536,34 @@ function getRestChoiceAudioEvent(choiceId: RestChoiceId) {
   }
 
   return "campaign.nodeRest" as const;
+}
+
+function canStartEncounter(
+  encounter: Encounter,
+  completedEncounterIds: string[],
+) {
+  if (completedEncounterIds.includes(encounter.id) || !hasEncounterAction(encounter)) {
+    return false;
+  }
+
+  const encounterIndex = encounters.findIndex(
+    (candidate) => candidate.id === encounter.id,
+  );
+  const previousPlayableEncounters = encounters
+    .slice(0, Math.max(0, encounterIndex))
+    .filter(hasEncounterAction);
+
+  return previousPlayableEncounters.every((previousEncounter) =>
+    completedEncounterIds.includes(previousEncounter.id),
+  );
+}
+
+function hasEncounterAction(encounter: Encounter) {
+  return (
+    encounter.nodeType === "Rest / Upgrade" ||
+    encounter.enemyIds.length > 0 ||
+    Boolean(encounter.mysteryEncounterIds?.length)
+  );
 }
 
 function hasValidCombatEnemy(encounter: Encounter) {

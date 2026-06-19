@@ -9,6 +9,7 @@ import { codexEntries } from "@/data/codexEntries";
 import { encounters } from "@/data/encounters";
 import { heroes } from "@/data/heroes";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { TutorialHint } from "@/components/TutorialHint";
 import {
   ContentPanel,
   DetailPanel,
@@ -69,11 +70,13 @@ export function MapScreen({
   const deckSize = runDeck.reduce((total, entry) => total + entry.quantity, 0);
   const completedCount = completedEncounterIds.length;
   const nextEnterableEncounter = useMemo(
-    () => getNextEnterableEncounter(completedEncounterIds) ?? encounters[0],
+    () => getNextEnterableEncounter(completedEncounterIds),
     [completedEncounterIds],
   );
+  const fallbackSelectedEncounter =
+    nextEnterableEncounter ?? encounters[encounters.length - 1] ?? encounters[0];
   const [selectedEncounterId, setSelectedEncounterId] = useState(
-    nextEnterableEncounter.id,
+    fallbackSelectedEncounter.id,
   );
   const selectedEncounter = useMemo(
     () =>
@@ -86,6 +89,7 @@ export function MapScreen({
     completedEncounterIds,
   );
   const selectedCompleted = completedEncounterIds.includes(selectedEncounter.id);
+  const campaignComplete = completedEncounterIds.includes("encounter-valley-boss");
   const selectedCodexLinks = getCodexLinkLabels(selectedEncounter.codexEntryIds);
 
   useEffect(() => {
@@ -236,7 +240,7 @@ export function MapScreen({
               const isCompleted = completedEncounterIds.includes(encounter.id);
               const isSelected = selectedEncounter.id === encounter.id;
               const canEnter = canEnterEncounter(encounter, completedEncounterIds);
-              const isCurrent = nextEnterableEncounter.id === encounter.id;
+              const isCurrent = nextEnterableEncounter?.id === encounter.id;
               const state = isCompleted
                 ? "completed"
                 : canEnter
@@ -290,6 +294,12 @@ export function MapScreen({
           </div>
 
           <ScrollPanel className="campaign-detail-scroll">
+            <TutorialHint
+              title={campaignComplete ? "Campaign Complete" : "First Run Guide"}
+              tone={selectedEncounter.nodeType === "Boss" ? "danger" : "default"}
+            >
+              {getMapTutorialHint(selectedEncounter, selectedCanEnter, selectedCompleted)}
+            </TutorialHint>
             {selectedEncounter.description && (
               <div className="campaign-detail-note campaign-detail-note-primary">
                 <p>Valley Chronicle</p>
@@ -432,6 +442,38 @@ function getNodePurpose(encounter: Encounter) {
   };
 
   return purposes[encounter.id] ?? encounter.gameplayRole;
+}
+
+function getMapTutorialHint(
+  encounter: Encounter,
+  canEnter: boolean,
+  completed: boolean,
+) {
+  if (completed) {
+    return "This step is complete. Select the next current node to continue David's path through the valley.";
+  }
+
+  if (!canEnter) {
+    return "Future steps stay locked until the previous node is complete.";
+  }
+
+  if (encounter.nodeType === "Boss") {
+    return "Goliath is the final test: bring Guard timing, Fear removal, and Courage attacks to the high place.";
+  }
+
+  if (encounter.nodeType === "Rest / Upgrade") {
+    return "The Brook of Stones is final preparation before Goliath. Heal, strengthen a Courage card, remember deliverance, or cleanse harmful pressure.";
+  }
+
+  if (encounter.nodeType === "Mystery Encounter") {
+    return "Mystery choices shape the run. Choose preparation, prayer, or speed based on what David needs next.";
+  }
+
+  if (encounter.nodeType === "Elite") {
+    return "Elite battles test whether the deck can handle armor, pressure, and timing before Goliath.";
+  }
+
+  return "Begin here to learn the battle rhythm: read enemy intent, spend Resolve, Guard when needed, and build Courage.";
 }
 
 function getNodeActionLabel(

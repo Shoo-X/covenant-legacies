@@ -8,6 +8,7 @@ import {
   TheologyNotePanel,
 } from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { TutorialHint } from "@/components/TutorialHint";
 import { getCorruptionThreshold } from "@/game/corruption";
 import { getRestChoices, type RestChoiceId } from "@/game/rest";
 import type { ResourceState, StartingDeckCard } from "@/types/game";
@@ -80,6 +81,11 @@ export function RestNodeScreen({
         title="The Brook of Stones"
         tone="sacred"
       >
+        <TutorialHint tone="sacred" title="Before Goliath">
+          This is the final preparation node. Heal if David is worn down, upgrade
+          a Courage card for stronger attacks, or cleanse Fear and Corruption
+          before the champion's challenge.
+        </TutorialHint>
         <div className="rest-choice-grid">
           {choices.map((choice) => (
             <ChoiceCard

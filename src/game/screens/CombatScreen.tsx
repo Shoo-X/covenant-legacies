@@ -23,6 +23,7 @@ import {
 } from "@/components/ResourceBadge";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { SymbolicArt } from "@/components/SymbolicArt";
+import { TutorialHint } from "@/components/TutorialHint";
 import {
   getCombatPresentationDelay,
   getEndTurnRiskAssessment,
@@ -1088,6 +1089,15 @@ export function CombatScreen({
 
             <GamePanel className="combat-actions-panel">
               <p className="combat-command-kicker">Command</p>
+              <TutorialHint className="combat-command-hint">
+                {getCombatTurnHint({
+                  hasFear: combat.hasFear,
+                  isBossEncounter,
+                  isHighDangerIntent,
+                  phase: combat.phase,
+                  turn: combat.turn,
+                })}
+              </TutorialHint>
               <PrimaryButton
                 disabled={isPlayerInputLocked}
                 onClick={requestEndTurn}
@@ -1477,11 +1487,77 @@ function EncounterIntroOverlay({
               <dd>{encounter.references.join("; ")}</dd>
             </div>
           </dl>
+          <TutorialHint
+            title={encounter.nodeType === "Boss" ? "Before Goliath" : "First Combat Help"}
+            tone={encounter.nodeType === "Boss" ? "danger" : "default"}
+          >
+            <ul>
+              {getEncounterIntroHints(encounter).map((hint) => (
+                <li key={hint}>{hint}</li>
+              ))}
+            </ul>
+          </TutorialHint>
           <PrimaryButton onClick={onEnterBattle}>Enter Battle</PrimaryButton>
         </div>
       </div>
     </div>
   );
+}
+
+function getCombatTurnHint({
+  hasFear,
+  isBossEncounter,
+  isHighDangerIntent,
+  phase,
+  turn,
+}: {
+  hasFear: boolean;
+  isBossEncounter: boolean;
+  isHighDangerIntent: boolean;
+  phase: CombatPhase;
+  turn: number;
+}) {
+  if (phase !== "PlayerMain") {
+    return "Watch the battlefield resolve before choosing your next card.";
+  }
+
+  if (isBossEncounter && hasFear) {
+    return "Goliath tests Fear removal and timing. Clear Fear when you can, then spend Courage through attacks.";
+  }
+
+  if (isHighDangerIntent) {
+    return "The next enemy intent is dangerous. Guard first if David cannot safely take the hit.";
+  }
+
+  if (turn === 1) {
+    return "Resolve pays for most cards. Guard blocks damage, and Courage is spent by David's attacks for bonus damage.";
+  }
+
+  return "Read enemy intent, spend Resolve carefully, and decide whether this turn needs Guard or pressure.";
+}
+
+function getEncounterIntroHints(encounter: Encounter) {
+  if (encounter.nodeType === "Boss") {
+    return [
+      "Goliath applies Fear and threatens heavy spear attacks.",
+      "Guard before large attacks; clean blocks can build Courage.",
+      "Courage, Sling, Psalm, and Faith timing are the road to victory.",
+    ];
+  }
+
+  if (encounter.id === "encounter-valley-battle-2") {
+    return [
+      "Some battles include targetable structures.",
+      "Destroy structure pressure when it would make the fight worse.",
+      "Enemy intent still tells you whether to Guard or attack this turn.",
+    ];
+  }
+
+  return [
+    "Resolve pays for most cards in David's starter deck.",
+    "Guard blocks incoming damage before HP is lost.",
+    "Enemy intent previews what the enemy will do next.",
+  ];
 }
 
 function CombatPopup({

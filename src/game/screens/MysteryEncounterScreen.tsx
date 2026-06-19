@@ -13,6 +13,7 @@ import {
   TheologyNotePanel,
 } from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { TutorialHint } from "@/components/TutorialHint";
 import { formatCardCost } from "@/game/cardText";
 import type { MysteryEncounter, MysteryEncounterChoice, ResourceState } from "@/types/game";
 
@@ -79,6 +80,12 @@ export function MysteryEncounterScreen({
             <div className="decision-warning-note">{encounter.cautionNote}</div>
           )}
         </div>
+
+        <TutorialHint tone={isForbiddenEncounter ? "danger" : "sacred"}>
+          {encounter.id === "mystery-five-smooth-stones"
+            ? "This is preparation, not a magic object. Choose an upgrade, prayerful cleansing, or Resolve for the next battle."
+            : "Mystery choices can change resources, cards, or map pressure. Weigh the cost before taking the road."}
+        </TutorialHint>
 
         <div className="mystery-choice-grid">
           {encounter.choices.map((choice) => {

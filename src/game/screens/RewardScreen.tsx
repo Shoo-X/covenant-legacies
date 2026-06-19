@@ -11,6 +11,7 @@ import {
   StatusBadge,
 } from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
+import { TutorialHint } from "@/components/TutorialHint";
 import { starterCampaign } from "@/data/campaigns";
 import { heroes } from "@/data/heroes";
 import type { Card } from "@/types/game";
@@ -46,6 +47,11 @@ export function RewardScreen({
         eyebrow="Victory Reward"
         title="Choose one card for the road ahead."
       >
+        <TutorialHint>
+          Rewards grow the deck, but every added card changes future draws.
+          Choose a card that supports Guard, Courage, or Faith timing; skip if the
+          deck is already doing its job.
+        </TutorialHint>
         <div className="reward-card-stage">
           {rewardCards.slice(0, 3).map((card) => (
             <RewardCardShell
