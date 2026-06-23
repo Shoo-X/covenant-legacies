@@ -3,6 +3,10 @@ import { getArtAsset } from "@/data/artAssets";
 
 const davidGoliathArt = getArtAsset("art-david-goliath-portrait");
 const giantHighPlaceArt = getArtAsset("art-giant-of-high-place");
+const giantsShieldBearerArt = getArtAsset("art-giants-shield-bearer");
+const idolPriestArt = getArtAsset("art-idol-priest");
+const philistineRaiderArt = getArtAsset("art-philistine-raider");
+const watcherTouchedRaiderArt = getArtAsset("art-watcher-touched-raider");
 
 export const enemies: Enemy[] = [
   {
@@ -13,6 +17,9 @@ export const enemies: Enemy[] = [
     attackDamage: 6,
     intent: "Raid pattern",
     traits: ["Human", "Philistine"],
+    imagePath: philistineRaiderArt?.path,
+    artworkTitle: philistineRaiderArt?.title ?? "Philistine Raider",
+    imageObjectPosition: philistineRaiderArt?.objectPosition ?? "50% 34%",
     mechanics: [
       "Mounting physical pressure with a telegraphed heavy strike.",
       "Teaches Guard timing before the campaign introduces stranger threats.",
@@ -31,6 +38,9 @@ export const enemies: Enemy[] = [
     attackDamage: 5,
     intent: "Idol-standard pressure",
     traits: ["Human", "Philistine", "Idol"],
+    imagePath: idolPriestArt?.path,
+    artworkTitle: idolPriestArt?.title ?? "Keeper of the Idol Standard",
+    imageObjectPosition: idolPriestArt?.objectPosition ?? "50% 34%",
     mechanics: [
       "Charges an Idol Standard structure while making weaker direct attacks.",
       "Destroying altar or structure effects can stop setup turns and Corruption pressure.",
@@ -38,7 +48,7 @@ export const enemies: Enemy[] = [
     sourceTier: "Biblical Inference",
     references: ["1 Samuel 5", "1 Samuel 31:8-10"],
     theologyNote:
-      "The Idol Standard is a game abstraction from Philistine idol contexts, framed as false worship pressure rather than spiritual power to admire.",
+      "The Idol Standard is a game abstraction from Philistine idol contexts, representing false worship pressure rather than spiritual power to admire.",
     gameplayRole: "Trial",
   },
   {
@@ -49,9 +59,10 @@ export const enemies: Enemy[] = [
     attackDamage: 10,
     intent: "Shield and interception pattern",
     traits: ["Human", "Philistine"],
-    imagePath: davidGoliathArt?.path,
-    artworkTitle: davidGoliathArt?.title ?? "David vs Goliath",
-    imageObjectPosition: "74% 34%",
+    imagePath: giantsShieldBearerArt?.path ?? davidGoliathArt?.path,
+    artworkTitle:
+      giantsShieldBearerArt?.title ?? davidGoliathArt?.title ?? "Giant's Shield-Bearer",
+    imageObjectPosition: giantsShieldBearerArt?.objectPosition ?? "50% 34%",
     mechanics: [
       "Builds Guard before shield-bashing and protecting stronger threats.",
       "Teaches players that not every threat is solved by raw damage.",
@@ -91,6 +102,9 @@ export const enemies: Enemy[] = [
     attackDamage: 8,
     intent: "Forge scaling pattern",
     traits: ["Human", "Watcher"],
+    imagePath: watcherTouchedRaiderArt?.path,
+    artworkTitle: watcherTouchedRaiderArt?.title ?? "Watcher-Touched Raider",
+    imageObjectPosition: watcherTouchedRaiderArt?.objectPosition ?? "50% 34%",
     mechanics: ["Gains Might before attacking."],
     sourceTier: "Speculative Fiction",
     references: ["Genesis 6:1-4", "Joshua 11:22", "2 Samuel 21:15-22"],

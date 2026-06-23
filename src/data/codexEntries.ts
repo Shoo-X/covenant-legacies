@@ -119,6 +119,8 @@ export const codexEntries: CodexLoreEntry[] = [
   {
     id: "codex-dagon-philistine-idols",
     title: "Dagon and Philistine Idols",
+    imagePath: getArtAssetPath("art-idol-priest"),
+    artworkTitle: "Keeper of the Idol Standard",
     sourceTier: "Scripture",
     references: ["1 Samuel 5", "1 Samuel 31:8-10"],
     theologyNote:
@@ -374,6 +376,8 @@ export const codexEntries: CodexLoreEntry[] = [
   {
     id: "codex-clean-hands",
     title: "Clean Hands",
+    imagePath: getArtAssetPath("art-clean-hands"),
+    artworkTitle: "Clean Hands",
     sourceTier: "Scripture",
     references: ["Psalm 24:3-4", "Psalm 51"],
     theologyNote:
@@ -401,6 +405,8 @@ export const codexEntries: CodexLoreEntry[] = [
   {
     id: "codex-philistine-pressure",
     title: "Philistine Pressure",
+    imagePath: getArtAssetPath("art-idol-priest"),
+    artworkTitle: "Keeper of the Idol Standard",
     sourceTier: "Biblical Inference",
     references: ["1 Samuel 17:1-11", "1 Samuel 5", "1 Samuel 31"],
     theologyNote:
@@ -562,7 +568,7 @@ export const codexEntries: CodexLoreEntry[] = [
       interpretiveTraditions:
         "Interpreters have debated the nature of the event, but faithful readings consistently recognize the passage as tragic and forbidden rather than exemplary.",
       gameInterpretation:
-        "In Covenant: Legacies, Endor-related cards are burdens, warnings, or costly forbidden-knowledge effects. They are never framed as admirable occult power.",
+        "In Covenant: Legacies, Endor-related cards are burdens, warnings, or costly forbidden-knowledge effects. They are never presented as admirable occult power.",
     },
   },
   {
@@ -591,7 +597,7 @@ export const codexEntries: CodexLoreEntry[] = [
     sourceTier: "Scripture",
     references: ["1 Corinthians 12", "Hebrews 5:14"],
     theologyNote:
-      "Discernment is framed as faithful wisdom and trained moral perception.",
+      "Discernment is presented as faithful wisdom and trained moral perception.",
     gameplayRole: "Support",
     representationMode: "Prayer",
     sections: {

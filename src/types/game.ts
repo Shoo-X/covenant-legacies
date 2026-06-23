@@ -387,6 +387,7 @@ export type GameScreen =
   | "rest"
   | "reward"
   | "memorial-reward"
+  | "run-summary"
   | "collection"
   | "gallery"
   | "codex";

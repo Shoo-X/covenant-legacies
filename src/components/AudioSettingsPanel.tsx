@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { defaultAudioSettings } from "@/audio/audioManager";
 import { useAudio } from "@/audio/useAudio";
 import { Divider, PillTag } from "@/components/UiPrimitives";
@@ -35,7 +35,11 @@ function AudioSlider({ label, onChange, value }: AudioSliderProps) {
 }
 
 export function AudioSettingsPanel() {
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false,
+  );
   const {
     setMasterVolume,
     setMusicVolume,
@@ -44,10 +48,6 @@ export function AudioSettingsPanel() {
     toggleMute,
   } = useAudio();
   const displaySettings = hasMounted ? settings : defaultAudioSettings;
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   return (
     <section className="audio-settings-panel" aria-label="Audio settings">

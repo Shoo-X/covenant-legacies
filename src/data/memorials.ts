@@ -110,7 +110,7 @@ export const memorials: Memorial[] = [
     sourceTier: "Scripture",
     references: ["Psalm 45:7", "Isaiah 61:3"],
     theologyNote:
-      "Gladness is framed as restoration after fear, not denial of suffering.",
+      "Gladness points to restoration after fear rather than denial of suffering.",
     gameplayRole: "Memorial",
   },
   {

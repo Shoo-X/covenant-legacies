@@ -27,7 +27,7 @@ export function getTurnStartResources(
 export function applyStartOfCombatMemorials(
   state: CombatState,
   cardsById: Map<string, Card>,
-  random: () => number = Math.random,
+  random: () => number,
 ): CombatState {
   let nextState = state;
 

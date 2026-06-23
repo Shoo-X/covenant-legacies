@@ -3,6 +3,7 @@ interface PrimaryButtonProps {
   className?: string;
   disabled?: boolean;
   onClick?: () => void;
+  title?: string;
   tone?: ButtonTone;
 }
 
@@ -20,6 +21,7 @@ export function PrimaryButton({
   className = "",
   disabled = false,
   onClick,
+  title,
   tone = "primary",
 }: PrimaryButtonProps) {
   return (
@@ -27,6 +29,7 @@ export function PrimaryButton({
       className={`ui-button ${toneClass[tone]} ${className}`}
       disabled={disabled}
       onClick={onClick}
+      title={title}
       type="button"
     >
       {children}

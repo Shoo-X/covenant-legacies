@@ -9,10 +9,16 @@ import type { GameScreen } from "@/types/game";
 interface AppShellProps {
   children: React.ReactNode;
   currentScreen: GameScreen;
+  navigationState?: Partial<Record<GameScreen, { disabled?: boolean; reason?: string }>>;
   onNavigate: (screen: GameScreen) => void;
 }
 
-export function AppShell({ children, currentScreen, onNavigate }: AppShellProps) {
+export function AppShell({
+  children,
+  currentScreen,
+  navigationState,
+  onNavigate,
+}: AppShellProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return (
@@ -21,6 +27,7 @@ export function AppShell({ children, currentScreen, onNavigate }: AppShellProps)
         <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
           <GameTopBar
             currentScreen={currentScreen}
+            navigationState={navigationState}
             onNavigate={onNavigate}
             onOpenSettings={() => setIsSettingsOpen(true)}
           />

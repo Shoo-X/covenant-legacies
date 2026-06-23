@@ -44,7 +44,7 @@ export function createCombatState(
   hero: Hero,
   enemy: Enemy,
   cardsById: Map<string, Card>,
-  random: () => number = Math.random,
+  random: () => number,
   runDeck: StartingDeckCard[] = hero.startingDeck,
   memorials: Memorial[] = [],
   startingFaithBonus = 0,

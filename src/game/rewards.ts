@@ -40,7 +40,7 @@ const davidStarterFriendlyResources = new Set(["Resolve", "Faith"]);
 export function chooseRewardCards(
   cards: Card[],
   count: number,
-  random: () => number = Math.random,
+  random: () => number,
   runDeck: StartingDeckCard[] = [],
   memorials: Memorial[] = [],
 ) {
@@ -132,7 +132,7 @@ export function chooseMemorialRewards(
   memorials: Memorial[],
   ownedMemorialIds: string[],
   count: number,
-  random: () => number = Math.random,
+  random: () => number,
 ) {
   return shuffleMemorials(
     memorials.filter((memorial) => !ownedMemorialIds.includes(memorial.id)),

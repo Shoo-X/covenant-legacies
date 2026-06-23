@@ -226,7 +226,7 @@ export interface CombatContext {
   cardsById: Map<string, Card>;
   memorials?: Memorial[];
   startingFaithBonus?: number;
-  random?: () => number;
+  random: () => number;
 }
 
 export type CombatAction =

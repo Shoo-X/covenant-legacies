@@ -15,7 +15,7 @@ export const corruptedAltarDefinition: EnemyStructureDefinition = {
   sourceTier: "Biblical Inference",
   references: ["1 Samuel 5", "1 Samuel 31:8-10"],
   theologyNote:
-    "The idol standard is framed as false worship pressure to resist and break, not as a source of usable power.",
+    "The idol standard represents false worship pressure to resist and break, not a source of usable power.",
   gameplayRole: "Structure",
 };
 

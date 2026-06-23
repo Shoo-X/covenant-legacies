@@ -24,6 +24,7 @@ import {
 import type { Card, CardRarity, CardSet, StartingDeckCard } from "@/types/game";
 
 interface CollectionScreenProps {
+  deckEditingEnabled?: boolean;
   onAddToDeck: (cardId: string) => void;
   onRemoveFromDeck: (cardId: string) => void;
   runDeck: StartingDeckCard[];
@@ -32,6 +33,7 @@ interface CollectionScreenProps {
 type CollectionMode = "collection" | "deck";
 
 export function CollectionScreen({
+  deckEditingEnabled = false,
   onAddToDeck,
   onRemoveFromDeck,
   runDeck,
@@ -73,7 +75,7 @@ export function CollectionScreen({
       <PageLayout className="collection-screen" variant="archive">
         <DetailPanel className="collection-toolbar">
           <PageHeader
-            copy="Browse the playable card archive, inspect source-backed details, and shape the current run deck."
+            copy="Browse the playable card archive, inspect source-backed details, and review the current run deck."
             eyebrow="Card Archive"
             title="Collection"
           />
@@ -140,11 +142,29 @@ export function CollectionScreen({
                   />
                   {mode === "deck" && (
                     <div className="collection-deck-actions">
-                      <button onClick={() => onRemoveFromDeck(card.id)} type="button">
+                      <button
+                        disabled={!deckEditingEnabled}
+                        onClick={() => onRemoveFromDeck(card.id)}
+                        title={
+                          deckEditingEnabled
+                            ? "Remove from deck"
+                            : "Run deck changes come from rewards, rest, and mystery choices."
+                        }
+                        type="button"
+                      >
                         -
                       </button>
                       <span>{deckCounts.get(card.id) ?? 0}</span>
-                      <button onClick={() => onAddToDeck(card.id)} type="button">
+                      <button
+                        disabled={!deckEditingEnabled}
+                        onClick={() => onAddToDeck(card.id)}
+                        title={
+                          deckEditingEnabled
+                            ? "Add to deck"
+                            : "Run deck changes come from rewards, rest, and mystery choices."
+                        }
+                        type="button"
+                      >
                         +
                       </button>
                     </div>
@@ -162,6 +182,12 @@ export function CollectionScreen({
           {mode === "deck" ? (
             <>
               <h3>{runDeck.reduce((total, entry) => total + entry.quantity, 0)} cards</h3>
+              {!deckEditingEnabled && (
+                <p className="collection-panel-copy">
+                  The active run deck is read-only here. Card changes come from
+                  rewards, rest choices, and mystery choices.
+                </p>
+              )}
               <div className="collection-deck-list game-scroll">
                 {deckCards.map((card) => (
                   <button

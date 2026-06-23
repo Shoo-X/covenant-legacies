@@ -7,7 +7,10 @@
     "build": "next build",
     "postbuild": "node scripts/disable-next-route-types.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "verify:rng": "node scripts/verify-deterministic-rng.mjs",
+    "verify:summary": "node scripts/verify-run-summary.mjs",
+    "verify:navigation": "node scripts/verify-navigation-integrity.mjs"
   },
   "dependencies": {
     "next": "16.2.9",

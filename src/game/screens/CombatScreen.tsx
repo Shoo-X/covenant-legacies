@@ -39,6 +39,8 @@ import { hasCardEffectType } from "@/game/combat/effectResolver";
 import { getUpgradedCombatCard } from "@/game/cardUpgrades";
 import { getEnemyEncounterPresentation } from "@/game/combat/enemyPatterns";
 import { getCorruptionThreshold } from "@/game/corruption";
+import { getCombatReturnToMapState } from "@/game/navigationPolicy";
+import { createRng, deriveSeed } from "@/game/random";
 import type {
   CombatAction,
   CombatCardInstance,
@@ -63,6 +65,7 @@ import type {
 
 interface CombatScreenProps {
   encounter: Encounter;
+  onDefeat: (remainingHealth: number, resources: ResourceState) => void;
   onNavigate: (screen: GameScreen) => void;
   onVictory: (
     encounter: Encounter,
@@ -73,6 +76,7 @@ interface CombatScreenProps {
   runHealth: number;
   runMemorials: Memorial[];
   runResources: ResourceState;
+  runSeed: string;
   startingFaithBonus: number;
   upgradedCardIds: string[];
 }
@@ -118,12 +122,14 @@ interface CombatSummaryStats {
 
 export function CombatScreen({
   encounter,
+  onDefeat,
   onNavigate,
   onVictory,
   runDeck,
   runHealth,
   runMemorials,
   runResources,
+  runSeed,
   startingFaithBonus,
   upgradedCardIds,
 }: CombatScreenProps) {
@@ -142,14 +148,15 @@ export function CombatScreen({
   const cueIdRef = useRef(0);
   const lastActiveActionIdRef = useRef<string | undefined>(undefined);
   const lastDrawFeedbackIdRef = useRef<number | undefined>(undefined);
-  const playedCardsThisBattleRef = useRef(0);
   const lastStatusAudioRef = useRef<string | undefined>(undefined);
+  const combatEventRngRef = useRef(
+    createRng(deriveSeed(runSeed, `combat:${encounter.id}:events`)),
+  );
   const [selectedCardId, setSelectedCardId] = useState<string>();
   const [selectedCombatTargetId, setSelectedCombatTargetId] =
     useState<CombatTargetId>("enemy");
   const [playedCue, setPlayedCue] = useState<PlayedCue>();
-  const [terminalSummaryStats, setTerminalSummaryStats] =
-    useState<CombatSummaryStats>();
+  const [playedCardsThisBattleCount, setPlayedCardsThisBattleCount] = useState(0);
   const [isEndTurnWarningOpen, setIsEndTurnWarningOpen] = useState(false);
   const [hasSeenEncounterIntro, setHasSeenEncounterIntro] = useState(() =>
     hasStoredEncounterIntro(enemy.id),
@@ -159,7 +166,7 @@ export function CombatScreen({
       hero,
       enemy,
       cardsById,
-      Math.random,
+      createRng(deriveSeed(runSeed, `combat:${encounter.id}:initial`)).randomFloat,
       runDeck,
       runMemorials,
       startingFaithBonus,
@@ -188,6 +195,10 @@ export function CombatScreen({
   const prefersReducedMotion = usePrefersReducedMotion();
   const isPlayerInputLocked =
     combat.status !== "active" || combat.phase !== "PlayerMain";
+  const returnToMapState = getCombatReturnToMapState({
+    phase: combat.phase,
+    status: combat.status,
+  });
   const isBossEncounter = encounter.nodeType === "Boss";
   const isHighDangerIntent = getIsHighDangerIntent(intentDetails);
   const endTurnRisk = getEndTurnRiskAssessment(combat);
@@ -207,18 +218,20 @@ export function CombatScreen({
     setCombat((current) =>
       combatReducer(current, action, {
         cardsById,
-        random: Math.random,
+        random: combatEventRngRef.current.randomFloat,
       }),
     );
   }
 
   function retryBattleFromStart() {
-    playedCardsThisBattleRef.current = 0;
-    setTerminalSummaryStats(undefined);
+    setPlayedCardsThisBattleCount(0);
     setSelectedCardId(undefined);
     setSelectedCombatTargetId("enemy");
     setPlayedCue(undefined);
     setIsEndTurnWarningOpen(false);
+    combatEventRngRef.current = createRng(
+      deriveSeed(runSeed, `combat:${encounter.id}:events`),
+    );
     dispatch({ type: "restart" });
   }
 
@@ -238,7 +251,7 @@ export function CombatScreen({
           { type: "advance-presentation" },
           {
             cardsById,
-            random: Math.random,
+            random: combatEventRngRef.current.randomFloat,
           },
         ),
       );
@@ -304,7 +317,7 @@ export function CombatScreen({
         return;
       }
 
-      playedCardsThisBattleRef.current += 1;
+      setPlayedCardsThisBattleCount((current) => current + 1);
       cueIdRef.current += 1;
       playSound("card.play");
       playSound(getCardPlayAudioEvent(card));
@@ -418,21 +431,12 @@ export function CombatScreen({
     .slice(-3)
     .reverse();
   const combatSummaryStats = {
-    ...(terminalSummaryStats ?? getCombatSummaryStats(combat)),
+    ...getCombatSummaryStats(combat),
     cardsPlayed: Math.max(
-      terminalSummaryStats?.cardsPlayed ?? 0,
       combat.metrics.cardsPlayed,
-      playedCardsThisBattleRef.current,
+      playedCardsThisBattleCount,
     ),
   };
-
-  useEffect(() => {
-    if (combat.status === "active") {
-      return;
-    }
-
-    setTerminalSummaryStats((current) => current ?? getCombatSummaryStats(combat));
-  }, [combat]);
 
   useEffect(() => {
     if (!latestDrawFeedback || lastDrawFeedbackIdRef.current === latestDrawFeedback.id) {
@@ -1162,8 +1166,9 @@ export function CombatScreen({
               )}
               {combat.status === "active" && (
                 <PrimaryButton
-                  disabled={isPlayerInputLocked}
+                  disabled={!returnToMapState.enabled}
                   onClick={() => onNavigate("map")}
+                  title={returnToMapState.reason}
                   tone="secondary"
                 >
                   Return to Map
@@ -1196,8 +1201,11 @@ export function CombatScreen({
                     : "Retry Battle From Start"}
                 </PrimaryButton>
                 {combat.status === "defeat" && (
-                  <PrimaryButton onClick={() => onNavigate("map")} tone="secondary">
-                    Return to Map
+                  <PrimaryButton
+                    onClick={() => onDefeat(combat.player.health, combat.resources)}
+                    tone="secondary"
+                  >
+                    End Run
                   </PrimaryButton>
                 )}
               </>
@@ -1234,10 +1242,11 @@ export function CombatScreen({
                 stats={[
                   { label: "Starting HP", value: combatSummaryStats.startingHealth },
                   { label: "Ending HP", value: combatSummaryStats.endingHealth },
-                  { label: "Damage Taken", value: combatSummaryStats.damageReceived },
+                  { label: "Damage Sustained", value: combatSummaryStats.damageReceived },
                   { label: "Rounds", value: combatSummaryStats.roundsTaken },
                   { label: "Corruption", value: combatSummaryStats.corruptionGained },
                   { label: "Cards Played", value: combatSummaryStats.cardsPlayed },
+                  { label: "Seed", value: runSeed },
                 ]}
               />
               {(combat.metrics.notableCardName || combat.metrics.notableArchetype) && (

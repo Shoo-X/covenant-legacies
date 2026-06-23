@@ -11,6 +11,8 @@ export interface AudioSettings {
 type AudioSettingsListener = (settings: AudioSettings) => void;
 
 const audioSettingsStorageKey = "covenant-legacies:audio-settings";
+const musicFadeMs = 900;
+const musicFadeStepMs = 50;
 
 export const defaultAudioSettings: AudioSettings = {
   masterVolume: 0.82,
@@ -35,13 +37,16 @@ class CovenantAudioManager {
   private ambience?: HTMLAudioElement;
   private currentAmbienceEvent?: SoundEventName;
   private currentMusicEvent?: SoundEventName;
+  private fadeTimers = new Set<number>();
   private listeners = new Set<AudioSettingsListener>();
   private lastPlayedAt = new Map<SoundEventName, number>();
   private music?: HTMLAudioElement;
+  private pendingMusicEvent?: SoundEventName;
   private settings: AudioSettings = defaultAudioSettings;
 
   constructor() {
     this.settings = this.readSettings();
+    this.listenForAudioUnlock();
   }
 
   getSettings() {
@@ -78,7 +83,7 @@ class CovenantAudioManager {
       return;
     }
 
-    this.stopMusic();
+    const previousMusic = this.music;
     this.music = this.createAudioElement(eventName);
     this.currentMusicEvent = eventName;
 
@@ -86,15 +91,29 @@ class CovenantAudioManager {
       return;
     }
 
-    this.music.loop = true;
-    this.music.volume = this.getEffectiveVolume(eventName);
-    void this.music.play().catch(() => {
-      this.stopMusic();
-    });
+    this.clearFadeTimers();
+    this.fadeOutAndStop(previousMusic);
+    this.music.loop = Boolean(entry.loop);
+    this.music.volume = 0;
+    void this.music
+      .play()
+      .then(() => {
+        if (this.music && this.currentMusicEvent === eventName) {
+          this.fadeAudioTo(this.music, eventName, this.getEffectiveVolume(eventName));
+        }
+      })
+      .catch(() => {
+        this.pendingMusicEvent = eventName;
+        this.fadeOutAndStop(this.music);
+        this.music = undefined;
+        this.currentMusicEvent = undefined;
+      });
   }
 
   stopMusic() {
-    this.stopLoop("music");
+    this.fadeOutAndStop(this.music);
+    this.music = undefined;
+    this.currentMusicEvent = undefined;
   }
 
   playAmbience(eventName: SoundEventName) {
@@ -189,6 +208,7 @@ class CovenantAudioManager {
 
     audio.volume = this.getEffectiveVolume(eventName);
     void audio.play().catch(() => undefined);
+    this.resumePendingMusic();
   }
 
   private canPlayNow(eventName: SoundEventName) {
@@ -235,7 +255,12 @@ class CovenantAudioManager {
 
   private syncLoopVolumes() {
     if (this.music && this.currentMusicEvent) {
-      this.music.volume = this.getEffectiveVolume(this.currentMusicEvent);
+      this.fadeAudioTo(
+        this.music,
+        this.currentMusicEvent,
+        this.getEffectiveVolume(this.currentMusicEvent),
+        180,
+      );
     }
 
     if (this.ambience && this.currentAmbienceEvent) {
@@ -283,6 +308,89 @@ class CovenantAudioManager {
     } catch {
       // Audio settings are optional; storage failures should never block play.
     }
+  }
+
+  private fadeAudioTo(
+    audio: HTMLAudioElement,
+    eventName: SoundEventName,
+    targetVolume: number,
+    durationMs = musicFadeMs,
+  ) {
+    const startVolume = audio.volume;
+    const startedAt = performance.now();
+
+    const fadeStep = () => {
+      if (!audio || audio.paused) {
+        return;
+      }
+
+      const elapsed = performance.now() - startedAt;
+      const progress = Math.min(1, elapsed / durationMs);
+      audio.volume = clampVolume(
+        startVolume + (this.getEffectiveVolume(eventName) - startVolume) * progress,
+      );
+
+      if (progress < 1) {
+        this.fadeTimers.add(window.setTimeout(fadeStep, musicFadeStepMs));
+        return;
+      }
+
+      audio.volume = targetVolume;
+    };
+
+    fadeStep();
+  }
+
+  private fadeOutAndStop(audio?: HTMLAudioElement) {
+    if (!audio) {
+      return;
+    }
+
+    const startVolume = audio.volume;
+    const startedAt = performance.now();
+
+    const fadeStep = () => {
+      const elapsed = performance.now() - startedAt;
+      const progress = Math.min(1, elapsed / musicFadeMs);
+      audio.volume = clampVolume(startVolume * (1 - progress));
+
+      if (progress < 1) {
+        this.fadeTimers.add(window.setTimeout(fadeStep, musicFadeStepMs));
+        return;
+      }
+
+      audio.pause();
+      audio.currentTime = 0;
+    };
+
+    fadeStep();
+  }
+
+  private clearFadeTimers() {
+    this.fadeTimers.forEach((timer) => window.clearTimeout(timer));
+    this.fadeTimers.clear();
+  }
+
+  private listenForAudioUnlock() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const resume = () => this.resumePendingMusic();
+
+    window.addEventListener("pointerdown", resume, { passive: true });
+    window.addEventListener("keydown", resume);
+  }
+
+  private resumePendingMusic() {
+    const eventName = this.pendingMusicEvent;
+
+    if (!eventName) {
+      return;
+    }
+
+    this.pendingMusicEvent = undefined;
+    this.playMusic(eventName);
   }
 }
 

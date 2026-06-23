@@ -20,7 +20,7 @@ export function buildStartingDeck(deckCards: StartingDeckCard[], cardsById: Map<
   return deck;
 }
 
-export function shuffleDeck<T>(items: T[], random: () => number = Math.random) {
+export function shuffleDeck<T>(items: T[], random: () => number) {
   const shuffled = [...items];
 
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -34,7 +34,7 @@ export function shuffleDeck<T>(items: T[], random: () => number = Math.random) {
 export function drawCards(
   state: CombatState,
   count: number,
-  random: () => number = Math.random,
+  random: () => number,
 ) {
   let drawPile = [...state.drawPile];
   let discardPile = [...state.discardPile];

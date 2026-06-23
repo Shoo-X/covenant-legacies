@@ -60,11 +60,11 @@ export function getRestChoices(
       id: "upgrade",
       label: "Choose a Smooth Stone",
       description: upgradeTarget
-        ? `Upgrade ${upgradeTarget.name}, a Courage card, for the rest of this run.`
+        ? `Upgrade all copies of ${upgradeTarget.name}, a Courage card, for the rest of this run.`
         : "No upgradeable Courage cards remain in the run deck.",
       disabled: !upgradeTarget,
       effectSummary: upgradeTarget
-        ? `${upgradeTarget.name} will use upgraded card text in combat.`
+        ? `Every ${upgradeTarget.name} copy will use upgraded card text in combat.`
         : "No Courage card can be upgraded.",
       details: upgradeTarget
         ? [
@@ -179,7 +179,7 @@ export function applyRestChoice(
   }
 
   return {
-    message: `${upgradeTarget.name} upgraded.`,
+    message: `All copies of ${upgradeTarget.name} upgraded.`,
     state: {
       ...state,
       upgradedCardIds: [...state.upgradedCardIds, upgradeTarget.id],

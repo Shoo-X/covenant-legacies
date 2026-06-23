@@ -7049,6 +7049,12 @@ a:focus-visible,
   line-height: 1.56;
 }
 
+.home-demo-act .home-save-notice {
+  color: rgba(215, 180, 93, 0.9);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
 .home-demo-flow {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -7178,6 +7184,261 @@ a:focus-visible,
   color: rgba(241, 228, 194, 0.74);
   font-size: 0.78rem;
   line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+
+.game-route-notice {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 45;
+  max-width: min(28rem, calc(100vw - 2rem));
+  border: 1px solid rgba(215, 180, 93, 0.32);
+  border-radius: var(--radius-sm);
+  background: rgba(15, 11, 8, 0.94);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  color: #fff3cf;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  padding: 0.75rem 0.9rem;
+}
+
+.run-summary-screen {
+  display: grid;
+  grid-template-columns: minmax(22rem, 0.9fr) minmax(0, 1.35fr);
+  gap: 1rem;
+  height: 100%;
+  min-height: 0;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.run-summary-empty {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  place-items: center;
+  padding: 1rem;
+}
+
+.run-summary-hero-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 1rem;
+}
+
+.run-summary-identity {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.run-summary-identity-row {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid rgba(203, 185, 143, 0.14);
+  background: rgba(8, 7, 5, 0.28);
+  padding: 0.75rem;
+}
+
+.run-summary-identity-row span,
+.run-summary-section-title p {
+  color: rgba(215, 180, 93, 0.78);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.run-summary-identity-row strong {
+  color: #fff3cf;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.run-summary-seed-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.run-summary-copy-status {
+  min-height: 1.2rem;
+  color: rgba(241, 228, 194, 0.66);
+  font-size: 0.78rem;
+}
+
+.run-summary-body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: auto;
+}
+
+.run-summary-section {
+  border: 1px solid rgba(203, 185, 143, 0.12);
+  background: rgba(10, 8, 6, 0.5);
+  padding: 1rem;
+}
+
+.run-summary-section-title {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+}
+
+.run-summary-section-title h2,
+.run-summary-list-panel h3 {
+  color: #fff3cf;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.run-summary-journey-list,
+.run-summary-entity-list,
+.run-summary-deck-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.run-summary-journey-list li,
+.run-summary-entity-list li,
+.run-summary-deck-list li {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(203, 185, 143, 0.12);
+  background: rgba(8, 7, 5, 0.28);
+  padding: 0.65rem 0.75rem;
+}
+
+.run-summary-journey-list span,
+.run-summary-entity-list span,
+.run-summary-deck-list span {
+  min-width: 0;
+  color: rgba(241, 228, 194, 0.86);
+  font-size: 0.88rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.run-summary-journey-list li > span {
+  font-weight: 800;
+}
+
+.run-summary-deck-list li > div {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.run-summary-entity-list strong,
+.run-summary-deck-list strong {
+  color: #fff3cf;
+  font-size: 0.86rem;
+}
+
+.run-summary-stat-grid,
+.run-summary-change-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.run-summary-resource-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.run-summary-list-panel {
+  display: grid;
+  min-width: 0;
+  gap: 0.55rem;
+}
+
+.run-summary-muted {
+  color: rgba(241, 228, 194, 0.62);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.run-summary-legacy-note {
+  color: rgba(241, 228, 194, 0.72);
+  font-size: 0.86rem;
+  line-height: 1.55;
+  padding: 1rem;
+}
+
+@media (max-width: 900px) {
+  .run-summary-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    padding: 0.75rem;
+  }
+
+  .run-summary-hero-panel {
+    justify-content: start;
+  }
+
+  .run-summary-identity {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .run-summary-seed-row {
+    grid-column: 1 / -1;
+  }
+
+  .run-summary-stat-grid,
+  .run-summary-change-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .run-summary-screen {
+    padding: 0.6rem;
+  }
+
+  .run-summary-identity,
+  .run-summary-stat-grid,
+  .run-summary-change-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .run-summary-seed-row,
+  .run-summary-journey-list li,
+  .run-summary-entity-list li,
+  .run-summary-deck-list li {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .run-summary-seed-row {
+    display: grid;
+  }
+
+  .run-summary-journey-list li,
+  .run-summary-entity-list li,
+  .run-summary-deck-list li {
+    flex-direction: column;
+  }
+
+  .run-summary-deck-list li > div {
+    justify-content: flex-start;
+  }
 }
 
 .demo-empty-state {
@@ -7782,6 +8043,138 @@ a:focus-visible,
 
 .gallery-controls label {
   min-width: 0;
+}
+
+.gallery-art-needs {
+  display: grid;
+  gap: 0.7rem;
+  min-height: 0;
+  border: 1px solid rgba(215, 180, 93, 0.16);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at 0 0, rgba(215, 180, 93, 0.09), transparent 11rem),
+    rgba(8, 7, 5, 0.24);
+  padding: 0.85rem;
+}
+
+.gallery-art-needs-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.gallery-art-needs-heading span,
+.gallery-art-need-stat span,
+.gallery-art-need-row span {
+  color: rgba(215, 180, 93, 0.76);
+  font-size: 0.6rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.gallery-art-needs-heading strong {
+  color: rgba(241, 228, 194, 0.58);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gallery-art-needs-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.gallery-art-need-stat {
+  min-width: 0;
+  border: 1px solid rgba(215, 180, 93, 0.14);
+  border-radius: 0.22rem;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 0.55rem;
+}
+
+.gallery-art-need-stat strong {
+  display: block;
+  margin-top: 0.22rem;
+  color: #fff3cf;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.gallery-art-needs-list {
+  display: grid;
+  gap: 0.38rem;
+  min-height: 0;
+}
+
+.gallery-art-need-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  min-width: 0;
+  border: 1px solid rgba(215, 180, 93, 0.12);
+  border-radius: 0.22rem;
+  background: rgba(8, 7, 5, 0.28);
+  padding: 0.55rem;
+}
+
+.gallery-art-need-row div {
+  min-width: 0;
+}
+
+.gallery-art-need-row strong {
+  display: block;
+  margin-top: 0.2rem;
+  overflow: hidden;
+  color: rgba(241, 228, 194, 0.78);
+  font-size: 0.78rem;
+  line-height: 1.18;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gallery-art-need-row em {
+  flex: 0 0 auto;
+  border: 1px solid rgba(241, 228, 194, 0.16);
+  border-radius: 999px;
+  padding: 0.2rem 0.42rem;
+  color: rgba(241, 228, 194, 0.62);
+  font-size: 0.58rem;
+  font-style: normal;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gallery-art-need-missing {
+  border-color: rgba(211, 72, 64, 0.26);
+}
+
+.gallery-art-need-missing em {
+  border-color: rgba(211, 72, 64, 0.34);
+  color: rgba(255, 198, 183, 0.74);
+}
+
+.gallery-art-need-placeholder {
+  border-color: rgba(93, 183, 232, 0.22);
+}
+
+.gallery-art-need-placeholder em {
+  border-color: rgba(93, 183, 232, 0.28);
+  color: rgba(220, 239, 255, 0.72);
+}
+
+.gallery-art-need-final {
+  border-color: rgba(119, 190, 130, 0.24);
+}
+
+.gallery-art-need-final em {
+  border-color: rgba(119, 190, 130, 0.3);
+  color: rgba(205, 241, 198, 0.74);
 }
 
 .gallery-grid {

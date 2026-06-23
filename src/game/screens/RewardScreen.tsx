@@ -5,10 +5,8 @@ import { useAudio } from "@/audio/useAudio";
 import { CollectibleCard } from "@/components/CollectibleCard";
 import {
   DecisionScreenFrame,
-  getSourceTierTone,
   RewardCardShell,
   RewardFooterActions,
-  StatusBadge,
 } from "@/components/DecisionPrimitives";
 import { ScreenFrame } from "@/components/ScreenFrame";
 import { TutorialHint } from "@/components/TutorialHint";
@@ -55,18 +53,6 @@ export function RewardScreen({
         <div className="reward-card-stage">
           {rewardCards.slice(0, 3).map((card) => (
             <RewardCardShell
-              footer={
-                <>
-                  <StatusBadge tone={getSourceTierTone(card.sourceTier)}>
-                    {card.sourceTier}
-                  </StatusBadge>
-                  <StatusBadge
-                    tone={card.type.includes("Forbidden") ? "danger" : "muted"}
-                  >
-                    {card.rarity}
-                  </StatusBadge>
-                </>
-              }
               key={card.id}
               tone={card.type.includes("Forbidden") ? "danger" : "default"}
             >

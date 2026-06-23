@@ -28,6 +28,7 @@ export const soundEvents = {
     enemyIntent: "combat.enemyIntent",
     victory: "combat.victory",
     defeat: "combat.defeat",
+    defeatAlt: "combat.defeatAlt",
   },
   campaign: {
     mapOpen: "campaign.mapOpen",
@@ -35,10 +36,13 @@ export const soundEvents = {
     nodeBattle: "campaign.nodeBattle",
     nodeRest: "campaign.nodeRest",
     nodeMystery: "campaign.nodeMystery",
+    nodeMysteryAlt: "campaign.nodeMysteryAlt",
     nodeReward: "campaign.nodeReward",
     nodeUpgrade: "campaign.nodeUpgrade",
     nodeCleanse: "campaign.nodeCleanse",
     giantStomp: "campaign.giantStomp",
+    giantPresence: "campaign.giantPresence",
+    presenceCue: "campaign.presenceCue",
   },
   ambience: {
     valleyWind: "ambience.valleyWind",
@@ -75,15 +79,19 @@ export type SoundEventName =
   | "combat.enemyIntent"
   | "combat.victory"
   | "combat.defeat"
+  | "combat.defeatAlt"
   | "campaign.mapOpen"
   | "campaign.nodeSelect"
   | "campaign.nodeBattle"
   | "campaign.nodeRest"
   | "campaign.nodeMystery"
+  | "campaign.nodeMysteryAlt"
   | "campaign.nodeReward"
   | "campaign.nodeUpgrade"
   | "campaign.nodeCleanse"
   | "campaign.giantStomp"
+  | "campaign.giantPresence"
+  | "campaign.presenceCue"
   | "ambience.valleyWind"
   | "ambience.campfire"
   | "ambience.battlefield"

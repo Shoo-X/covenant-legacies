@@ -49,7 +49,7 @@ const routePoints = [
   { x: 89, y: 29 },
 ];
 
-const valleyArt = getArtAsset("art-valley-of-the-giant");
+const valleyArt = getArtAsset("art-valley-of-the-giant-landscape");
 const giantArt = getArtAsset("art-giant-of-high-place");
 
 export function MapScreen({
@@ -122,7 +122,7 @@ export function MapScreen({
               label="Corruption"
               value={`${runResources.corruption} ${corruptionThreshold.name}`}
             />
-            <RunStat label="Renown" value={`${completedCount}/${encounters.length}`} />
+            <RunStat label="Journey" value={`${completedCount}/${encounters.length}`} />
           </div>
         </header>
 
@@ -323,12 +323,6 @@ export function MapScreen({
               <div className="campaign-detail-note campaign-detail-note-locked">
                 <p>Locked</p>
                 <span>Locked until the previous node is complete.</span>
-              </div>
-            )}
-            {selectedEncounter.conversationStarter && (
-              <div className="campaign-detail-note">
-                <p>Conversation Starter</p>
-                <span>{selectedEncounter.conversationStarter}</span>
               </div>
             )}
             <div className="campaign-detail-note">

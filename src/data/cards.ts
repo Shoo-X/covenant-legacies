@@ -1,10 +1,112 @@
 import type { Card } from "@/types/game";
-import { getArtAssetPath } from "@/data/artAssets";
+import { getArtAsset, getArtAssetPath } from "@/data/artAssets";
 
 const openAiConceptArtistCredit = "ChatGPT / OpenAI image generation concept art";
 
 function artAssetPath(assetId: string, fallbackPath: string) {
   return getArtAssetPath(assetId) ?? fallbackPath;
+}
+
+interface CardArtAssignment {
+  assetId: string;
+  cardSet?: NonNullable<Card["cardSet"]>;
+  objectPosition?: string;
+}
+
+const cardArtAssignments: Record<string, CardArtAssignment> = {
+  "card-altar-of-mercy": { assetId: "art-altar-of-mercy", cardSet: "David's Legacy" },
+  "card-angelic-message": { assetId: "art-angelic-message" },
+  "card-banner-of-the-king": {
+    assetId: "art-banner-of-the-king",
+    cardSet: "David's Legacy",
+  },
+  "card-blessing-of-the-most-high": { assetId: "art-blessing-of-the-most-high" },
+  "card-bread-and-wine": { assetId: "art-bread-and-wine" },
+  "card-captain-of-thousands": {
+    assetId: "art-captain-of-thousands",
+    cardSet: "David's Legacy",
+  },
+  "card-captains-formation": {
+    assetId: "art-captains-formation",
+    cardSet: "David's Legacy",
+  },
+  "card-clean-hands": { assetId: "art-clean-hands", cardSet: "David's Legacy" },
+  "card-courage-before-the-host": {
+    assetId: "art-courage-before-battle",
+    cardSet: "David's Legacy",
+  },
+  "card-defy-the-giant": {
+    assetId: "art-stand-against-the-giant",
+    cardSet: "David's Legacy",
+  },
+  "card-delayed-answer": { assetId: "art-delayed-answer" },
+  "card-discernment": { assetId: "art-discernment" },
+  "card-dread-knowledge": { assetId: "art-forbidden-watchers-knowledge" },
+  "card-dread-pronouncement": { assetId: "art-dread-pronouncement" },
+  "card-forbidden-consultation": { assetId: "art-forbidden-consultation" },
+  "card-forbidden-watcher-diagram": { assetId: "art-forbidden-watchers-knowledge" },
+  "card-giant-forged-edge": { assetId: "art-giant-forged-edge" },
+  "card-lament-into-praise": {
+    assetId: "art-lament-into-praise",
+    cardSet: "David's Legacy",
+  },
+  "card-mercy-at-the-threshing-floor": {
+    assetId: "art-mercy-at-the-threshing-floor",
+    cardSet: "David's Legacy",
+  },
+  "card-order-of-the-king-priest": { assetId: "art-order-of-the-king-priest" },
+  "card-renewed-oath": { assetId: "art-renewed-oath", cardSet: "David's Legacy" },
+  "card-royal-decree": { assetId: "art-royal-decree", cardSet: "David's Legacy" },
+  "card-seal-of-faith": { assetId: "art-seal-of-faith", cardSet: "David's Legacy" },
+  "card-shepherds-stand": {
+    assetId: "art-shepherds-stand",
+    cardSet: "David's Legacy",
+  },
+  "card-shield-bearer": { assetId: "art-shield-bearer", cardSet: "David's Legacy" },
+  "card-song-in-the-night": {
+    assetId: "art-song-in-the-night",
+    cardSet: "David's Legacy",
+  },
+  "card-stone-of-defiance": {
+    assetId: "art-stone-of-defiance",
+    cardSet: "David's Legacy",
+  },
+  "card-strike-the-boaster": {
+    assetId: "art-stand-against-the-giant",
+    cardSet: "David's Legacy",
+  },
+  "card-vanguard-spearmen": {
+    assetId: "art-vanguard-spearmen",
+    cardSet: "David's Legacy",
+  },
+  "card-waters-of-rest": { assetId: "art-waters-of-rest", cardSet: "David's Legacy" },
+};
+
+function applyCardArtAssignment(card: Card): Card {
+  const assignment = cardArtAssignments[card.id];
+
+  if (!assignment) {
+    return card;
+  }
+
+  const artAsset = getArtAsset(assignment.assetId);
+
+  if (!artAsset) {
+    return card;
+  }
+
+  return {
+    ...card,
+    artAssetId: assignment.assetId,
+    artistCredit: card.artistCredit ?? openAiConceptArtistCredit,
+    artworkTitle: artAsset.title,
+    cardSet: assignment.cardSet ?? card.cardSet,
+    imageObjectFit: card.imageObjectFit ?? artAsset.objectFit,
+    imageObjectPosition:
+      assignment.objectPosition ?? artAsset.objectPosition ?? card.imageObjectPosition,
+    imagePath: artAsset.path,
+    visualTags: card.visualTags ?? artAsset.tags,
+  };
 }
 
 export const showcaseCardIds = [
@@ -342,7 +444,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["1 Samuel 16:23", "Psalms"],
     scriptureAnchors: ["1 Samuel 16:23", "Psalms"],
     theologyNote:
-      "Music is framed as ministry and courage-forming worship, not enchantment.",
+      "Music serves ministry and courage-forming worship rather than enchantment.",
     gameplayRole: "Prayer",
     representationMode: "Prayer",
   },
@@ -511,7 +613,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["Original kingdom motif", "1 Samuel 17 as thematic setting"],
     scriptureAnchors: ["1 Samuel 17"],
     theologyNote:
-      "Leadership is framed as courageous stewardship rather than domination.",
+      "Leadership serves courageous stewardship rather than domination.",
     gameplayRole: "Defense",
     representationMode: "Legacy",
   },
@@ -676,7 +778,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["Joshua 24", "Psalms"],
     scriptureAnchors: ["Joshua 24"],
     theologyNote:
-      "Covenant faithfulness is framed as allegiance and remembrance.",
+      "Covenant faithfulness means allegiance and remembrance.",
     gameplayRole: "Defense",
     representationMode: "CovenantMemory",
   },
@@ -1029,7 +1131,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["Genesis 6:1-4", "2 Peter 2:4", "Jude 6"],
     scriptureAnchors: ["Genesis 6", "2 Peter 2:4", "Jude 6"],
     theologyNote:
-      "Forbidden knowledge is framed as dread and corruption, never as enlightened wisdom.",
+      "Forbidden knowledge brings dread and corruption, never enlightened wisdom.",
     gameplayRole: "Card Draw",
     representationMode: "ForbiddenWarning",
   },
@@ -1191,7 +1293,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["1 Samuel 17:34-37", "1 Samuel 17:49"],
     scriptureAnchors: ["1 Samuel 17"],
     theologyNote:
-      "Precision is framed as practiced faithfulness, not supernatural targeting.",
+      "Precision reflects practiced faithfulness rather than supernatural targeting.",
     gameplayRole: "Attack",
     representationMode: "Legacy",
   },
@@ -1664,7 +1766,7 @@ const shepherdKingActOneCards: Card[] = [
     references: ["1 Samuel 17:45-47"],
     scriptureAnchors: ["1 Samuel 17"],
     theologyNote:
-      "David's public words are framed as testimony to the Lord, not a power formula.",
+      "David's public words bear testimony to the Lord rather than functioning as a power formula.",
     gameplayRole: "Support",
     representationMode: "CovenantMemory",
   },
@@ -1733,7 +1835,7 @@ const shepherdKingActOneCards: Card[] = [
   },
 ];
 
-export const cards: Card[] = [
+const baseCards: Card[] = [
   {
     id: "card-david-vs-goliath",
     name: "David vs Goliath",
@@ -1964,7 +2066,7 @@ export const cards: Card[] = [
     sourceTier: "Scripture",
     references: ["1 Samuel 17"],
     theologyNote:
-      "David's victory is framed as covenant courage and divine deliverance, not personal bravado.",
+      "David's victory rests in covenant courage and divine deliverance rather than personal bravado.",
     gameplayRole: "Anti-Giant",
   },
   {
@@ -2026,7 +2128,7 @@ export const cards: Card[] = [
     sourceTier: "Scripture",
     references: ["Psalms", "1 Samuel 16"],
     theologyNote:
-      "Worship is represented as courage-forming remembrance and prayer, not magical performance.",
+      "Worship forms courage through remembrance and prayer rather than magical performance.",
     gameplayRole: "Prayer",
   },
   {
@@ -2084,7 +2186,7 @@ export const cards: Card[] = [
     references: ["Psalm 23", "1 Samuel 17:34-37"],
     scriptureAnchors: ["Psalm 23", "1 Samuel 17"],
     theologyNote:
-      "Watchfulness is framed as faithful care and discernment, not supernatural surveillance.",
+      "Watchfulness reflects faithful care and discernment rather than supernatural surveillance.",
     gameplayRole: "Tactic",
     representationMode: "Legacy",
   },
@@ -2197,7 +2299,7 @@ export const cards: Card[] = [
     sourceTier: "Scripture",
     references: ["1 Samuel 28"],
     theologyNote:
-      "This is framed as a warning about fear-driven disobedience, not an endorsement of occult practice.",
+      "This warns against fear-driven disobedience and does not endorse occult practice.",
     gameplayRole: "Corruption",
   },
   {
@@ -2253,9 +2355,17 @@ export const cards: Card[] = [
     synergyNotes: "Turns Fear removal into immediate pressure.",
     upgradedVersion: "Deal 9 damage. Remove Fear.",
     combatEffect: { damage: 7, removeFear: true },
+    artAssetId: "art-fearless-charge",
+    imagePath: artAssetPath("art-fearless-charge", "/art/cards/fearless-charge.png"),
+    imageObjectPosition: "50% 36%",
+    artworkTitle: "Fearless Charge",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "David's Legacy",
+    flavorText: "Fear did not leave because the danger was small.",
+    visualTags: ["courage", "fear", "valley", "david"],
     sourceTier: "Speculative Fiction",
     references: ["Original card", "1 Samuel 17 as thematic inspiration"],
-    theologyNote: "Courage is framed as faithful resolve under threat.",
+    theologyNote: "Courage means faithful resolve under threat.",
     gameplayRole: "Attack",
   },
   {
@@ -2269,6 +2379,7 @@ export const cards: Card[] = [
     synergyNotes: "Primary Courage payoff against the Valley's giant enemies.",
     upgradedVersion: "Deal 11 damage. If target has Giant or giant-legacy foe, deal +8 damage.",
     combatEffect: { damage: 9, antiGiantDamage: 6 },
+    artAssetId: "art-courage-before-battle",
     imagePath: artAssetPath(
       "art-david-goliath-portrait",
       "/art/cards/david-vs-goliath.png",
@@ -2296,6 +2407,17 @@ export const cards: Card[] = [
     synergyNotes: "A bridge card for Courage decks that want Psalm-style flow.",
     upgradedVersion: "Remove Fear. Gain 7 Guard. Draw 1 card.",
     combatEffect: { removeFear: true, guard: 5, draw: 1 },
+    artAssetId: "art-captains-formation",
+    imagePath: artAssetPath(
+      "art-courage-before-battle",
+      "/art/cards/courage-before-battle.png",
+    ),
+    imageObjectPosition: "50% 35%",
+    artworkTitle: "Courage Before Battle",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "David's Legacy",
+    flavorText: "The heart was steadied before the battle line moved.",
+    visualTags: ["courage", "prayer", "guard", "battle line"],
     sourceTier: "Speculative Fiction",
     references: ["Original card"],
     theologyNote: "Faithful courage steadies the heart before public opposition.",
@@ -2474,6 +2596,16 @@ export const cards: Card[] = [
     synergyNotes: "Formation card that turns defense into a stronger attack line.",
     upgradedVersion: "Gain 5 Guard. Your next attack deals +3 damage.",
     combatEffect: { guard: 3, nextAttackBonus: 2 },
+    imagePath: artAssetPath(
+      "art-captains-formation",
+      "/art/cards/captains-formation.png",
+    ),
+    imageObjectPosition: "50% 38%",
+    artworkTitle: "Captain's Formation",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "David's Legacy",
+    flavorText: "Order held the line while courage found its mark.",
+    visualTags: ["formation", "kingdom", "guard", "leadership"],
     sourceTier: "Speculative Fiction",
     references: ["Original formation"],
     theologyNote: "Kingdom order is expressed through disciplined protection.",
@@ -2543,6 +2675,14 @@ export const cards: Card[] = [
     upgradedVersion:
       "Gain 5 Guard. If Corruption is 0, draw 2 cards; otherwise remove 2 Corruption.",
     combatEffect: { removeCorruption: 2, guard: 4 },
+    artAssetId: "art-clean-hands",
+    imagePath: artAssetPath("art-clean-hands", "/art/cards/clean-hands.png"),
+    imageObjectPosition: "50% 38%",
+    artworkTitle: "Clean Hands",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "David's Legacy",
+    flavorText: "A clean path was not an easy path.",
+    visualTags: ["clean hands", "covenant", "repentance", "prayer"],
     sourceTier: "Scripture",
     references: ["Psalm 24:4"],
     theologyNote: "Purity language is treated as repentance and faithful integrity.",
@@ -2561,7 +2701,7 @@ export const cards: Card[] = [
     combatEffect: { removeCorruption: 1, gainFaith: 1, gainAuthority: 1 },
     sourceTier: "Speculative Fiction",
     references: ["Original covenant motif"],
-    theologyNote: "Renewal is framed as returning to faithfulness.",
+    theologyNote: "Renewal means returning to faithfulness.",
     gameplayRole: "Support",
   },
   {
@@ -2607,6 +2747,17 @@ export const cards: Card[] = [
     synergyNotes: "Cheap Covenant support that enables Psalm turns.",
     upgradedVersion: "Remove 2 Corruption. Your next Prayer costs 1 less.",
     combatEffect: { removeCorruption: 1, nextPrayerCostReduction: 1 },
+    artAssetId: "art-remember-promise",
+    imagePath: artAssetPath(
+      "art-remember-promise",
+      "/art/cards/remember-promise.png",
+    ),
+    imageObjectPosition: "50% 36%",
+    artworkTitle: "Remember the Promise",
+    artistCredit: openAiConceptArtistCredit,
+    cardSet: "David's Legacy",
+    flavorText: "Memory became a road back to trust.",
+    visualTags: ["promise", "covenant", "memory", "faith"],
     sourceTier: "Speculative Fiction",
     references: ["Original covenant motif"],
     theologyNote: "Remembering the promise means returning to trust rather than fear.",
@@ -2614,3 +2765,5 @@ export const cards: Card[] = [
   },
   ...shepherdKingActOneCards,
 ];
+
+export const cards: Card[] = baseCards.map(applyCardArtAssignment);

@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useAudio } from "@/audio/useAudio";
 import { cards } from "@/data/cards";
 import {
   ChoiceCard,
@@ -32,6 +34,7 @@ export function RestNodeScreen({
   runResources,
   upgradedCardIds,
 }: RestNodeScreenProps) {
+  const { playSound } = useAudio();
   const cardsById = new Map(cards.map((card) => [card.id, card]));
   const choices = getRestChoices(
     {
@@ -45,6 +48,10 @@ export function RestNodeScreen({
     cardsById,
   );
   const corruptionThreshold = getCorruptionThreshold(runResources.corruption);
+
+  useEffect(() => {
+    playSound("campaign.nodeRest");
+  }, [playSound]);
 
   return (
     <ScreenFrame>
@@ -64,18 +71,18 @@ export function RestNodeScreen({
             <div className="decision-note-panel decision-context-panel">
               <p>Before Goliath</p>
               <span>
-                Final preparation before the champion's challenge: heal,
+                Final preparation before the champion&apos;s challenge: heal,
                 strengthen Courage, remember deliverance, or pray cleanly.
               </span>
             </div>
             <ScriptureReferencePanel>1 Samuel 17:40</ScriptureReferencePanel>
             <TheologyNotePanel>
               The brook is final preparation before the public battle: prayer,
-              memory, and chosen stones are framed as obedience, not magic.
+              memory, and chosen stones serve faithful obedience before the Lord.
             </TheologyNotePanel>
           </>
         }
-        copy="Take one careful mercy before Goliath's challenge: rest, choose, remember, or pray."
+        copy="Take one careful mercy before Goliath&apos;s challenge: rest, choose, remember, or pray."
         eyebrow="Rest / Upgrade / Cleanse"
         meta={<StatusBadge tone="gold">Scripture</StatusBadge>}
         title="The Brook of Stones"
@@ -84,7 +91,7 @@ export function RestNodeScreen({
         <TutorialHint tone="sacred" title="Before Goliath">
           This is the final preparation node. Heal if David is worn down, upgrade
           a Courage card for stronger attacks, or cleanse Fear and Corruption
-          before the champion's challenge.
+          before the champion&apos;s challenge.
         </TutorialHint>
         <div className="rest-choice-grid">
           {choices.map((choice) => (

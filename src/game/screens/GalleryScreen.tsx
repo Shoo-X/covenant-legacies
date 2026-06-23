@@ -14,6 +14,12 @@ import {
   ScrollPanel,
 } from "@/components/UiPrimitives";
 import { artAssets, getArtAssetByPath, type ArtAsset } from "@/data/artAssets";
+import {
+  artRegistrySummary,
+  type ArtCurrentStatus,
+  type ArtRegistryItem,
+} from "@/data/artRegistry";
+import { artPromptQueue } from "@/data/artPromptQueue";
 import { cards } from "@/data/cards";
 import {
   cardRarityFilters,
@@ -123,6 +129,8 @@ export function GalleryScreen() {
               options={cardSetFilters}
             />
           </div>
+
+          <ArtNeedsDashboard />
         </DetailPanel>
 
         <ScrollPanel className="gallery-grid">
@@ -195,6 +203,73 @@ export function GalleryScreen() {
       )}
     </ScreenFrame>
   );
+}
+
+function ArtNeedsDashboard() {
+  const priorityItems = artPromptQueue.slice(0, 8);
+
+  return (
+    <section className="gallery-art-needs" aria-label="Art needs dashboard">
+      <div className="gallery-art-needs-heading">
+        <span>Art Needs</span>
+        <strong>{artPromptQueue.length} queued</strong>
+      </div>
+
+      <div className="gallery-art-needs-stats">
+        <ArtNeedStat label="Missing" status="missing" value={artRegistrySummary.missing} />
+        <ArtNeedStat
+          label="Placeholder"
+          status="placeholder"
+          value={artRegistrySummary.placeholder}
+        />
+        <ArtNeedStat label="Final" status="final" value={artRegistrySummary.final} />
+      </div>
+
+      <div className="gallery-art-needs-list">
+        {priorityItems.map((item) => (
+          <ArtNeedRow item={item} key={`${item.assetType}-${item.assetId}`} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ArtNeedStat({
+  label,
+  status,
+  value,
+}: {
+  label: string;
+  status: ArtCurrentStatus;
+  value: number;
+}) {
+  return (
+    <div className={`gallery-art-need-stat gallery-art-need-${status}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function ArtNeedRow({ item }: { item: ArtRegistryItem }) {
+  return (
+    <div className={`gallery-art-need-row gallery-art-need-${item.currentStatus}`}>
+      <div>
+        <span>
+          {item.priority} / {formatAssetType(item.assetType)}
+        </span>
+        <strong>{item.displayName}</strong>
+      </div>
+      <em>{item.currentStatus}</em>
+    </div>
+  );
+}
+
+function formatAssetType(assetType: ArtRegistryItem["assetType"]) {
+  return assetType
+    .split("-")
+    .map((word) => word[0]?.toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 function toCardGalleryEntry(card: Card): GalleryEntry {

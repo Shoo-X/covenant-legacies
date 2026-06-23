@@ -59,7 +59,7 @@ export function applyMysteryChoice(
         ...nextState,
         upgradedCardIds: [...nextState.upgradedCardIds, choice.upgradeCardId],
       };
-      messages.push("Chosen card upgraded.");
+      messages.push("Chosen card family upgraded; all copies use upgraded text.");
     } else if (choice.fallbackAddCardId) {
       nextState = {
         ...nextState,
@@ -79,7 +79,7 @@ export function applyMysteryChoice(
         };
       }
 
-      messages.push("Fallback card added in upgraded form.");
+      messages.push("Fallback card added; its card family uses upgraded text.");
     }
   }
 
@@ -141,7 +141,7 @@ export function applyMysteryChoice(
       ...nextState,
       upgradedCardIds: [...nextState.upgradedCardIds, ...upgradedCardIds],
     };
-    messages.push(`${upgradedCardIds.length} Covenant cards upgraded.`);
+    messages.push(`${upgradedCardIds.length} Covenant card families upgraded.`);
   }
 
   return {

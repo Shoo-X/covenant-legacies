@@ -42,6 +42,44 @@ const openAiConceptDefaults = {
   | "saga"
 >;
 
+interface CardArtAssetInput {
+  id: string;
+  title: string;
+  fileName: string;
+  incomingFileName?: string;
+  objectPosition?: string;
+  relatedCards: string[];
+  tags: string[];
+  notes: string;
+  theologicalSensitivity?: TheologicalSensitivity;
+}
+
+function createCardArtAsset({
+  fileName,
+  id,
+  incomingFileName,
+  notes,
+  objectPosition = "50% 38%",
+  relatedCards,
+  tags,
+  theologicalSensitivity = "low",
+  title,
+}: CardArtAssetInput): ArtAsset {
+  return {
+    ...openAiConceptDefaults,
+    id,
+    title,
+    path: `/art/cards/${fileName}`,
+    additionalPaths: [`/art/incoming/${incomingFileName ?? fileName}`],
+    objectPosition,
+    relatedCards,
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags,
+    notes,
+    theologicalSensitivity,
+  };
+}
+
 export const artAssets: ArtAsset[] = [
   {
     ...openAiConceptDefaults,
@@ -367,6 +405,318 @@ export const artAssets: ArtAsset[] = [
   },
   {
     ...openAiConceptDefaults,
+    id: "art-fearless-charge",
+    title: "Fearless Charge",
+    path: "/art/cards/fearless-charge.png",
+    additionalPaths: ["/art/incoming/fearless-charge.png"],
+    objectPosition: "50% 36%",
+    relatedCards: ["card-fearless-charge"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["david", "courage", "charge", "valley", "fear"],
+    notes:
+      "Courage action concept for David's starter reward pool; present as faithful resolve rather than reckless bravado.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-courage-before-battle",
+    title: "Courage Before Battle",
+    path: "/art/cards/courage-before-battle.png",
+    additionalPaths: ["/art/incoming/courage-before-battle.png"],
+    objectPosition: "50% 35%",
+    relatedCards: ["card-courage-before-the-host"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["courage", "prayer", "battle line", "david", "valley"],
+    notes:
+      "Pre-battle courage concept for prayer and Guard support; present as steadiness under trust, not spellcasting.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-captains-formation",
+    title: "Captain's Formation",
+    path: "/art/cards/captains-formation.png",
+    additionalPaths: ["/art/incoming/captains-formation.png"],
+    objectPosition: "50% 38%",
+    relatedCards: ["card-captains-formation"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["formation", "kingdom", "guard", "battle line", "leadership"],
+    notes:
+      "Kingdom formation concept for disciplined protection and leadership support.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-clean-hands",
+    title: "Clean Hands",
+    path: "/art/cards/clean-hands.png",
+    additionalPaths: ["/art/incoming/clean-hands.png"],
+    objectPosition: "50% 38%",
+    relatedCards: ["card-clean-hands"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat", "Codex"],
+    tags: ["clean hands", "covenant", "repentance", "prayer", "integrity"],
+    notes:
+      "Covenant integrity concept for cleansing and low-corruption play; frame as repentance and mercy rather than ritual control.",
+    theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-remember-promise",
+    title: "Remember the Promise",
+    path: "/art/cards/remember-promise.png",
+    additionalPaths: ["/art/incoming/remember-promise.png"],
+    objectPosition: "50% 36%",
+    relatedCards: ["card-remember-the-promise"],
+    relatedScreens: ["Gallery", "Collection", "Card Inspect", "Combat"],
+    tags: ["promise", "covenant", "memory", "prayer", "faith"],
+    notes:
+      "Covenant memory concept for promise and remembrance cards; use as faithful return rather than talismanic power.",
+    theologicalSensitivity: "low",
+  },
+  createCardArtAsset({
+    id: "art-altar-of-mercy",
+    title: "Altar of Mercy",
+    fileName: "altar-of-mercy.png",
+    incomingFileName: "alter-of-mercy.png",
+    relatedCards: ["card-altar-of-mercy"],
+    tags: ["altar", "mercy", "covenant", "cleansing", "restoration"],
+    notes:
+      "Mercy and covenant restoration concept; frame as repentance and mercy rather than transactional ritual.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-angelic-message",
+    title: "Angelic Message",
+    fileName: "angelic-message.png",
+    relatedCards: ["card-angelic-message"],
+    tags: ["angel", "message", "intervention", "wisdom", "authority"],
+    notes:
+      "High-sensitivity angelic messenger concept; present angels as servants under God's authority, not controllable summons.",
+    theologicalSensitivity: "high",
+  }),
+  createCardArtAsset({
+    id: "art-banner-of-the-king",
+    title: "Banner of the King",
+    fileName: "banner-of-the-king.png",
+    relatedCards: ["card-banner-of-the-king"],
+    tags: ["banner", "kingdom", "formation", "allegiance", "guard"],
+    notes:
+      "Kingdom banner concept for allegiance and ordered courage, not self-exaltation.",
+  }),
+  createCardArtAsset({
+    id: "art-blessing-of-the-most-high",
+    title: "Blessing of the Most High",
+    fileName: "blessing-of-the-most-high.png",
+    relatedCards: ["card-blessing-of-the-most-high"],
+    tags: ["blessing", "most high", "covenant", "guard", "hope"],
+    notes:
+      "Blessing concept tied to God Most High; handle reverently as received mercy, not a controllable power object.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-bread-and-wine",
+    title: "Bread and Wine",
+    fileName: "bread-and-wine.png",
+    relatedCards: ["card-bread-and-wine"],
+    tags: ["bread", "wine", "provision", "covenant", "blessing"],
+    notes:
+      "Provision and blessing concept inspired by Melchizedek; avoid treating sacred imagery as a consumable power trick.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-captain-of-thousands",
+    title: "Captain of Thousands",
+    fileName: "captain-of-thousands.png",
+    relatedCards: ["card-captain-of-thousands"],
+    tags: ["captain", "kingdom", "command", "guard", "leadership"],
+    notes:
+      "Leadership concept for disciplined protection and ordered courage.",
+  }),
+  createCardArtAsset({
+    id: "art-delayed-answer",
+    title: "Delayed Answer",
+    fileName: "delayed-answer.png",
+    relatedCards: ["card-delayed-answer"],
+    tags: ["prayer", "waiting", "lament", "wisdom", "faith"],
+    notes:
+      "Prayerful waiting concept for lament and patience without implying abandonment.",
+  }),
+  createCardArtAsset({
+    id: "art-discernment",
+    title: "Discernment",
+    fileName: "discernment.png",
+    relatedCards: ["card-discernment"],
+    tags: ["discernment", "wisdom", "clarity", "prayer", "intent"],
+    notes:
+      "Discernment concept for faithful judgment and moral clarity, not forbidden insight.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-dread-pronouncement",
+    title: "Dread Pronouncement",
+    fileName: "dread-pronouncement.png",
+    relatedCards: ["card-dread-pronouncement"],
+    tags: ["dread", "burden", "warning", "judgment", "forbidden"],
+    notes:
+      "Forbidden-warning burden concept; should feel tragic, heavy, and spiritually dangerous rather than attractive.",
+    theologicalSensitivity: "high",
+  }),
+  createCardArtAsset({
+    id: "art-forbidden-consultation",
+    title: "Forbidden Consultation",
+    fileName: "forbidden-consultation.png",
+    relatedCards: ["card-forbidden-consultation"],
+    tags: ["forbidden", "consultation", "warning", "fear", "corruption"],
+    notes:
+      "Forbidden-counsel concept for cautionary use; never frame as wise or admirable spiritual practice.",
+    theologicalSensitivity: "high",
+  }),
+  createCardArtAsset({
+    id: "art-forbidden-watchers-knowledge",
+    title: "Forbidden Watcher Knowledge",
+    fileName: "forbidden-watchers-knowledge.png",
+    relatedCards: ["card-forbidden-watcher-diagram", "card-dread-knowledge"],
+    tags: ["forbidden", "watcher", "knowledge", "corruption", "warning"],
+    notes:
+      "Speculative Watcher knowledge concept; keep clearly marked as fiction and spiritually dangerous, not doctrine or valid wisdom.",
+    theologicalSensitivity: "high",
+  }),
+  createCardArtAsset({
+    id: "art-giant-forged-edge",
+    title: "Giant-Forged Edge",
+    fileName: "giant-forged-edge.png",
+    relatedCards: ["card-giant-forged-edge"],
+    tags: ["giant", "forged", "weapon", "forbidden", "corruption"],
+    notes:
+      "Forbidden weapon concept; use as a cautionary temptation with visible corruption cost.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-lament-into-praise",
+    title: "Lament Into Praise",
+    fileName: "lament-into-praise.png",
+    relatedCards: ["card-lament-into-praise"],
+    tags: ["lament", "praise", "psalm", "prayer", "restoration"],
+    notes:
+      "Psalm concept honoring lament as faithful speech before God.",
+  }),
+  createCardArtAsset({
+    id: "art-mercy-at-the-threshing-floor",
+    title: "Mercy at the Threshing Floor",
+    fileName: "mercy-at-threshing-floor.png",
+    relatedCards: ["card-mercy-at-the-threshing-floor"],
+    tags: ["mercy", "threshing floor", "repentance", "covenant", "cleansing"],
+    notes:
+      "Mercy and repentance concept; avoid presenting the threshing-floor motif as purchasable ritual control.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-order-of-the-king-priest",
+    title: "Order of the King-Priest",
+    fileName: "order-of-the-king-priest.png",
+    relatedCards: ["card-order-of-the-king-priest"],
+    tags: ["king-priest", "melchizedek", "covenant", "authority", "mystery"],
+    notes:
+      "High-mystery king-priest concept; keep reverent and restrained rather than overdefining Melchizedek.",
+    theologicalSensitivity: "high",
+  }),
+  createCardArtAsset({
+    id: "art-renewed-oath",
+    title: "Renewed Oath",
+    fileName: "renewed-oath.png",
+    relatedCards: ["card-renewed-oath"],
+    tags: ["oath", "renewal", "covenant", "faith", "authority"],
+    notes:
+      "Covenant renewal concept for return to faithfulness.",
+  }),
+  createCardArtAsset({
+    id: "art-royal-decree",
+    title: "Royal Decree",
+    fileName: "royal-decree.png",
+    relatedCards: ["card-royal-decree"],
+    tags: ["decree", "kingdom", "authority", "wisdom", "command"],
+    notes:
+      "Kingdom command concept for submitted authority and wise leadership.",
+  }),
+  createCardArtAsset({
+    id: "art-seal-of-faith",
+    title: "Seal of Faith",
+    fileName: "seal-of-faith.png",
+    relatedCards: ["card-seal-of-faith"],
+    tags: ["faith", "seal", "covenant", "guard", "steadfastness"],
+    notes:
+      "Covenant steadfastness concept; avoid talismanic framing.",
+  }),
+  createCardArtAsset({
+    id: "art-shepherds-stand",
+    title: "Shepherd's Stand",
+    fileName: "shepherds-stand.png",
+    relatedCards: ["card-shepherds-stand"],
+    tags: ["shepherd", "stand", "guard", "courage", "david"],
+    notes:
+      "Protective shepherd courage concept for defensive David reward cards.",
+  }),
+  createCardArtAsset({
+    id: "art-shield-bearer",
+    title: "Shield-Bearer",
+    fileName: "shield-bearer.png",
+    relatedCards: ["card-shield-bearer"],
+    tags: ["shield", "ally", "kingdom", "guard", "formation"],
+    notes:
+      "Ally defense concept for ordered mutual protection.",
+  }),
+  createCardArtAsset({
+    id: "art-song-in-the-night",
+    title: "Song in the Night",
+    fileName: "song-in-the-night.png",
+    relatedCards: ["card-song-in-the-night"],
+    tags: ["song", "night", "psalm", "prayer", "healing"],
+    notes:
+      "Psalm endurance concept for song in distress and faithful hope.",
+  }),
+  createCardArtAsset({
+    id: "art-stand-against-the-giant",
+    title: "Stand Against the Giant",
+    fileName: "stand-against-the-giant.png",
+    relatedCards: [
+      "card-defy-the-giant",
+      "card-strike-the-boaster",
+      "card-david-vs-goliath",
+    ],
+    tags: ["david", "giant", "valley", "courage", "sling"],
+    notes:
+      "David-facing-giant concept for anti-Giant courage cards rooted in 1 Samuel 17.",
+    theologicalSensitivity: "moderate",
+  }),
+  createCardArtAsset({
+    id: "art-stone-of-defiance",
+    title: "Stone of Defiance",
+    fileName: "stone-of-defiance.png",
+    relatedCards: ["card-stone-of-defiance"],
+    tags: ["stone", "defiance", "courage", "fear", "valley"],
+    notes:
+      "Prepared-stone concept for Fear removal and Courage setup.",
+  }),
+  createCardArtAsset({
+    id: "art-vanguard-spearmen",
+    title: "Vanguard Spearmen",
+    fileName: "vanguard-spearmen.png",
+    relatedCards: ["card-vanguard-spearmen"],
+    tags: ["spearmen", "vanguard", "kingdom", "formation", "guard"],
+    notes:
+      "Ally formation concept for courage and disciplined protection.",
+  }),
+  createCardArtAsset({
+    id: "art-waters-of-rest",
+    title: "Waters of Rest",
+    fileName: "waters-of-rest.png",
+    relatedCards: ["card-waters-of-rest"],
+    tags: ["waters", "rest", "psalm", "provision", "shepherd"],
+    notes:
+      "Psalm 23 restoration concept for healing and Fear removal.",
+  }),
+  {
+    ...openAiConceptDefaults,
     id: "art-daniel-lions-den",
     title: "Daniel in the Lions' Den",
     path: "/art/heroes/daniel-lions-den.png",
@@ -390,8 +740,83 @@ export const artAssets: ArtAsset[] = [
     relatedScreens: ["Gallery", "Combat", "Codex"],
     tags: ["giant", "high place", "boss", "judgment", "valley"],
     notes:
-      "Boss-scale giant/champion concept for Goliath and high-place pressure; keep framed as Philistine champion and giant-legacy atmosphere rather than glamorized tyranny.",
+      "Boss-scale giant/champion concept for Goliath and high-place pressure; present as Philistine champion and giant-legacy atmosphere rather than glamorized tyranny.",
     theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-idol-priest",
+    title: "Keeper of the Idol Standard",
+    path: "/art/enemies/idol-priest.png",
+    additionalPaths: ["/art/incoming/idol-priest.png"],
+    objectPosition: "50% 34%",
+    relatedCards: ["card-idols-bargain", "card-idols-whisper"],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["philistine", "idol", "standard", "false worship", "enemy"],
+    notes:
+      "Enemy concept for Philistine idol-standard pressure; present idolatry as false confidence and warning, never as admirable power.",
+    theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-philistine-raider",
+    title: "Philistine Raider",
+    path: "/art/enemies/philistine-raider.png",
+    additionalPaths: ["/art/incoming/philistine-raider.png"],
+    objectPosition: "50% 34%",
+    relatedCards: [],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["philistine", "raider", "valley", "battle line", "enemy"],
+    notes:
+      "Enemy concept for the Valley Mouth skirmish; represents inferred Philistine pressure rather than a named biblical figure.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-giants-shield-bearer",
+    title: "Giant's Shield-Bearer",
+    path: "/art/enemies/giants-shield-bearer.png",
+    additionalPaths: ["/art/incoming/giants-shield-bearer.png"],
+    objectPosition: "50% 34%",
+    relatedCards: [],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["shield-bearer", "philistine", "gath", "guard", "enemy"],
+    notes:
+      "Enemy concept for the shield-bearer before the champion; keep as battlefield support, not a disposable fantasy creature.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-idol-standard",
+    title: "Idol Standard",
+    path: "/art/enemies/idol-standard.png",
+    additionalPaths: ["/art/incoming/idol-standard.png"],
+    objectPosition: "50% 45%",
+    relatedCards: ["card-idols-bargain", "card-idols-whisper"],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["idol", "standard", "philistine", "false worship", "structure"],
+    notes:
+      "Structure concept for false-worship pressure; should read as warning and battlefield intimidation, not admirable power.",
+    theologicalSensitivity: "moderate",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-watcher-touched-raider",
+    title: "Watcher-Touched Raider",
+    path: "/art/enemies/watcher-touched-raider.png",
+    additionalPaths: ["/art/incoming/watcher-touched-raider.png"],
+    objectPosition: "50% 34%",
+    saga: "War of the Watchers",
+    relatedCards: [
+      "card-forbidden-watcher-diagram",
+      "card-dread-knowledge",
+      "card-watcher-touched-relic",
+    ],
+    relatedScreens: ["Gallery", "Combat", "Codex"],
+    tags: ["watcher", "forbidden", "corruption", "raider", "speculative"],
+    notes:
+      "Speculative forbidden-pressure enemy concept; keep as cautionary fiction and do not present as doctrine or Goliath's source.",
+    theologicalSensitivity: "high",
   },
   {
     ...openAiConceptDefaults,
@@ -419,6 +844,20 @@ export const artAssets: ArtAsset[] = [
     tags: ["valley", "campaign map", "giant", "wilderness", "david"],
     notes:
       "Campaign vista concept for The Valley of the Giant, David's starter campaign anchored in 1 Samuel 17.",
+    theologicalSensitivity: "low",
+  },
+  {
+    ...openAiConceptDefaults,
+    id: "art-valley-of-the-giant-landscape",
+    title: "The Valley of the Giant Landscape",
+    path: "/art/showcase/valley-of-the-giant-landscape.png",
+    additionalPaths: ["/art/incoming/valley-of-the-giant-landscape.png"],
+    objectPosition: "50% 50%",
+    relatedCards: [],
+    relatedScreens: ["Campaign Map", "Gallery", "Codex"],
+    tags: ["valley", "campaign map", "battle lines", "brook", "david"],
+    notes:
+      "Wide campaign-location concept for The Valley of the Giant route map, anchored in 1 Samuel 17.",
     theologicalSensitivity: "low",
   },
 ];

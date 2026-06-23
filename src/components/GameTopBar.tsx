@@ -4,12 +4,14 @@ import type { GameScreen } from "@/types/game";
 
 interface GameTopBarProps {
   currentScreen: GameScreen;
+  navigationState?: Partial<Record<GameScreen, { disabled?: boolean; reason?: string }>>;
   onNavigate: (screen: GameScreen) => void;
   onOpenSettings?: () => void;
 }
 
 export function GameTopBar({
   currentScreen,
+  navigationState,
   onNavigate,
   onOpenSettings,
 }: GameTopBarProps) {
@@ -25,13 +27,16 @@ export function GameTopBar({
       <nav className="top-nav-tabs" aria-label="Game screens">
         {screens.map((screen) => {
           const isActive = screen.id === currentScreen;
+          const state = navigationState?.[screen.id];
 
           return (
             <button
               className={`top-nav-tab ${isActive ? "is-active" : ""}`}
+              disabled={state?.disabled}
               key={screen.id}
               onClick={() => onNavigate(screen.id)}
               aria-current={isActive ? "page" : undefined}
+              title={state?.reason}
               type="button"
             >
               {screen.label}

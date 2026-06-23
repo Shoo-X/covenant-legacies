@@ -102,13 +102,13 @@ export const heroes: Hero[] = [
     strengths: ["Defensive resets", "Provision pacing", "Judgment against oppression"],
     weaknesses: ["Slower setup", "Requires careful resource planning"],
     signatureMechanic:
-      "Deliverance effects open paths through pressure without framing Moses as a wizard.",
+      "Deliverance effects open paths through pressure under the Lord's command.",
     passiveName: "Wilderness Provision",
     passiveText:
       "Preview: future runs will lean on provision, signs, and judgment under God's authority.",
     references: ["Exodus"],
     theologyNote:
-      "Moses is framed as a servant and deliverer under God's command, not as a generic spellcaster.",
+      "Moses is presented as a servant and deliverer under God's command.",
     artAssetId: "art-moses-divider-of-seas",
     imagePath: mosesArt?.path,
     artworkTitle: mosesArt?.title,
@@ -142,7 +142,7 @@ export const heroes: Hero[] = [
     strengths: ["Anti-Idol pressure", "Altar interactions", "High-impact judgment"],
     weaknesses: ["Resource hungry", "Vulnerable during setup turns"],
     signatureMechanic:
-      "Covenant altar and judgment effects confront idolatry without treating power as magic.",
+      "Covenant altar and judgment effects confront idolatry as prophetic witness.",
     passiveName: "Repair the Altar",
     passiveText:
       "Preview: future runs will suppress idol structures and answer false worship through judgment.",
@@ -170,7 +170,7 @@ export const heroes: Hero[] = [
       "Preview: future runs will use wisdom, visions, and interpretation to plan around threats.",
     references: ["Daniel"],
     theologyNote:
-      "Daniel is framed through wisdom, prayer, faithfulness, and interpretation under God, not occult divination.",
+      "Daniel is presented through wisdom, prayer, faithfulness, and interpretation under God rather than occult divination.",
     artAssetId: "art-daniel-lions-den",
     imagePath: danielArt?.path,
     artworkTitle: danielArt?.title,
@@ -226,13 +226,13 @@ export const heroes: Hero[] = [
     strengths: ["Hope and restoration", "Fear removal", "Witness-based support"],
     weaknesses: ["Lower direct damage", "Needs protection and timing"],
     signatureMechanic:
-      "Witness turns restoration and hope into support, not magical combat.",
+      "Witness turns restoration and hope into faithful support.",
     passiveName: "First Witness",
     passiveText:
       "Preview: future runs will emphasize testimony, hope, restoration, and Fear removal.",
     references: ["John 20", "Mark 16"],
     theologyNote:
-      "Mary Magdalene is framed as a faithful witness to resurrection hope, not as a magical combat unit.",
+      "Mary Magdalene is presented as a faithful witness to resurrection hope.",
     artAssetId: "art-mary-empty-tomb",
     imagePath: maryArt?.path,
     artworkTitle: maryArt?.title,
